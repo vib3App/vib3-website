@@ -1,25 +1,113 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/services/api';
 
+// Calculate minimum birthdate (13 years ago)
+function getMaxBirthdate(): string {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 13);
+  return date.toISOString().split('T')[0];
+}
+
+// Validate age is 13+
+function isValidAge(birthdate: string): boolean {
+  const birth = new Date(birthdate);
+  const today = new Date();
+  const age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    return age - 1 >= 13;
+  }
+  return age >= 13;
+}
+
+// Validate password strength
+function validatePassword(password: string): string | null {
+  if (password.length < 8) return 'Password must be at least 8 characters';
+  if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
+  if (!/[a-z]/.test(password)) return 'Password must contain a lowercase letter';
+  if (!/[0-9]/.test(password)) return 'Password must contain a number';
+  return null;
+}
+
+// Validate username
+function validateUsername(username: string): string | null {
+  if (username.length < 3) return 'Username must be at least 3 characters';
+  if (username.length > 20) return 'Username must be 20 characters or less';
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'Username can only contain letters, numbers, and underscores';
+  return null;
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const { setUser, setLoading } = useAuthStore();
+  const { setUser } = useAuthStore();
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [birthdate, setBirthdate] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const maxBirthdate = useMemo(() => getMaxBirthdate(), []);
+
+  // Validate form before submission
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    // Email validation
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    // Password validation
+    if (!password) {
+      errors.password = 'Password is required';
+    } else if (!isLogin) {
+      const pwError = validatePassword(password);
+      if (pwError) errors.password = pwError;
+    }
+
+    // Registration-specific validations
+    if (!isLogin) {
+      // Username
+      const usernameError = validateUsername(username);
+      if (usernameError) errors.username = usernameError;
+
+      // Confirm password
+      if (password !== confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match';
+      }
+
+      // Birthdate
+      if (!birthdate) {
+        errors.birthdate = 'Please enter your birthdate';
+      } else if (!isValidAge(birthdate)) {
+        errors.birthdate = 'You must be at least 13 years old to register';
+      }
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
+
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -27,16 +115,27 @@ export default function LoginPage() {
       if (isLogin) {
         user = await authApi.login({ email, password });
       } else {
-        user = await authApi.register({ email, password, username });
+        user = await authApi.register({ email, password, username, birthdate });
       }
 
       setUser(user);
       router.push('/feed');
     } catch (err: unknown) {
       const error = err as { message?: string };
-      setError(error.message || 'An error occurred');
+      setError(error.message || 'An error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Clear field error when user starts typing
+  const clearFieldError = (field: string) => {
+    if (fieldErrors[field]) {
+      setFieldErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
     }
   };
 
@@ -94,11 +193,15 @@ export default function LoginPage() {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full bg-[#0A0E1A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#6366F1] transition-colors"
+                  onChange={(e) => { setUsername(e.target.value); clearFieldError('username'); }}
+                  className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-colors ${
+                    fieldErrors.username ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+                  }`}
                   placeholder="Choose a username"
-                  required={!isLogin}
                 />
+                {fieldErrors.username && (
+                  <p className="text-red-400 text-xs mt-1">{fieldErrors.username}</p>
+                )}
               </div>
             )}
 
@@ -107,24 +210,91 @@ export default function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0A0E1A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#6366F1] transition-colors"
+                onChange={(e) => { setEmail(e.target.value); clearFieldError('email'); }}
+                className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-colors ${
+                  fieldErrors.email ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+                }`}
                 placeholder="Enter your email"
-                required
               />
+              {fieldErrors.email && (
+                <p className="text-red-400 text-xs mt-1">{fieldErrors.email}</p>
+              )}
             </div>
+
+            {!isLogin && (
+              <div>
+                <label className="block text-white/70 text-sm mb-2">Birthdate</label>
+                <input
+                  type="date"
+                  value={birthdate}
+                  onChange={(e) => { setBirthdate(e.target.value); clearFieldError('birthdate'); }}
+                  max={maxBirthdate}
+                  className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-colors ${
+                    fieldErrors.birthdate ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+                  }`}
+                  style={{ colorScheme: 'dark' }}
+                />
+                {fieldErrors.birthdate && (
+                  <p className="text-red-400 text-xs mt-1">{fieldErrors.birthdate}</p>
+                )}
+                <p className="text-white/30 text-xs mt-1">You must be at least 13 years old</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-white/70 text-sm mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#0A0E1A] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-[#6366F1] transition-colors"
-                placeholder="Enter your password"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); clearFieldError('password'); }}
+                  className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 pr-12 text-white placeholder-white/30 focus:outline-none transition-colors ${
+                    fieldErrors.password ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+                  }`}
+                  placeholder={isLogin ? 'Enter your password' : 'Create a password'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {fieldErrors.password && (
+                <p className="text-red-400 text-xs mt-1">{fieldErrors.password}</p>
+              )}
+              {!isLogin && !fieldErrors.password && (
+                <p className="text-white/30 text-xs mt-1">8+ characters, uppercase, lowercase, number</p>
+              )}
             </div>
+
+            {!isLogin && (
+              <div>
+                <label className="block text-white/70 text-sm mb-2">Confirm Password</label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => { setConfirmPassword(e.target.value); clearFieldError('confirmPassword'); }}
+                  className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-colors ${
+                    fieldErrors.confirmPassword ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+                  }`}
+                  placeholder="Confirm your password"
+                />
+                {fieldErrors.confirmPassword && (
+                  <p className="text-red-400 text-xs mt-1">{fieldErrors.confirmPassword}</p>
+                )}
+              </div>
+            )}
 
             {error && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm">

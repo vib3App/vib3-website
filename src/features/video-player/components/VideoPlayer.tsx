@@ -120,17 +120,17 @@ export function VideoPlayer({
       {/* Loading indicator */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
       {/* Error state */}
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white">
-          <p className="mb-4">{error}</p>
+          <p className="mb-4 text-white/70">{error}</p>
           <button
             onClick={retry}
-            className="px-4 py-2 bg-cyan-500 rounded hover:bg-cyan-600"
+            className="px-4 py-2 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] rounded-lg hover:opacity-90 transition-opacity"
           >
             Retry
           </button>

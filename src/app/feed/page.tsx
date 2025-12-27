@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { feedApi, videoApi, userApi } from '@/services/api';
 import { VideoPlayer } from '@/features/video-player';
 import { ActionButton, CommentsSheet, ShareModal, ProfileButton } from '@/components/video';
@@ -36,6 +37,7 @@ const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
 );
 
 export default function FeedPage() {
+  const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const [videos, setVideos] = useState<Video[]>([]);
@@ -48,6 +50,32 @@ export default function FeedPage() {
   // Modal states
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  // Swipe detection refs
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const minSwipeDistance = 50;
+
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndY.current = e.changedTouches[0].clientY;
+    const distance = touchStartY.current - touchEndY.current;
+
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > 0) {
+        // Swiped up - go to next video
+        handleNext();
+      } else {
+        // Swiped down - go to previous video
+        handlePrevious();
+      }
+    }
+  };
 
   const loadVideos = useCallback(async (reset = false) => {
     try {
@@ -174,8 +202,7 @@ export default function FeedPage() {
   };
 
   const handleProfile = (userId: string) => {
-    // TODO: Navigate to profile page when implemented
-    console.log('Navigate to profile:', userId);
+    router.push(`/profile/${userId}`);
   };
 
   const handleCommentAdded = () => {
@@ -190,6 +217,47 @@ export default function FeedPage() {
   };
 
   const currentVideo = videos[currentIndex];
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if modals are open or typing in an input
+      if (commentsOpen || shareOpen) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'j':
+          e.preventDefault();
+          handleNext();
+          break;
+        case 'ArrowUp':
+        case 'k':
+          e.preventDefault();
+          handlePrevious();
+          break;
+        case 'l':
+          e.preventDefault();
+          if (currentVideo) handleLike(currentVideo.id);
+          break;
+        case 'c':
+          e.preventDefault();
+          setCommentsOpen(true);
+          break;
+        case 's':
+          e.preventDefault();
+          setShareOpen(true);
+          break;
+        case 'Escape':
+          setCommentsOpen(false);
+          setShareOpen(false);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [commentsOpen, shareOpen, currentVideo, handleNext, handlePrevious, handleLike]);
 
   return (
     <div className="h-screen bg-[#0A0E1A] flex flex-col">
@@ -223,12 +291,12 @@ export default function FeedPage() {
 
         {/* Auth */}
         {isAuthenticated ? (
-          <div className="flex items-center gap-3">
+          <Link href="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <span className="text-white/70 text-sm">@{user?.username}</span>
             <div className="w-8 h-8 rounded-full bg-[#6366F1] flex items-center justify-center text-white font-medium">
               {user?.username?.[0]?.toUpperCase() || 'U'}
             </div>
-          </div>
+          </Link>
         ) : (
           <Link
             href="/login"
@@ -272,7 +340,39 @@ export default function FeedPage() {
             <p className="text-white/40 text-sm">Be the first to share something!</p>
           </div>
         ) : currentVideo ? (
-          <div className="relative w-full max-w-md h-full max-h-[80vh] mx-auto">
+          <div
+            ref={containerRef}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            className="relative w-full max-w-md h-full max-h-[80vh] mx-auto select-none"
+          >
+            {/* Navigation arrows - visible on hover (desktop) */}
+            <button
+              onClick={handlePrevious}
+              disabled={currentIndex === 0}
+              className="absolute left-1/2 -translate-x-1/2 top-2 z-20 bg-black/40 backdrop-blur-sm rounded-full p-2 opacity-0 hover:opacity-100 transition-opacity disabled:hidden"
+              aria-label="Previous video"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentIndex >= videos.length - 1 && !hasMore}
+              className="absolute left-1/2 -translate-x-1/2 bottom-2 z-20 bg-black/40 backdrop-blur-sm rounded-full p-2 opacity-0 hover:opacity-100 transition-opacity disabled:hidden"
+              aria-label="Next video"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Video counter */}
+            <div className="absolute top-3 left-3 z-20 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1 text-white text-xs">
+              {currentIndex + 1} / {videos.length}
+            </div>
+
             {/* Video player */}
             <VideoPlayer
               src={currentVideo.videoUrl}
