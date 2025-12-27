@@ -8,13 +8,20 @@ import type { AuthUser, LoginCredentials, RegisterData } from '@/types';
 interface AuthResponse {
   token: string;
   refreshToken: string;
-  user: {
+  // User data can be nested in 'user' object or at top level
+  user?: {
     _id: string;
     username: string;
     email: string;
     profilePicture?: string;
     isVerified?: boolean;
   };
+  // Or at top level (some API responses)
+  _id?: string;
+  username?: string;
+  email?: string;
+  profilePicture?: string;
+  isVerified?: boolean;
 }
 
 interface RefreshResponse {
@@ -86,16 +93,23 @@ export const authApi = {
    */
   async getMe(): Promise<AuthUser | null> {
     try {
-      const { data } = await apiClient.get<{ user: AuthResponse['user'] }>('/auth/me');
+      const { data } = await apiClient.get<AuthResponse>('/auth/me');
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 
+      // Handle both nested user object and top-level fields
+      const userId = data.user?._id || data._id || '';
+      const username = data.user?.username || data.username || '';
+      const email = data.user?.email || data.email || '';
+      const profilePicture = data.user?.profilePicture || data.profilePicture;
+      const isVerified = data.user?.isVerified || data.isVerified || false;
+
       return {
-        id: data.user._id,
-        username: data.user.username,
-        email: data.user.email,
-        profilePicture: data.user.profilePicture,
-        isVerified: data.user.isVerified || false,
+        id: userId,
+        username,
+        email,
+        profilePicture,
+        isVerified,
         token: token || '',
         refreshToken: refreshToken || '',
       };
@@ -111,12 +125,24 @@ function transformAuthResponse(data: AuthResponse): AuthUser {
     localStorage.setItem('refresh_token', data.refreshToken);
   }
 
+  // Handle both nested user object and top-level fields
+  const userId = data.user?._id || data._id || '';
+  const username = data.user?.username || data.username || '';
+  const email = data.user?.email || data.email || '';
+  const profilePicture = data.user?.profilePicture || data.profilePicture;
+  const isVerified = data.user?.isVerified || data.isVerified || false;
+
+  console.log('Auth transform - extracted userId:', userId, 'from data:', {
+    nested: data.user?._id,
+    topLevel: data._id
+  });
+
   return {
-    id: data.user._id,
-    username: data.user.username,
-    email: data.user.email,
-    profilePicture: data.user.profilePicture,
-    isVerified: data.user.isVerified || false,
+    id: userId,
+    username,
+    email,
+    profilePicture,
+    isVerified,
     token: data.token,
     refreshToken: data.refreshToken,
   };

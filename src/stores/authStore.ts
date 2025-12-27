@@ -20,9 +20,38 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
+/**
+ * Extract user ID from profile picture URL as fallback
+ * URL format: profile-{userId}-{timestamp}.jpg
+ */
+function extractUserIdFromProfilePic(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/profile-([a-f0-9]{24})-/i);
+  return match ? match[1] : null;
+}
+
+/**
+ * Ensure user has an ID (migration for old stored users without id)
+ */
+function migrateUser(user: AuthUser | null): AuthUser | null {
+  if (!user) return null;
+
+  // If user already has id, return as-is
+  if (user.id) return user;
+
+  // Try to extract ID from profile picture URL
+  const extractedId = extractUserIdFromProfilePic(user.profilePicture);
+  if (extractedId) {
+    console.log('Migrated user ID from profile picture:', extractedId);
+    return { ...user, id: extractedId };
+  }
+
+  return user;
+}
+
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // State
       user: null,
       isAuthenticated: false,
@@ -33,7 +62,9 @@ export const useAuthStore = create<AuthStore>()(
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', user.token);
         }
-        set({ user, isAuthenticated: true, isLoading: false });
+        // Ensure user has ID before storing
+        const migratedUser = migrateUser(user) || user;
+        set({ user: migratedUser, isAuthenticated: true, isLoading: false });
       },
 
       logout: () => {
@@ -51,6 +82,18 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Migrate stored user data on rehydration
+      onRehydrateStorage: () => (state) => {
+        if (state?.user && !state.user.id) {
+          const migratedUser = migrateUser(state.user);
+          if (migratedUser?.id) {
+            state.user = migratedUser;
+          }
+        }
+        if (state) {
+          state.isLoading = false;
+        }
+      },
     }
   )
 );
