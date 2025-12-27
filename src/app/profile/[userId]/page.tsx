@@ -110,11 +110,13 @@ export default function ProfilePage() {
         }
       } catch (err: unknown) {
         console.error('Failed to load profile:', err);
-        const error = err as { message?: string; response?: { status: number } };
+        const error = err as { message?: string; response?: { status: number }; code?: string };
         if (error.response?.status === 404) {
           setError('User not found');
+        } else if (error.response?.status === 400) {
+          setError('Invalid user ID');
         } else {
-          setError('Failed to load profile');
+          setError(error.message || 'Failed to load profile');
         }
       } finally {
         setIsLoading(false);
@@ -166,6 +168,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-[#0A0E1A] flex flex-col items-center justify-center px-4">
         <div className="text-white/50 text-lg mb-4">{error || 'User not found'}</div>
+        <div className="text-white/30 text-sm mb-4">User ID: {userId}</div>
         <Link href="/feed" className="text-[#6366F1] hover:underline">
           Go back to feed
         </Link>
