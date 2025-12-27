@@ -102,7 +102,7 @@ export function ShareModal({ videoId, videoUrl, caption, isOpen, onClose }: Shar
         <h2 className="text-white font-semibold text-lg text-center mb-6">Share Video</h2>
 
         {/* Native share button (mobile) */}
-        {typeof navigator !== 'undefined' && navigator.share && (
+        {typeof navigator !== 'undefined' && 'share' in navigator && (
           <button
             onClick={handleNativeShare}
             className="w-full mb-4 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] rounded-xl text-white font-medium flex items-center justify-center gap-2"
