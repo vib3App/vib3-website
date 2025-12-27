@@ -18,22 +18,26 @@ export interface User {
   createdAt: string;
 }
 
-export interface AuthUser extends User {
+export interface AuthUser {
+  id: string;
+  username: string;
   email: string;
+  profilePicture?: string;
+  isVerified: boolean;
   token: string;
   refreshToken: string;
 }
 
-export interface LoginRequest {
+export interface LoginCredentials {
   email: string;
   password: string;
 }
 
-export interface RegisterRequest {
+export interface RegisterData {
   email: string;
   password: string;
   username: string;
-  birthDate: string;
+  birthdate?: string;
 }
 
 export interface AuthResponse {

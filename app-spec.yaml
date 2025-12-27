@@ -1,0 +1,27 @@
+domains:
+- domain: vib3app.net
+  type: PRIMARY
+features:
+- buildpack-stack=ubuntu-22
+ingress:
+  rules:
+  - component:
+      name: vib3-website
+    match:
+      path:
+        prefix: /
+name: vib3-website
+region: nyc
+services:
+- build_command: npm run build
+  environment_slug: node-js
+  github:
+    branch: main
+    deploy_on_push: true
+    repo: vib3App/vib3-website
+  http_port: 3000
+  instance_count: 1
+  instance_size_slug: apps-s-1vcpu-0.5gb
+  name: vib3-website
+  run_command: npm run start
+  source_dir: /
