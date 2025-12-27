@@ -1,5 +1,46 @@
 # VIB3 Web App - Development Guide
 
+---
+
+## CRITICAL EXPECTATIONS (READ FIRST)
+
+**These rules are non-negotiable:**
+
+### 1. One Step at a Time
+- Complete ONE feature/page fully before moving to the next
+- "Complete" means 100% functional, tested, and verified
+- Do NOT move on until current work is confirmed working end-to-end
+
+### 2. No Fake "Done"
+- Never say something is "done" or "complete" if it's just code written
+- Code written ≠ functional
+- Must actually TEST and VERIFY before claiming completion
+- If you can't test something, say so explicitly
+
+### 3. No God Objects
+- Every file under 300 lines (target under 200)
+- Single responsibility per file
+- Changing the landing page must NOT affect the feed page
+- Changing auth must NOT break video player
+- If components are coupled, they're wrong
+
+### 4. Honest Status Updates
+- Be direct about what works and what doesn't
+- List specific things tested vs untested
+- Don't oversell progress
+
+### 5. Step-by-Step Verification
+Before marking ANY feature complete:
+- [ ] Code written
+- [ ] Code compiles/builds
+- [ ] Manually tested in browser
+- [ ] All interactive elements work
+- [ ] No console errors
+- [ ] Responsive on mobile/desktop
+- [ ] Documented what was done
+
+---
+
 ## Project Overview
 VIB3 Web is a standalone Next.js web application that provides a browser-based experience for the VIB3 social video platform. It shares the same backend API as the Flutter mobile app but is optimized for web browsers.
 
