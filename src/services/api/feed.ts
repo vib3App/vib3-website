@@ -10,22 +10,36 @@ type VibeType = 'Energetic' | 'Chill' | 'Creative' | 'Social' | 'Romantic' | 'Fu
 
 interface FeedVideoResponse {
   _id: string;
-  userId: string;
-  username: string;
+  userId?: string;
+  username?: string;
   profilePicture?: string;
   videoUrl: string;
   hlsUrl?: string;
   thumbnailUrl?: string;
-  caption: string;
-  hashtags: string[];
+  caption?: string;
+  title?: string;
+  description?: string;
+  hashtags?: string[];
   duration: number;
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
-  sharesCount: number;
-  isPublic: boolean;
+  likesCount?: number;
+  commentsCount?: number;
+  viewsCount?: number;
+  sharesCount?: number;
+  likes?: number;
+  comments?: number;
+  views?: number;
+  shares?: number;
+  isPublic?: boolean;
   createdAt: string;
   isLiked?: boolean;
+  // Nested user object from API
+  user?: {
+    _id: string;
+    username: string;
+    displayName?: string;
+    profileImage?: string;
+    profilePicture?: string;
+  };
 }
 
 interface FeedResponse {
@@ -147,21 +161,26 @@ function transformFeedResponse(data: FeedResponse): PaginatedResponse<Video> {
 }
 
 function transformVideo(data: FeedVideoResponse): Video {
+  // Extract user info - could be at top level or nested in user object
+  const userId = data.userId || data.user?._id || '';
+  const username = data.username || data.user?.username || 'unknown';
+  const userAvatar = data.profilePicture || data.user?.profileImage || data.user?.profilePicture;
+
   return {
     id: data._id,
-    userId: data.userId,
-    username: data.username,
-    userAvatar: data.profilePicture,
+    userId,
+    username,
+    userAvatar,
     videoUrl: data.hlsUrl || data.videoUrl,
     thumbnailUrl: data.thumbnailUrl,
-    caption: data.caption,
+    caption: data.caption || data.title || data.description || '',
     hashtags: data.hashtags || [],
     duration: data.duration,
-    likesCount: data.likesCount || 0,
-    commentsCount: data.commentsCount || 0,
-    viewsCount: data.viewsCount || 0,
-    sharesCount: data.sharesCount || 0,
-    isPublic: data.isPublic,
+    likesCount: data.likesCount || data.likes || 0,
+    commentsCount: data.commentsCount || data.comments || 0,
+    viewsCount: data.viewsCount || data.views || 0,
+    sharesCount: data.sharesCount || data.shares || 0,
+    isPublic: data.isPublic !== false,
     createdAt: data.createdAt,
     isLiked: data.isLiked,
   };
