@@ -110,6 +110,16 @@ export const videoApi = {
   },
 
   /**
+   * Favorite/unfavorite a video (toggle)
+   */
+  async toggleFavorite(videoId: string): Promise<{ favorited: boolean; favoriteCount: number }> {
+    const { data } = await apiClient.post<{ favorited: boolean; favoriteCount: number }>(
+      `/videos/${videoId}/favorite`
+    );
+    return data;
+  },
+
+  /**
    * Check if user liked a video
    */
   async checkLiked(videoId: string): Promise<boolean> {

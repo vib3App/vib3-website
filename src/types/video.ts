@@ -22,6 +22,7 @@ export interface Video {
   commentsCount: number;
   sharesCount: number;
   isLiked?: boolean;
+  isFavorited?: boolean;
   isFollowing?: boolean;
   isPublic?: boolean;
   createdAt: string;

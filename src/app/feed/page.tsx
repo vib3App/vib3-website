@@ -4,10 +4,36 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { feedApi, videoApi } from '@/services/api';
 import { VideoPlayer } from '@/features/video-player';
+import { ActionButton, CommentsSheet, ShareModal } from '@/components/video';
 import { useAuthStore } from '@/stores/authStore';
 import type { Video } from '@/types';
 
 type FeedTab = 'forYou' | 'following' | 'trending';
+
+// Icons as components
+const HeartIcon = ({ filled = false }: { filled?: boolean }) => (
+  <svg className="w-6 h-6" fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+  </svg>
+);
+
+const CommentIcon = () => (
+  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+  </svg>
+);
+
+const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
+  <svg className="w-6 h-6" fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+  </svg>
+);
 
 export default function FeedPage() {
   const { isAuthenticated, user } = useAuthStore();
@@ -18,6 +44,10 @@ export default function FeedPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  // Modal states
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const loadVideos = useCallback(async (reset = false) => {
     try {
@@ -75,6 +105,10 @@ export default function FeedPage() {
   };
 
   const handleLike = async (videoId: string) => {
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
     try {
       const result = await videoApi.toggleLike(videoId);
       setVideos((prev) =>
@@ -87,6 +121,48 @@ export default function FeedPage() {
     } catch (err) {
       console.error('Failed to like video:', err);
     }
+  };
+
+  const handleFavorite = async (videoId: string) => {
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+    try {
+      const result = await videoApi.toggleFavorite(videoId);
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.id === videoId
+            ? { ...v, isFavorited: result.favorited }
+            : v
+        )
+      );
+    } catch (err) {
+      console.error('Failed to favorite video:', err);
+    }
+  };
+
+  const handleComment = () => {
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+    setCommentsOpen(true);
+  };
+
+  const handleShare = () => {
+    setShareOpen(true);
+  };
+
+  const handleCommentAdded = () => {
+    // Update comment count
+    setVideos((prev) =>
+      prev.map((v, i) =>
+        i === currentIndex
+          ? { ...v, commentsCount: v.commentsCount + 1 }
+          : v
+      )
+    );
   };
 
   const currentVideo = videos[currentIndex];
@@ -184,9 +260,9 @@ export default function FeedPage() {
             />
 
             {/* Video info overlay */}
-            <div className="absolute bottom-0 left-0 right-16 p-4 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl">
+            <div className="absolute bottom-0 left-0 right-20 p-4 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-10 h-10 rounded-full bg-[#6366F1] flex items-center justify-center text-white font-medium">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6366F1] to-[#14B8A6] flex items-center justify-center text-white font-medium">
                   {currentVideo.username?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div>
@@ -203,39 +279,42 @@ export default function FeedPage() {
               )}
             </div>
 
-            {/* Action buttons */}
-            <div className="absolute right-2 bottom-20 flex flex-col gap-4">
-              <button
+            {/* Action buttons - matching Flutter design */}
+            <div className="absolute right-2 bottom-24 flex flex-col gap-3">
+              {/* Like */}
+              <ActionButton
+                icon={<HeartIcon />}
+                activeIcon={<HeartIcon filled />}
+                isActive={currentVideo.isLiked}
+                label={currentVideo.likesCount}
                 onClick={() => handleLike(currentVideo.id)}
-                className="flex flex-col items-center gap-1"
-              >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  currentVideo.isLiked ? 'bg-red-500' : 'bg-white/10'
-                }`}>
-                  <svg className="w-6 h-6 text-white" fill={currentVideo.isLiked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <span className="text-white text-xs">{currentVideo.likesCount || 0}</span>
-              </button>
+              />
 
-              <button className="flex flex-col items-center gap-1">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <span className="text-white text-xs">{currentVideo.commentsCount || 0}</span>
-              </button>
+              {/* Comment */}
+              <ActionButton
+                icon={<CommentIcon />}
+                label={currentVideo.commentsCount}
+                onClick={handleComment}
+                gradientFrom="#14B8A6"
+                gradientTo="#6366F1"
+              />
 
-              <button className="flex flex-col items-center gap-1">
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                </div>
-                <span className="text-white text-xs">{currentVideo.sharesCount || 0}</span>
-              </button>
+              {/* Share */}
+              <ActionButton
+                icon={<ShareIcon />}
+                label={currentVideo.sharesCount}
+                onClick={handleShare}
+              />
+
+              {/* Bookmark/Favorite */}
+              <ActionButton
+                icon={<BookmarkIcon />}
+                activeIcon={<BookmarkIcon filled />}
+                isActive={currentVideo.isFavorited}
+                onClick={() => handleFavorite(currentVideo.id)}
+                gradientFrom="#14B8A6"
+                gradientTo="#6366F1"
+              />
             </div>
 
             {/* Navigation arrows */}
@@ -251,7 +330,7 @@ export default function FeedPage() {
             <button
               onClick={handleNext}
               disabled={currentIndex === videos.length - 1 && !hasMore}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 flex items-center justify-center text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
+              className="absolute right-20 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 flex items-center justify-center text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black/70 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -266,6 +345,27 @@ export default function FeedPage() {
         <div className="text-center py-2 text-white/30 text-sm">
           {currentIndex + 1} / {videos.length}
         </div>
+      )}
+
+      {/* Comments Sheet */}
+      {currentVideo && (
+        <CommentsSheet
+          videoId={currentVideo.id}
+          isOpen={commentsOpen}
+          onClose={() => setCommentsOpen(false)}
+          onCommentAdded={handleCommentAdded}
+        />
+      )}
+
+      {/* Share Modal */}
+      {currentVideo && (
+        <ShareModal
+          videoId={currentVideo.id}
+          videoUrl={currentVideo.videoUrl}
+          caption={currentVideo.caption || ''}
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+        />
       )}
     </div>
   );
