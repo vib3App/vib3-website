@@ -40,8 +40,8 @@ export const feedApi = {
    * Get For You feed (personalized)
    */
   async getForYouFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/feed/for-you', {
-      params: { page, limit },
+    const { data } = await apiClient.get<FeedResponse>('/videos', {
+      params: { page, limit, feed: 'foryou' },
     });
     return transformFeedResponse(data);
   },
@@ -50,8 +50,8 @@ export const feedApi = {
    * Get Following feed
    */
   async getFollowingFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/feed/following', {
-      params: { page, limit },
+    const { data } = await apiClient.get<FeedResponse>('/videos', {
+      params: { page, limit, feed: 'following' },
     });
     return transformFeedResponse(data);
   },
@@ -60,7 +60,7 @@ export const feedApi = {
    * Get Trending feed
    */
   async getTrendingFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/feed/trending', {
+    const { data } = await apiClient.get<FeedResponse>('/trending', {
       params: { page, limit },
     });
     return transformFeedResponse(data);
@@ -70,8 +70,8 @@ export const feedApi = {
    * Get Discover feed
    */
   async getDiscoverFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/feed/discover', {
-      params: { page, limit },
+    const { data } = await apiClient.get<FeedResponse>('/videos', {
+      params: { page, limit, feed: 'discover' },
     });
     return transformFeedResponse(data);
   },
