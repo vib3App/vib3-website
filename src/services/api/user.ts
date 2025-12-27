@@ -53,10 +53,15 @@ export const userApi = {
    * Get user's videos
    */
   async getUserVideos(userId: string, page: number = 1, limit: number = 20): Promise<UserVideosResponse> {
-    const { data } = await apiClient.get<UserVideosResponse>(`/videos`, {
+    const { data } = await apiClient.get<{ videos: Array<Video & { _id?: string }> }>(`/videos`, {
       params: { userId, page, limit }
     });
-    return data;
+    // Transform _id to id for consistency
+    const videos = (data.videos || []).map(v => ({
+      ...v,
+      id: v.id || v._id || '',
+    }));
+    return { videos };
   },
 
   /**

@@ -85,20 +85,31 @@ export default function ProfilePage() {
       setError(null);
 
       try {
-        // Load profile
+        // Load profile first
         const profileData = await userApi.getProfile(userId);
         setProfile(profileData);
 
-        // Load user's videos
-        const videosData = await userApi.getUserVideos(userId);
-        setVideos(videosData.videos || []);
+        // Load user's videos (don't fail if this fails)
+        try {
+          const videosData = await userApi.getUserVideos(userId);
+          setVideos(videosData.videos || []);
+        } catch (videoErr) {
+          console.error('Failed to load user videos:', videoErr);
+          setVideos([]);
+        }
 
         // Check if following (only if authenticated and not own profile)
         if (isAuthenticated && !isOwnProfile) {
-          const following = await userApi.isFollowing(userId);
-          setIsFollowing(following);
+          try {
+            const following = await userApi.isFollowing(userId);
+            setIsFollowing(following);
+          } catch (followErr) {
+            console.error('Failed to check follow status:', followErr);
+            setIsFollowing(false);
+          }
         }
       } catch (err: unknown) {
+        console.error('Failed to load profile:', err);
         const error = err as { message?: string; response?: { status: number } };
         if (error.response?.status === 404) {
           setError('User not found');
