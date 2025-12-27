@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { feedApi, videoApi } from '@/services/api';
+import { feedApi, videoApi, userApi } from '@/services/api';
 import { VideoPlayer } from '@/features/video-player';
-import { ActionButton, CommentsSheet, ShareModal } from '@/components/video';
+import { ActionButton, CommentsSheet, ShareModal, ProfileButton } from '@/components/video';
 import { useAuthStore } from '@/stores/authStore';
 import type { Video } from '@/types';
 
@@ -154,6 +154,30 @@ export default function FeedPage() {
     setShareOpen(true);
   };
 
+  const handleFollow = async (userId: string, currentlyFollowing: boolean) => {
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+    try {
+      const result = await userApi.toggleFollow(userId, currentlyFollowing);
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.userId === userId
+            ? { ...v, isFollowing: result.following }
+            : v
+        )
+      );
+    } catch (err) {
+      console.error('Failed to follow user:', err);
+    }
+  };
+
+  const handleProfile = (userId: string) => {
+    // TODO: Navigate to profile page when implemented
+    console.log('Navigate to profile:', userId);
+  };
+
   const handleCommentAdded = () => {
     // Update comment count
     setVideos((prev) =>
@@ -280,7 +304,17 @@ export default function FeedPage() {
             </div>
 
             {/* Action buttons - matching Flutter design */}
-            <div className="absolute right-2 bottom-24 flex flex-col gap-3">
+            <div className="absolute right-2 bottom-24 flex flex-col items-center gap-3">
+              {/* Profile with Follow */}
+              <ProfileButton
+                username={currentVideo.username}
+                userAvatar={currentVideo.userAvatar}
+                isFollowing={currentVideo.isFollowing || false}
+                isOwnVideo={currentVideo.userId === user?.id}
+                onFollow={() => handleFollow(currentVideo.userId, currentVideo.isFollowing || false)}
+                onProfile={() => handleProfile(currentVideo.userId)}
+              />
+
               {/* Like */}
               <ActionButton
                 icon={<HeartIcon />}
