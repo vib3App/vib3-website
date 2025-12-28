@@ -1,24 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { messagesApi } from '@/services/api';
+import { websocketService } from '@/services/websocket';
+import type { Conversation, Message } from '@/types';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { SideNav } from '@/components/ui/SideNav';
-
-interface Conversation {
-  id: string;
-  participantId: string;
-  participantUsername: string;
-  participantAvatar?: string;
-  participantDisplayName?: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  unreadCount: number;
-  isOnline: boolean;
-}
 
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -33,6 +24,12 @@ function timeAgo(dateString: string): string {
 }
 
 function ConversationItem({ conversation }: { conversation: Conversation }) {
+  // Get the other participant for direct messages
+  const participant = conversation.participants[0];
+  const displayName = conversation.type === 'group'
+    ? conversation.name
+    : participant?.username;
+
   return (
     <Link
       href={`/messages/${conversation.id}`}
@@ -40,21 +37,21 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
     >
       <div className="relative flex-shrink-0">
         <div className="w-14 h-14 rounded-full overflow-hidden bg-[#1A1F2E]">
-          {conversation.participantAvatar ? (
+          {(conversation.avatar || participant?.avatar) ? (
             <Image
-              src={conversation.participantAvatar}
-              alt={conversation.participantUsername}
+              src={conversation.avatar || participant?.avatar || ''}
+              alt={displayName || ''}
               width={56}
               height={56}
               className="object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/50 text-xl font-medium">
-              {conversation.participantUsername.charAt(0).toUpperCase()}
+              {displayName?.charAt(0).toUpperCase() || '?'}
             </div>
           )}
         </div>
-        {conversation.isOnline && (
+        {participant?.isOnline && (
           <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0A0E1A]" />
         )}
       </div>
@@ -62,12 +59,14 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className={`font-medium ${conversation.unreadCount > 0 ? 'text-white' : 'text-white/70'}`}>
-            {conversation.participantDisplayName || conversation.participantUsername}
+            {displayName}
           </span>
-          <span className="text-white/50 text-xs">{timeAgo(conversation.lastMessageTime)}</span>
+          <span className="text-white/50 text-xs">
+            {conversation.lastMessage && timeAgo(conversation.lastMessage.createdAt)}
+          </span>
         </div>
         <p className={`text-sm truncate ${conversation.unreadCount > 0 ? 'text-white/70' : 'text-white/50'}`}>
-          {conversation.lastMessage}
+          {conversation.lastMessage?.content || 'No messages yet'}
         </p>
       </div>
 
@@ -82,10 +81,22 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
 
 export default function MessagesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+
+  const loadConversations = useCallback(async () => {
+    try {
+      const response = await messagesApi.getConversations();
+      setConversations(response.items);
+    } catch (error) {
+      console.error('Failed to load conversations:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -93,59 +104,60 @@ export default function MessagesPage() {
       return;
     }
 
-    // Load conversations
-    setIsLoading(true);
-    // TODO: Implement actual API call
-    setTimeout(() => {
-      setConversations([
-        {
-          id: 'conv1',
-          participantId: 'user1',
-          participantUsername: 'creative_soul',
-          participantDisplayName: 'Creative Soul',
-          lastMessage: 'Hey! Love your latest video 🔥',
-          lastMessageTime: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-          unreadCount: 2,
-          isOnline: true,
-        },
-        {
-          id: 'conv2',
-          participantId: 'user2',
-          participantUsername: 'music_producer',
-          participantDisplayName: 'Music Producer',
-          lastMessage: 'Lets collab on something!',
-          lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-          unreadCount: 0,
-          isOnline: true,
-        },
-        {
-          id: 'conv3',
-          participantId: 'user3',
-          participantUsername: 'dance_queen',
-          participantDisplayName: 'Dance Queen',
-          lastMessage: 'Thanks for the follow back!',
-          lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-          unreadCount: 0,
-          isOnline: false,
-        },
-        {
-          id: 'conv4',
-          participantId: 'user4',
-          participantUsername: 'vibe_master',
-          lastMessage: 'Check out this new trend',
-          lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-          unreadCount: 0,
-          isOnline: false,
-        },
-      ]);
-      setIsLoading(false);
-    }, 500);
-  }, [isAuthenticated, router]);
+    loadConversations();
+
+    // Connect to WebSocket
+    if (user?.token) {
+      websocketService.connect(user.token);
+
+      const unsubConnection = websocketService.onConnectionChange((connected) => {
+        setIsConnected(connected);
+      });
+
+      const unsubMessage = websocketService.onMessage((message: Message) => {
+        // Update conversation with new message
+        setConversations(prev => {
+          const updated = prev.map(conv => {
+            if (conv.id === message.conversationId) {
+              return {
+                ...conv,
+                lastMessage: message,
+                unreadCount: conv.unreadCount + 1,
+                updatedAt: message.createdAt,
+              };
+            }
+            return conv;
+          });
+          // Sort by most recent
+          return updated.sort((a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          );
+        });
+      });
+
+      const unsubPresence = websocketService.onPresence((userId, isOnline) => {
+        setConversations(prev => prev.map(conv => ({
+          ...conv,
+          participants: conv.participants.map(p =>
+            p.userId === userId ? { ...p, isOnline } : p
+          ),
+        })));
+      });
+
+      return () => {
+        unsubConnection();
+        unsubMessage();
+        unsubPresence();
+      };
+    }
+  }, [isAuthenticated, user?.token, router, loadConversations]);
 
   const filteredConversations = searchQuery
     ? conversations.filter(c =>
-        c.participantUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.participantDisplayName?.toLowerCase().includes(searchQuery.toLowerCase())
+        c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.participants.some(p =>
+          p.username.toLowerCase().includes(searchQuery.toLowerCase())
+        )
       )
     : conversations;
 
@@ -165,8 +177,16 @@ export default function MessagesPage() {
         {/* Header */}
         <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
           <div className="flex items-center justify-between px-4 h-14">
-            <h1 className="text-xl font-bold text-white">Messages</h1>
-            <button className="w-10 h-10 rounded-full bg-[#1A1F2E] flex items-center justify-center text-white hover:bg-[#252A3E] transition-colors">
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-white">Messages</h1>
+              {isConnected && (
+                <div className="w-2 h-2 bg-green-500 rounded-full" title="Connected" />
+              )}
+            </div>
+            <button
+              onClick={() => router.push('/messages/new')}
+              className="w-10 h-10 rounded-full bg-[#1A1F2E] flex items-center justify-center text-white hover:bg-[#252A3E] transition-colors"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -210,6 +230,12 @@ export default function MessagesPage() {
               <p className="text-white/30 text-sm mt-1">
                 Start a conversation with someone you follow
               </p>
+              <button
+                onClick={() => router.push('/messages/new')}
+                className="mt-4 px-6 py-2 bg-[#6366F1] text-white rounded-full hover:bg-[#5558E3] transition-colors"
+              >
+                New Message
+              </button>
             </div>
           ) : (
             filteredConversations.map(conversation => (

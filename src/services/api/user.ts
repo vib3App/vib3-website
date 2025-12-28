@@ -129,4 +129,81 @@ export const userApi = {
       return false;
     }
   },
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(updates: {
+    displayName?: string;
+    bio?: string;
+    profilePicture?: string;
+  }): Promise<UserProfile> {
+    const { data } = await apiClient.put<UserProfile>('/user/profile', updates);
+    return data;
+  },
+
+  /**
+   * Upload profile picture
+   */
+  async uploadProfilePicture(formData: FormData): Promise<{ url: string }> {
+    const { data } = await apiClient.post<{ url: string }>('/user/profile-picture', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+
+  /**
+   * Get user's followers
+   */
+  async getFollowers(userId: string, page = 1, limit = 20): Promise<{ users: UserProfile[]; hasMore: boolean }> {
+    const { data } = await apiClient.get<{ users: UserProfile[]; hasMore: boolean }>(
+      `/users/${userId}/followers`,
+      { params: { page, limit } }
+    );
+    return data;
+  },
+
+  /**
+   * Get users that a user is following
+   */
+  async getFollowing(userId: string, page = 1, limit = 20): Promise<{ users: UserProfile[]; hasMore: boolean }> {
+    const { data } = await apiClient.get<{ users: UserProfile[]; hasMore: boolean }>(
+      `/users/${userId}/following`,
+      { params: { page, limit } }
+    );
+    return data;
+  },
+
+  /**
+   * Get user's liked videos
+   */
+  async getLikedVideos(userId: string, page = 1, limit = 20): Promise<UserVideosResponse> {
+    const { data } = await apiClient.get<UserVideosResponse>(`/users/${userId}/liked-videos`, {
+      params: { page, limit },
+    });
+    return data;
+  },
+
+  /**
+   * Block a user
+   */
+  async blockUser(userId: string): Promise<void> {
+    await apiClient.post(`/users/${userId}/block`);
+  },
+
+  /**
+   * Unblock a user
+   */
+  async unblockUser(userId: string): Promise<void> {
+    await apiClient.post(`/users/${userId}/unblock`);
+  },
+
+  /**
+   * Report a user
+   */
+  async reportUser(userId: string, reason: string): Promise<void> {
+    await apiClient.post(`/users/${userId}/report`, { reason });
+  },
 };

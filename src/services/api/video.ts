@@ -31,8 +31,13 @@ interface CommentResponse {
   profilePicture?: string;
   content: string;
   likesCount: number;
+  replyCount?: number;
   createdAt: string;
   replies?: CommentResponse[];
+  isLiked?: boolean;
+  parentId?: string;
+  voiceUrl?: string;
+  voiceDuration?: number;
 }
 
 export const videoApi = {
@@ -103,6 +108,70 @@ export const videoApi = {
   },
 
   /**
+   * Like/unlike a comment
+   */
+  async toggleCommentLike(videoId: string, commentId: string): Promise<{ liked: boolean; likesCount: number }> {
+    const { data } = await apiClient.post<{ liked: boolean; likesCount: number }>(
+      `/videos/${videoId}/comments/${commentId}/like`
+    );
+    return data;
+  },
+
+  /**
+   * Get replies to a comment
+   */
+  async getCommentReplies(
+    videoId: string,
+    commentId: string,
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedResponse<Comment>> {
+    const { data } = await apiClient.get<{
+      replies: CommentResponse[];
+      total: number;
+      page: number;
+      hasMore: boolean;
+    }>(`/videos/${videoId}/comments/${commentId}/replies`, { params: { page, limit } });
+
+    return {
+      items: data.replies.map(transformComment),
+      total: data.total,
+      page: data.page,
+      hasMore: data.hasMore,
+    };
+  },
+
+  /**
+   * Reply to a comment
+   */
+  async replyToComment(
+    videoId: string,
+    commentId: string,
+    content: string
+  ): Promise<Comment> {
+    const { data } = await apiClient.post<CommentResponse>(
+      `/videos/${videoId}/comments/${commentId}/replies`,
+      { content }
+    );
+    return transformComment(data);
+  },
+
+  /**
+   * Add a voice comment
+   */
+  async addVoiceComment(videoId: string, audioBlob: Blob): Promise<Comment> {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'voice-comment.webm');
+
+    const { data } = await apiClient.post<CommentResponse>(
+      `/videos/${videoId}/comments/voice`,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+    return transformComment(data);
+  },
+
+  /**
    * Share video - record share
    */
   async shareVideo(videoId: string, platform?: string): Promise<void> {
@@ -160,7 +229,12 @@ function transformComment(data: CommentResponse): Comment {
     userAvatar: data.profilePicture,
     content: data.content,
     likesCount: data.likesCount || 0,
+    replyCount: data.replyCount || 0,
     createdAt: data.createdAt,
     replies: data.replies?.map(transformComment),
+    isLiked: data.isLiked,
+    parentId: data.parentId,
+    voiceUrl: data.voiceUrl,
+    voiceDuration: data.voiceDuration,
   };
 }

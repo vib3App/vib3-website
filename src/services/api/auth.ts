@@ -89,6 +89,52 @@ export const authApi = {
   },
 
   /**
+   * Request password reset email
+   */
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    const { data } = await apiClient.post<{ message: string }>('/auth/forgot-password', { email });
+    return data;
+  },
+
+  /**
+   * Reset password with token from email
+   */
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    const { data } = await apiClient.post<{ message: string }>('/auth/reset-password', {
+      token,
+      password: newPassword,
+    });
+    return data;
+  },
+
+  /**
+   * Change password for logged-in user
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    const { data } = await apiClient.post<{ message: string }>('/auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
+    return data;
+  },
+
+  /**
+   * Verify email with token
+   */
+  async verifyEmail(token: string): Promise<{ message: string }> {
+    const { data } = await apiClient.post<{ message: string }>('/auth/verify-email', { token });
+    return data;
+  },
+
+  /**
+   * Resend verification email
+   */
+  async resendVerificationEmail(): Promise<{ message: string }> {
+    const { data } = await apiClient.post<{ message: string }>('/auth/resend-verification');
+    return data;
+  },
+
+  /**
    * Get current user profile
    */
   async getMe(): Promise<AuthUser | null> {

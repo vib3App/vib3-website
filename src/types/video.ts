@@ -37,8 +37,13 @@ export interface Comment {
   userAvatar?: string;
   content: string;
   likesCount: number;
+  replyCount: number;
   createdAt: string;
   replies?: Comment[];
+  isLiked?: boolean;
+  parentId?: string;
+  voiceUrl?: string;
+  voiceDuration?: number;
 }
 
 export interface PaginatedResponse<T> {

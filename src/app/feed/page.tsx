@@ -11,9 +11,21 @@ import { SideNav } from '@/components/ui/SideNav';
 import { CommentSheet } from '@/components/video/CommentSheet';
 import { ShareSheet } from '@/components/video/ShareSheet';
 import { useAuthStore } from '@/stores/authStore';
+import { watchHistoryService } from '@/services/watchHistory';
 import type { Video } from '@/types';
 
 type FeedTab = 'forYou' | 'following';
+type VibeType = 'Energetic' | 'Chill' | 'Creative' | 'Social' | 'Romantic' | 'Funny' | 'Inspirational' | null;
+
+const VIBES: { id: VibeType; label: string; emoji: string }[] = [
+  { id: 'Energetic', label: 'Energetic', emoji: '⚡' },
+  { id: 'Chill', label: 'Chill', emoji: '😌' },
+  { id: 'Creative', label: 'Creative', emoji: '🎨' },
+  { id: 'Social', label: 'Social', emoji: '👥' },
+  { id: 'Romantic', label: 'Romantic', emoji: '💕' },
+  { id: 'Funny', label: 'Funny', emoji: '😂' },
+  { id: 'Inspirational', label: 'Inspiring', emoji: '✨' },
+];
 
 function formatCount(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -220,6 +232,8 @@ function FeedContent() {
   const { isAuthenticated, user } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
+  const [selectedVibe, setSelectedVibe] = useState<VibeType>(null);
+  const [showVibes, setShowVibes] = useState(false);
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -230,9 +244,12 @@ function FeedContent() {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const preloadedVideos = useRef<Set<string>>(new Set());
+  const watchStartTime = useRef<number>(0);
 
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -247,29 +264,79 @@ function FeedContent() {
     try {
       const currentPage = reset ? 1 : page;
 
-      const response = activeTab === 'following'
-        ? await feedApi.getFollowingFeed(currentPage)
-        : await feedApi.getForYouFeed(currentPage);
+      let response;
+      if (selectedVibe) {
+        response = await feedApi.getVibesFeed(selectedVibe, currentPage);
+      } else if (activeTab === 'following') {
+        response = await feedApi.getFollowingFeed(currentPage);
+      } else {
+        response = await feedApi.getForYouFeed(currentPage);
+      }
 
       if (reset) {
         setVideos(response.items);
         setCurrentIndex(0);
         setPage(1);
+        preloadedVideos.current.clear();
       } else {
         setVideos(prev => [...prev, ...response.items]);
       }
       setHasMore(response.hasMore);
+
+      // Preload first few videos
+      response.items.slice(0, 3).forEach(video => preloadVideo(video.videoUrl));
     } catch (err) {
       console.error('Failed to load videos:', err);
     } finally {
       setIsLoading(false);
       setLoadingMore(false);
     }
-  }, [activeTab, page]);
+  }, [activeTab, page, selectedVibe]);
 
   useEffect(() => {
     loadVideos(true);
-  }, [activeTab]);
+  }, [activeTab, selectedVibe]);
+
+  // Preload video function
+  const preloadVideo = useCallback((url: string) => {
+    if (preloadedVideos.current.has(url)) return;
+    preloadedVideos.current.add(url);
+
+    // Create a link element to preload
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'video';
+    link.href = url;
+    document.head.appendChild(link);
+
+    // Also create a video element to start buffering
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.src = url;
+    video.muted = true;
+  }, []);
+
+  // Preload next videos when current index changes
+  useEffect(() => {
+    const nextVideos = videos.slice(currentIndex + 1, currentIndex + 4);
+    nextVideos.forEach(video => preloadVideo(video.videoUrl));
+  }, [currentIndex, videos, preloadVideo]);
+
+  // Track watch time for current video
+  useEffect(() => {
+    const currentVideo = videos[currentIndex];
+    if (!currentVideo) return;
+
+    watchStartTime.current = Date.now();
+
+    return () => {
+      const watchDuration = (Date.now() - watchStartTime.current) / 1000;
+      if (watchDuration > 1) {
+        const progress = Math.min((watchDuration / currentVideo.duration) * 100, 100);
+        watchHistoryService.trackWatch(currentVideo.id, progress, currentVideo.duration);
+      }
+    };
+  }, [currentIndex, videos]);
 
   // Infinite scroll - load more when near end, or recycle if no more
   useEffect(() => {
@@ -487,29 +554,115 @@ function FeedContent() {
     <>
       {/* Feed Tabs Header */}
       <header className="fixed top-0 left-0 right-0 z-40 md:left-64 bg-gradient-to-b from-black/50 to-transparent">
-        <div className="flex items-center justify-center gap-6 pt-4 pb-8">
+        <div className="flex items-center justify-center gap-6 pt-4 pb-2">
           <button
-            onClick={() => setActiveTab('following')}
-            className={`text-lg font-semibold transition-colors ${activeTab === 'following' ? 'text-white' : 'text-white/50'}`}
+            onClick={() => { setActiveTab('following'); setSelectedVibe(null); }}
+            className={`text-lg font-semibold transition-colors ${activeTab === 'following' && !selectedVibe ? 'text-white' : 'text-white/50'}`}
           >
             Following
           </button>
           <div className="w-0.5 h-4 bg-white/30" />
           <button
-            onClick={() => setActiveTab('forYou')}
-            className={`text-lg font-semibold transition-colors ${activeTab === 'forYou' ? 'text-white' : 'text-white/50'}`}
+            onClick={() => { setActiveTab('forYou'); setSelectedVibe(null); }}
+            className={`text-lg font-semibold transition-colors ${activeTab === 'forYou' && !selectedVibe ? 'text-white' : 'text-white/50'}`}
           >
             For You
           </button>
+          <div className="w-0.5 h-4 bg-white/30" />
+          <button
+            onClick={() => setShowVibes(!showVibes)}
+            className={`text-lg font-semibold transition-colors flex items-center gap-1 ${selectedVibe ? 'text-white' : 'text-white/50'}`}
+          >
+            {selectedVibe ? VIBES.find(v => v.id === selectedVibe)?.emoji : '✨'} Vibes
+            <svg className={`w-4 h-4 transition-transform ${showVibes ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
+
+        {/* Vibe Filter Pills */}
+        {showVibes && (
+          <div className="flex items-center gap-2 px-4 pb-4 overflow-x-auto scrollbar-hide">
+            <button
+              onClick={() => { setSelectedVibe(null); setShowVibes(false); }}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                !selectedVibe ? 'bg-white text-black' : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+            >
+              All
+            </button>
+            {VIBES.map(vibe => (
+              <button
+                key={vibe.id}
+                onClick={() => { setSelectedVibe(vibe.id); setShowVibes(false); }}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1 ${
+                  selectedVibe === vibe.id ? 'bg-white text-black' : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                {vibe.emoji} {vibe.label}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
-      {/* Search - Top Right */}
-      <Link href="/search" className="fixed top-4 right-4 z-40 p-2 bg-black/30 backdrop-blur-sm rounded-full md:hidden">
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      </Link>
+      {/* Top Right Actions */}
+      <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+        {/* Queue Toggle */}
+        <button
+          onClick={() => setShowQueue(!showQueue)}
+          className="p-2 bg-black/30 backdrop-blur-sm rounded-full hidden md:block"
+          title="Up Next"
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+        </button>
+        {/* Search */}
+        <Link href="/search" className="p-2 bg-black/30 backdrop-blur-sm rounded-full md:hidden">
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </Link>
+      </div>
+
+      {/* Queue Panel */}
+      {showQueue && (
+        <div className="fixed top-16 right-4 w-80 max-h-96 bg-black/90 backdrop-blur-sm rounded-xl overflow-hidden z-40 hidden md:block">
+          <div className="p-4 border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-semibold">Up Next</h3>
+              <button onClick={() => setShowQueue(false)} className="text-white/50 hover:text-white">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="overflow-y-auto max-h-72">
+            {videos.slice(currentIndex + 1, currentIndex + 6).map((video, i) => (
+              <button
+                key={video.id}
+                onClick={() => scrollToVideo(currentIndex + 1 + i)}
+                className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition-colors"
+              >
+                <div className="w-16 h-10 bg-[#1A1F2E] rounded overflow-hidden flex-shrink-0">
+                  {video.thumbnailUrl && (
+                    <Image src={video.thumbnailUrl} alt="" width={64} height={40} className="object-cover w-full h-full" />
+                  )}
+                </div>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-white text-sm line-clamp-1">@{video.username}</p>
+                  <p className="text-white/50 text-xs line-clamp-1">{video.caption || 'No caption'}</p>
+                </div>
+              </button>
+            ))}
+            {videos.length <= currentIndex + 1 && (
+              <p className="text-white/50 text-sm text-center py-4">No more videos in queue</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Scrollable Feed */}
       <div

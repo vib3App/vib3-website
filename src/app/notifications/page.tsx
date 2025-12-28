@@ -1,27 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { notificationsApi } from '@/services/api';
+import { websocketService } from '@/services/websocket';
+import { desktopNotifications } from '@/services/desktopNotifications';
+import type { Notification, NotificationType } from '@/types';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { SideNav } from '@/components/ui/SideNav';
-
-type NotificationType = 'like' | 'comment' | 'follow' | 'mention' | 'system';
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  userId?: string;
-  username?: string;
-  userAvatar?: string;
-  message: string;
-  videoId?: string;
-  videoThumbnail?: string;
-  createdAt: string;
-  isRead: boolean;
-}
 
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -46,6 +35,7 @@ function NotificationIcon({ type }: { type: NotificationType }) {
         </div>
       );
     case 'comment':
+    case 'reply':
       return (
         <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
           <svg className="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
@@ -69,6 +59,20 @@ function NotificationIcon({ type }: { type: NotificationType }) {
           </svg>
         </div>
       );
+    case 'message':
+      return (
+        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+          <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+          </svg>
+        </div>
+      );
+    case 'live':
+      return (
+        <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+          <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+        </div>
+      );
     default:
       return (
         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
@@ -80,20 +84,52 @@ function NotificationIcon({ type }: { type: NotificationType }) {
   }
 }
 
-function NotificationItem({ notification }: { notification: Notification }) {
+interface NotificationItemProps {
+  notification: Notification;
+  onMarkRead: (id: string) => void;
+}
+
+function NotificationItem({ notification, onMarkRead }: NotificationItemProps) {
+  const getLink = (): string => {
+    const { type, data, fromUser } = notification;
+
+    switch (type) {
+      case 'like':
+      case 'comment':
+      case 'mention':
+      case 'reply':
+        return data?.videoId ? `/feed?video=${data.videoId}` : '#';
+      case 'follow':
+        return fromUser?.id ? `/profile/${fromUser.id}` : '#';
+      case 'message':
+        return data?.conversationId ? `/messages/${data.conversationId}` : '/messages';
+      case 'live':
+        return data?.liveStreamId ? `/live/${data.liveStreamId}` : '/live';
+      default:
+        return '#';
+    }
+  };
+
+  const handleClick = () => {
+    if (!notification.isRead) {
+      onMarkRead(notification.id);
+    }
+  };
+
   return (
     <Link
-      href={notification.videoId ? `/feed?video=${notification.videoId}` : notification.userId ? `/profile/${notification.userId}` : '#'}
+      href={getLink()}
+      onClick={handleClick}
       className={`flex items-center gap-3 p-4 hover:bg-white/5 transition-colors ${
         !notification.isRead ? 'bg-[#6366F1]/5' : ''
       }`}
     >
-      {notification.userAvatar ? (
+      {notification.fromUser?.avatar ? (
         <div className="relative flex-shrink-0">
           <div className="w-12 h-12 rounded-full overflow-hidden">
             <Image
-              src={notification.userAvatar}
-              alt={notification.username || 'User'}
+              src={notification.fromUser.avatar}
+              alt={notification.fromUser.username}
               width={48}
               height={48}
               className="object-cover"
@@ -109,18 +145,18 @@ function NotificationItem({ notification }: { notification: Notification }) {
 
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm">
-          {notification.username && (
-            <span className="font-semibold">{notification.username} </span>
+          {notification.fromUser && (
+            <span className="font-semibold">{notification.fromUser.username} </span>
           )}
-          {notification.message}
+          {notification.body}
         </p>
         <p className="text-white/50 text-xs mt-1">{timeAgo(notification.createdAt)}</p>
       </div>
 
-      {notification.videoThumbnail && (
+      {notification.data?.videoThumbnail && (
         <div className="w-12 h-16 rounded-lg overflow-hidden flex-shrink-0">
           <Image
-            src={notification.videoThumbnail}
+            src={notification.data.videoThumbnail}
             alt="Video"
             width={48}
             height={64}
@@ -138,10 +174,30 @@ function NotificationItem({ notification }: { notification: Notification }) {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'all' | 'mentions'>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
+
+  const loadNotifications = useCallback(async (pageNum: number, append = false) => {
+    try {
+      const response = await notificationsApi.getNotifications(pageNum, 20);
+      if (append) {
+        setNotifications(prev => [...prev, ...response.items]);
+      } else {
+        setNotifications(response.items);
+      }
+      setHasMore(response.hasMore);
+      setPage(pageNum);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -149,70 +205,70 @@ export default function NotificationsPage() {
       return;
     }
 
-    // Load notifications
-    setIsLoading(true);
-    // TODO: Implement actual API call
-    // Simulated notifications
-    setTimeout(() => {
-      setNotifications([
-        {
-          id: '1',
-          type: 'like',
-          userId: 'user1',
-          username: 'creative_soul',
-          userAvatar: undefined,
-          message: 'liked your video',
-          videoId: 'video1',
-          createdAt: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    loadNotifications(1);
+    setPermissionStatus(desktopNotifications.getPermission());
+
+    // Connect to WebSocket for real-time notifications
+    if (user?.token) {
+      websocketService.connect(user.token);
+
+      const unsubNotification = websocketService.onNotification((notification) => {
+        // Add new notification to the top
+        setNotifications(prev => [{
+          ...notification,
           isRead: false,
-        },
-        {
-          id: '2',
-          type: 'follow',
-          userId: 'user2',
-          username: 'music_lover',
-          userAvatar: undefined,
-          message: 'started following you',
-          createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-          isRead: false,
-        },
-        {
-          id: '3',
-          type: 'comment',
-          userId: 'user3',
-          username: 'vibe_master',
-          userAvatar: undefined,
-          message: 'commented: "This is amazing! 🔥"',
-          videoId: 'video2',
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-          isRead: true,
-        },
-        {
-          id: '4',
-          type: 'mention',
-          userId: 'user4',
-          username: 'dance_pro',
-          userAvatar: undefined,
-          message: 'mentioned you in a comment',
-          videoId: 'video3',
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-          isRead: true,
-        },
-        {
-          id: '5',
-          type: 'system',
-          message: 'Your video reached 1,000 views! Keep creating amazing content.',
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-          isRead: true,
-        },
-      ]);
-      setIsLoading(false);
-    }, 500);
-  }, [isAuthenticated, router]);
+        } as Notification, ...prev]);
+
+        // Show desktop notification if enabled
+        if (permissionStatus === 'granted') {
+          desktopNotifications.show(notification as Notification);
+        }
+      });
+
+      return () => {
+        unsubNotification();
+      };
+    }
+  }, [isAuthenticated, user?.token, router, loadNotifications, permissionStatus]);
+
+  const handleMarkRead = async (notificationId: string) => {
+    try {
+      await notificationsApi.markAsRead(notificationId);
+      setNotifications(prev =>
+        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+      );
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationsApi.markAllAsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    const permission = await desktopNotifications.requestPermission();
+    setPermissionStatus(permission);
+
+    if (permission === 'granted') {
+      // Subscribe to push notifications
+      const subscription = await desktopNotifications.subscribeToPush();
+      if (subscription) {
+        await notificationsApi.registerPushSubscription(subscription);
+      }
+    }
+  };
 
   const filteredNotifications = activeTab === 'mentions'
     ? notifications.filter(n => n.type === 'mention')
     : notifications;
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   if (!isAuthenticated) {
     return (
@@ -231,10 +287,30 @@ export default function NotificationsPage() {
         <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
           <div className="flex items-center justify-between px-4 h-14">
             <h1 className="text-xl font-bold text-white">Notifications</h1>
-            <button className="text-white/50 hover:text-white text-sm">
-              Mark all as read
-            </button>
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="text-[#6366F1] hover:text-[#5558E3] text-sm font-medium"
+              >
+                Mark all as read
+              </button>
+            )}
           </div>
+
+          {/* Desktop notification prompt */}
+          {permissionStatus === 'default' && desktopNotifications.isAvailable() && (
+            <div className="px-4 pb-3">
+              <button
+                onClick={handleEnableNotifications}
+                className="w-full bg-[#1A1F2E] text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#252A3E] transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                Enable desktop notifications
+              </button>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="flex border-b border-white/5">
@@ -280,9 +356,24 @@ export default function NotificationsPage() {
               </p>
             </div>
           ) : (
-            filteredNotifications.map(notification => (
-              <NotificationItem key={notification.id} notification={notification} />
-            ))
+            <>
+              {filteredNotifications.map(notification => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onMarkRead={handleMarkRead}
+                />
+              ))}
+
+              {hasMore && (
+                <button
+                  onClick={() => loadNotifications(page + 1, true)}
+                  className="w-full py-4 text-[#6366F1] hover:text-[#5558E3] text-sm font-medium"
+                >
+                  Load more
+                </button>
+              )}
+            </>
           )}
         </div>
       </main>

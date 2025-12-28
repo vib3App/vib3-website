@@ -238,6 +238,264 @@ export default function SettingsPage() {
             </div>
           )}
 
+          {/* Notifications Settings */}
+          {activeSection === 'notifications' && (
+            <div className="space-y-4">
+              <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div>
+                    <span className="text-white block">Push Notifications</span>
+                    <span className="text-white/50 text-sm">Get notified on your device</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">New Followers</span>
+                    <span className="text-white/50 text-sm">When someone follows you</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Likes</span>
+                    <span className="text-white/50 text-sm">When someone likes your video</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Comments</span>
+                    <span className="text-white/50 text-sm">When someone comments on your video</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Mentions</span>
+                    <span className="text-white/50 text-sm">When someone mentions you</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Direct Messages</span>
+                    <span className="text-white/50 text-sm">When you receive a message</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Live Streams</span>
+                    <span className="text-white/50 text-sm">When followed creators go live</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div>
+                    <span className="text-white block">Email Notifications</span>
+                    <span className="text-white/50 text-sm">Weekly digest and updates</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-white/20 relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute left-1 top-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Settings */}
+          {activeSection === 'content' && (
+            <div className="space-y-4">
+              {/* Playback Settings */}
+              <h3 className="text-white/50 text-sm font-medium px-1">Playback</h3>
+              <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div>
+                    <span className="text-white block">Autoplay Videos</span>
+                    <span className="text-white/50 text-sm">Play videos automatically in feed</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Default Quality</span>
+                    <span className="text-white/50 text-sm">Video playback quality</span>
+                  </div>
+                  <select className="bg-white/10 text-white px-3 py-1.5 rounded-lg text-sm">
+                    <option value="auto">Auto</option>
+                    <option value="1080p">1080p</option>
+                    <option value="720p">720p</option>
+                    <option value="480p">480p</option>
+                    <option value="360p">360p</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Loop Videos</span>
+                    <span className="text-white/50 text-sm">Repeat videos when finished</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Mute by Default</span>
+                    <span className="text-white/50 text-sm">Start videos muted</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-white/20 relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute left-1 top-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+              {/* AI Features */}
+              <h3 className="text-white/50 text-sm font-medium px-1 mt-6">AI Features</h3>
+              <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div>
+                    <span className="text-white block">Auto-Captions</span>
+                    <span className="text-white/50 text-sm">Generate captions automatically</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Caption Language</span>
+                    <span className="text-white/50 text-sm">Preferred caption language</span>
+                  </div>
+                  <select className="bg-white/10 text-white px-3 py-1.5 rounded-lg text-sm">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="zh">Chinese</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Smart Recommendations</span>
+                    <span className="text-white/50 text-sm">AI-powered content suggestions</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Beauty Filters</span>
+                    <span className="text-white/50 text-sm">AI face enhancement in camera</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Display Settings */}
+              <h3 className="text-white/50 text-sm font-medium px-1 mt-6">Display</h3>
+              <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div>
+                    <span className="text-white block">Dark Mode</span>
+                    <span className="text-white/50 text-sm">Use dark theme</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Reduce Motion</span>
+                    <span className="text-white/50 text-sm">Limit animations</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-white/20 relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute left-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Show View Counts</span>
+                    <span className="text-white/50 text-sm">Display view numbers</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-[#6366F1] relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute right-1 top-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Data & Storage */}
+              <h3 className="text-white/50 text-sm font-medium px-1 mt-6">Data & Storage</h3>
+              <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <div>
+                    <span className="text-white block">Data Saver</span>
+                    <span className="text-white/50 text-sm">Reduce data usage</span>
+                  </div>
+                  <button className="w-12 h-7 rounded-full bg-white/20 relative">
+                    <div className="w-5 h-5 bg-white rounded-full absolute left-1 top-1 transition-transform" />
+                  </button>
+                </div>
+
+                <button className="flex items-center justify-between w-full p-4 hover:bg-white/5 transition-colors border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Clear Cache</span>
+                    <span className="text-white/50 text-sm">Free up storage space</span>
+                  </div>
+                  <span className="text-white/50 text-sm">128 MB</span>
+                </button>
+
+                <button className="flex items-center justify-between w-full p-4 hover:bg-white/5 transition-colors border-t border-white/5">
+                  <div>
+                    <span className="text-white block">Clear Watch History</span>
+                    <span className="text-white/50 text-sm">Remove all watched videos</span>
+                  </div>
+                  <svg className="w-5 h-5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* About Section */}
           {activeSection === 'about' && (
             <div className="space-y-4">

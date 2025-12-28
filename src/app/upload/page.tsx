@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
+import { uploadApi, TusUploadManager } from '@/services/api';
+import type { VideoDraft } from '@/types';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { SideNav } from '@/components/ui/SideNav';
 
-type UploadStep = 'select' | 'edit' | 'details' | 'uploading' | 'complete';
+type UploadStep = 'select' | 'edit' | 'details' | 'uploading' | 'processing' | 'complete';
 
 const vibes = [
   { name: 'Energetic', emoji: '⚡' },
@@ -22,11 +24,13 @@ const vibes = [
 
 export default function UploadPage() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
   const [step, setStep] = useState<UploadStep>('select');
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [uploadId, setUploadId] = useState<string | null>(null);
+  const [thumbnailOptions, setThumbnailOptions] = useState<string[]>([]);
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState('');
@@ -34,10 +38,21 @@ export default function UploadPage() {
   const [visibility, setVisibility] = useState<'public' | 'followers' | 'private'>('public');
   const [allowComments, setAllowComments] = useState(true);
   const [allowDuet, setAllowDuet] = useState(true);
+  const [allowStitch, setAllowStitch] = useState(true);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('');
+  const [drafts, setDrafts] = useState<VideoDraft[]>([]);
+  const [showDrafts, setShowDrafts] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const tusManagerRef = useRef<TusUploadManager | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -45,23 +60,40 @@ export default function UploadPage() {
     }
   }, [isAuthenticated, router]);
 
+  // Load drafts on mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadDrafts();
+    }
+  }, [isAuthenticated]);
+
+  const loadDrafts = async () => {
+    try {
+      const data = await uploadApi.getDrafts();
+      setDrafts(data);
+    } catch (err) {
+      console.error('Failed to load drafts:', err);
+    }
+  };
+
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('video/')) {
-      alert('Please select a video file');
+      setError('Please select a video file');
       return;
     }
 
-    if (file.size > 500 * 1024 * 1024) { // 500MB limit
-      alert('File size must be less than 500MB');
+    if (file.size > 500 * 1024 * 1024) {
+      setError('File size must be less than 500MB');
       return;
     }
 
+    setError(null);
     setVideoFile(file);
     const url = URL.createObjectURL(file);
     setVideoPreviewUrl(url);
     setStep('edit');
 
-    // Generate thumbnail
+    // Generate local thumbnail
     const video = document.createElement('video');
     video.src = url;
     video.currentTime = 1;
@@ -71,7 +103,9 @@ export default function UploadPage() {
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx?.drawImage(video, 0, 0);
-      setThumbnail(canvas.toDataURL('image/jpeg'));
+      const thumbnail = canvas.toDataURL('image/jpeg');
+      setSelectedThumbnail(thumbnail);
+      setThumbnailOptions([thumbnail]);
     };
   }, []);
 
@@ -90,31 +124,161 @@ export default function UploadPage() {
     }
   };
 
+  const handleCustomThumbnail = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !uploadId) return;
+
+    try {
+      const { thumbnailUrl } = await uploadApi.uploadThumbnail(uploadId, file);
+      setThumbnailOptions(prev => [thumbnailUrl, ...prev]);
+      setSelectedThumbnail(thumbnailUrl);
+    } catch (err) {
+      console.error('Failed to upload thumbnail:', err);
+    }
+  };
+
   const handleUpload = async () => {
     if (!videoFile) return;
 
     setStep('uploading');
+    setError(null);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setStep('complete');
-          return 100;
+    try {
+      // Create TUS upload manager
+      const tusManager = new TusUploadManager();
+      tusManagerRef.current = tusManager;
+
+      tusManager.onProgress = (progress) => {
+        setUploadProgress(progress);
+      };
+
+      tusManager.onComplete = async (id) => {
+        setUploadId(id);
+        setStep('processing');
+
+        // Generate thumbnails from server
+        try {
+          const { thumbnails } = await uploadApi.generateThumbnails(id);
+          setThumbnailOptions(prev => [...thumbnails, ...prev]);
+        } catch {
+          // Keep local thumbnail if server fails
         }
-        return prev + Math.random() * 15;
-      });
-    }, 500);
 
-    // TODO: Implement actual upload
-    // const formData = new FormData();
-    // formData.append('video', videoFile);
-    // formData.append('caption', caption);
-    // formData.append('hashtags', JSON.stringify(hashtags));
-    // formData.append('vibe', selectedVibe || '');
-    // formData.append('visibility', visibility);
-    // await videoApi.upload(formData);
+        // Publish video
+        try {
+          const scheduledFor = showSchedule && scheduleDate && scheduleTime
+            ? new Date(`${scheduleDate}T${scheduleTime}`).toISOString()
+            : undefined;
+
+          await uploadApi.publishVideo({
+            uploadId: id,
+            caption,
+            hashtags,
+            thumbnailUrl: selectedThumbnail || undefined,
+            isPublic: visibility === 'public',
+            allowComments,
+            allowDuet,
+            allowStitch,
+            scheduledFor,
+          });
+
+          setStep('complete');
+        } catch (err) {
+          setError('Failed to publish video. Please try again.');
+          setStep('details');
+        }
+      };
+
+      tusManager.onError = (err) => {
+        setError(err.message);
+        setStep('edit');
+      };
+
+      await tusManager.start(videoFile);
+    } catch (err) {
+      setError('Upload failed. Please try again.');
+      setStep('edit');
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    setIsSavingDraft(true);
+    try {
+      await uploadApi.createDraft({
+        uploadId: uploadId || undefined,
+        videoUrl: videoPreviewUrl || undefined,
+        thumbnailUrl: selectedThumbnail || undefined,
+        caption,
+        hashtags,
+        mentions: [],
+        isPublic: visibility === 'public',
+        allowComments,
+        allowDuet,
+        allowStitch,
+        scheduledFor: showSchedule && scheduleDate && scheduleTime
+          ? new Date(`${scheduleDate}T${scheduleTime}`).toISOString()
+          : undefined,
+      });
+      await loadDrafts();
+      resetForm();
+    } catch (err) {
+      console.error('Failed to save draft:', err);
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
+  const handleLoadDraft = async (draft: VideoDraft) => {
+    setCaption(draft.caption);
+    setHashtags(draft.hashtags);
+    setVisibility(draft.isPublic ? 'public' : 'private');
+    setAllowComments(draft.allowComments);
+    setAllowDuet(draft.allowDuet);
+    setAllowStitch(draft.allowStitch);
+    if (draft.thumbnailUrl) setSelectedThumbnail(draft.thumbnailUrl);
+    if (draft.videoUrl) setVideoPreviewUrl(draft.videoUrl);
+    if (draft.scheduledFor) {
+      setShowSchedule(true);
+      const date = new Date(draft.scheduledFor);
+      setScheduleDate(date.toISOString().split('T')[0]);
+      setScheduleTime(date.toTimeString().slice(0, 5));
+    }
+    setShowDrafts(false);
+    setStep(draft.videoUrl ? 'details' : 'select');
+  };
+
+  const handleDeleteDraft = async (draftId: string) => {
+    try {
+      await uploadApi.deleteDraft(draftId);
+      setDrafts(prev => prev.filter(d => d.id !== draftId));
+    } catch (err) {
+      console.error('Failed to delete draft:', err);
+    }
+  };
+
+  const handleCancelUpload = () => {
+    if (tusManagerRef.current) {
+      tusManagerRef.current.abort();
+    }
+    setStep('edit');
+    setUploadProgress(0);
+  };
+
+  const resetForm = () => {
+    setStep('select');
+    setVideoFile(null);
+    setVideoPreviewUrl(null);
+    setUploadId(null);
+    setThumbnailOptions([]);
+    setSelectedThumbnail(null);
+    setCaption('');
+    setHashtags([]);
+    setSelectedVibe(null);
+    setUploadProgress(0);
+    setShowSchedule(false);
+    setScheduleDate('');
+    setScheduleTime('');
+    setError(null);
   };
 
   if (!isAuthenticated) {
@@ -134,18 +298,93 @@ export default function UploadPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-2xl font-bold text-white">Create</h1>
-            {step !== 'select' && step !== 'complete' && (
-              <button
-                onClick={() => {
-                  if (step === 'edit') setStep('select');
-                  else if (step === 'details') setStep('edit');
-                }}
-                className="text-white/50 hover:text-white"
-              >
-                Back
-              </button>
-            )}
+            <div className="flex items-center gap-4">
+              {drafts.length > 0 && step === 'select' && (
+                <button
+                  onClick={() => setShowDrafts(!showDrafts)}
+                  className="flex items-center gap-2 text-white/70 hover:text-white"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Drafts ({drafts.length})
+                </button>
+              )}
+              {step !== 'select' && step !== 'complete' && step !== 'uploading' && step !== 'processing' && (
+                <button
+                  onClick={() => {
+                    if (step === 'edit') setStep('select');
+                    else if (step === 'details') setStep('edit');
+                  }}
+                  className="text-white/50 hover:text-white"
+                >
+                  Back
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Drafts Panel */}
+          {showDrafts && (
+            <div className="mb-8 p-4 bg-[#1A1F2E] rounded-2xl">
+              <h2 className="text-white font-medium mb-4">Your Drafts</h2>
+              <div className="space-y-3">
+                {drafts.map((draft) => (
+                  <div
+                    key={draft.id}
+                    className="flex items-center gap-3 p-3 bg-[#0A0E1A] rounded-xl"
+                  >
+                    <div className="w-16 h-24 rounded-lg overflow-hidden bg-black/50 flex-shrink-0">
+                      {draft.thumbnailUrl ? (
+                        <Image
+                          src={draft.thumbnailUrl}
+                          alt="Draft"
+                          width={64}
+                          height={96}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <svg className="w-6 h-6 text-white/20" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm truncate">
+                        {draft.caption || 'No caption'}
+                      </p>
+                      <p className="text-white/50 text-xs mt-1">
+                        {new Date(draft.updatedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleLoadDraft(draft)}
+                      className="px-3 py-1.5 bg-[#6366F1] text-white text-sm rounded-full hover:opacity-90"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDraft(draft.id)}
+                      className="p-1.5 text-white/30 hover:text-red-500"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Step: Select Video */}
           {step === 'select' && (
@@ -193,7 +432,6 @@ export default function UploadPage() {
           {step === 'edit' && videoPreviewUrl && (
             <div className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Video Preview */}
                 <div className="aspect-[9/16] bg-black rounded-2xl overflow-hidden relative">
                   <video
                     ref={videoRef}
@@ -203,28 +441,43 @@ export default function UploadPage() {
                   />
                 </div>
 
-                {/* Basic Options */}
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-white font-medium mb-3">Cover Image</h3>
-                    <div className="flex gap-3">
-                      {thumbnail && (
-                        <div className="w-24 h-36 rounded-lg overflow-hidden ring-2 ring-[#6366F1]">
+                    <div className="flex gap-3 flex-wrap">
+                      {thumbnailOptions.map((thumb, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedThumbnail(thumb)}
+                          className={`w-20 h-28 rounded-lg overflow-hidden ${
+                            selectedThumbnail === thumb ? 'ring-2 ring-[#6366F1]' : ''
+                          }`}
+                        >
                           <Image
-                            src={thumbnail}
-                            alt="Thumbnail"
-                            width={96}
-                            height={144}
-                            className="object-cover"
+                            src={thumb}
+                            alt={`Thumbnail ${i + 1}`}
+                            width={80}
+                            height={112}
+                            className="object-cover w-full h-full"
                           />
-                        </div>
-                      )}
-                      <button className="w-24 h-36 rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center text-white/50 hover:border-white/40">
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => thumbnailInputRef.current?.click()}
+                        className="w-20 h-28 rounded-lg border border-dashed border-white/20 flex flex-col items-center justify-center text-white/50 hover:border-white/40"
+                      >
                         <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
                         <span className="text-xs">Upload</span>
                       </button>
+                      <input
+                        ref={thumbnailInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCustomThumbnail}
+                        className="hidden"
+                      />
                     </div>
                   </div>
 
@@ -266,7 +519,6 @@ export default function UploadPage() {
           {/* Step: Details */}
           {step === 'details' && (
             <div className="space-y-6">
-              {/* Caption */}
               <div>
                 <label className="block text-white font-medium mb-2">Caption</label>
                 <textarea
@@ -282,7 +534,6 @@ export default function UploadPage() {
                 </div>
               </div>
 
-              {/* Hashtags */}
               <div>
                 <label className="block text-white font-medium mb-2">Hashtags</label>
                 <div className="flex flex-wrap gap-2 mb-2">
@@ -319,7 +570,6 @@ export default function UploadPage() {
                 </div>
               </div>
 
-              {/* Vibe */}
               <div>
                 <label className="block text-white font-medium mb-2">Vibe</label>
                 <div className="flex flex-wrap gap-2">
@@ -340,7 +590,6 @@ export default function UploadPage() {
                 </div>
               </div>
 
-              {/* Visibility */}
               <div>
                 <label className="block text-white font-medium mb-2">Who can watch</label>
                 <div className="grid grid-cols-3 gap-3">
@@ -365,7 +614,6 @@ export default function UploadPage() {
                 </div>
               </div>
 
-              {/* Toggles */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-[#1A1F2E] rounded-xl">
                   <span className="text-white">Allow comments</span>
@@ -393,14 +641,79 @@ export default function UploadPage() {
                     }`} />
                   </button>
                 </div>
+                <div className="flex items-center justify-between p-4 bg-[#1A1F2E] rounded-xl">
+                  <span className="text-white">Allow Stitch</span>
+                  <button
+                    onClick={() => setAllowStitch(!allowStitch)}
+                    className={`w-12 h-7 rounded-full transition-colors ${
+                      allowStitch ? 'bg-[#6366F1]' : 'bg-white/20'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                      allowStitch ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
               </div>
 
-              <button
-                onClick={handleUpload}
-                className="w-full py-4 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
-              >
-                Post
-              </button>
+              {/* Schedule */}
+              <div className="p-4 bg-[#1A1F2E] rounded-xl">
+                <button
+                  onClick={() => setShowSchedule(!showSchedule)}
+                  className="w-full flex items-center justify-between text-white"
+                >
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-[#6366F1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Schedule for later</span>
+                  </div>
+                  <svg className={`w-5 h-5 transition-transform ${showSchedule ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {showSchedule && (
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-white/50 text-sm mb-2">Date</label>
+                      <input
+                        type="date"
+                        value={scheduleDate}
+                        onChange={(e) => setScheduleDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#6366F1]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-white/50 text-sm mb-2">Time</label>
+                      <input
+                        type="time"
+                        value={scheduleTime}
+                        onChange={(e) => setScheduleTime(e.target.value)}
+                        className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#6366F1]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-4">
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={isSavingDraft}
+                  className="flex-1 py-4 bg-[#1A1F2E] text-white font-semibold rounded-full hover:bg-[#252A3E] transition-colors disabled:opacity-50"
+                >
+                  {isSavingDraft ? 'Saving...' : 'Save Draft'}
+                </button>
+                <button
+                  onClick={handleUpload}
+                  className="flex-1 py-4 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
+                >
+                  {showSchedule && scheduleDate && scheduleTime ? 'Schedule' : 'Post'}
+                </button>
+              </div>
             </div>
           )}
 
@@ -409,14 +722,7 @@ export default function UploadPage() {
             <div className="text-center py-12">
               <div className="w-32 h-32 mx-auto mb-6 relative">
                 <svg className="w-full h-full -rotate-90">
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="60"
-                    fill="none"
-                    stroke="#1A1F2E"
-                    strokeWidth="8"
-                  />
+                  <circle cx="64" cy="64" r="60" fill="none" stroke="#1A1F2E" strokeWidth="8" />
                   <circle
                     cx="64"
                     cy="64"
@@ -441,7 +747,24 @@ export default function UploadPage() {
                 </div>
               </div>
               <h2 className="text-xl font-semibold text-white mb-2">Uploading your video...</h2>
-              <p className="text-white/50">This may take a moment</p>
+              <p className="text-white/50 mb-6">This may take a moment</p>
+              <button
+                onClick={handleCancelUpload}
+                className="text-white/50 hover:text-white"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* Step: Processing */}
+          {step === 'processing' && (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 mx-auto mb-6 relative">
+                <div className="w-full h-full rounded-full border-4 border-white/10 border-t-[#6366F1] animate-spin" />
+              </div>
+              <h2 className="text-xl font-semibold text-white mb-2">Processing video...</h2>
+              <p className="text-white/50">Almost there!</p>
             </div>
           )}
 
@@ -453,8 +776,14 @@ export default function UploadPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Video Posted!</h2>
-              <p className="text-white/50 mb-8">Your video is now live</p>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {showSchedule && scheduleDate && scheduleTime ? 'Video Scheduled!' : 'Video Posted!'}
+              </h2>
+              <p className="text-white/50 mb-8">
+                {showSchedule && scheduleDate && scheduleTime
+                  ? `Your video will go live on ${new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString()}`
+                  : 'Your video is now live'}
+              </p>
               <div className="flex justify-center gap-4">
                 <Link
                   href="/feed"
@@ -463,15 +792,7 @@ export default function UploadPage() {
                   View Feed
                 </Link>
                 <button
-                  onClick={() => {
-                    setStep('select');
-                    setVideoFile(null);
-                    setVideoPreviewUrl(null);
-                    setCaption('');
-                    setHashtags([]);
-                    setSelectedVibe(null);
-                    setUploadProgress(0);
-                  }}
+                  onClick={resetForm}
                   className="px-8 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full"
                 >
                   Upload Another
