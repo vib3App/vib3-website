@@ -19,8 +19,8 @@ export function FormInput({ label, type, value, placeholder, error, onChange }: 
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-colors ${
-          error ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+        className={`w-full glass rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
+          error ? 'border-red-500/50 focus:ring-2 focus:ring-red-500/50' : 'focus:ring-2 focus:ring-purple-500/50'
         }`}
         placeholder={placeholder}
       />
@@ -59,7 +59,7 @@ export function PasswordInput({
       <div className="flex items-center justify-between mb-2">
         <label className="block text-white/70 text-sm">{label}</label>
         {showForgot && (
-          <button type="button" onClick={onForgotClick} className="text-[#6366F1] text-sm hover:underline">
+          <button type="button" onClick={onForgotClick} className="text-purple-400 text-sm hover:underline">
             Forgot password?
           </button>
         )}
@@ -69,8 +69,8 @@ export function PasswordInput({
           type={showPassword ? 'text' : 'password'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 pr-12 text-white placeholder-white/30 focus:outline-none transition-colors ${
-            error ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+          className={`w-full glass rounded-xl px-4 py-3 pr-12 text-white placeholder-white/40 focus:outline-none transition-all ${
+            error ? 'border-red-500/50 focus:ring-2 focus:ring-red-500/50' : 'focus:ring-2 focus:ring-purple-500/50'
           }`}
           placeholder={placeholder}
         />
@@ -121,7 +121,7 @@ export function SubmitButton({ mode, isSubmitting }: SubmitButtonProps) {
     <button
       type="submit"
       disabled={isSubmitting}
-      className="w-full bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold py-3 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isSubmitting ? (
         <span className="flex items-center justify-center gap-2">

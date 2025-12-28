@@ -80,8 +80,8 @@ export function LoginForm({
             value={birthdate}
             onChange={(e) => { onBirthdateChange(e.target.value); onClearFieldError('birthdate'); }}
             max={maxBirthdate}
-            className={`w-full bg-[#0A0E1A] border rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none transition-colors ${
-              fieldErrors.birthdate ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-[#6366F1]'
+            className={`w-full glass rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none transition-all ${
+              fieldErrors.birthdate ? 'border-red-500/50 focus:ring-2 focus:ring-red-500/50' : 'focus:ring-2 focus:ring-purple-500/50'
             }`}
             style={{ colorScheme: 'dark' }}
           />

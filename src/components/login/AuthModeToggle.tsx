@@ -9,19 +9,19 @@ interface AuthModeToggleProps {
 
 export function AuthModeToggle({ mode, onModeChange }: AuthModeToggleProps) {
   return (
-    <div className="flex bg-[#0A0E1A] rounded-lg p-1 mb-6">
+    <div className="flex glass rounded-xl p-1 mb-6">
       <button
         onClick={() => onModeChange('login')}
-        className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-          mode === 'login' ? 'bg-[#6366F1] text-white' : 'text-white/50 hover:text-white'
+        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+          mode === 'login' ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white' : 'text-white/50 hover:text-white'
         }`}
       >
         Sign In
       </button>
       <button
         onClick={() => onModeChange('register')}
-        className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-          mode === 'register' ? 'bg-[#6366F1] text-white' : 'text-white/50 hover:text-white'
+        className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+          mode === 'register' ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white' : 'text-white/50 hover:text-white'
         }`}
       >
         Sign Up

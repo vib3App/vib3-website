@@ -54,7 +54,7 @@ export function SearchHeader({
             onFocus={() => onShowSuggestionsChange(true)}
             placeholder="Search videos, users, sounds..."
             autoFocus
-            className="w-full bg-[#1A1F2E] text-white px-12 py-3 rounded-full outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+            className="w-full glass text-white px-12 py-3 rounded-full outline-none placeholder:text-white/40 focus:ring-2 focus:ring-purple-500/50"
           />
           <svg
             className="absolute left-4 md:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 hidden md:block"
@@ -77,7 +77,7 @@ export function SearchHeader({
           )}
 
           {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[#1A1F2E] rounded-xl shadow-xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 right-0 mt-2 glass-heavy rounded-xl shadow-xl overflow-hidden z-50">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={index}
@@ -108,22 +108,22 @@ export function SearchHeader({
 function SuggestionIcon({ suggestion }: { suggestion: SearchSuggestion }) {
   if (suggestion.type === 'user' && suggestion.avatar) {
     return (
-      <div className="w-8 h-8 rounded-full overflow-hidden bg-[#0A0E1A]">
+      <div className="w-8 h-8 rounded-full overflow-hidden glass">
         <Image src={suggestion.avatar} alt="" width={32} height={32} className="object-cover" />
       </div>
     );
   }
   if (suggestion.type === 'hashtag') {
     return (
-      <div className="w-8 h-8 rounded-full bg-[#6366F1]/20 flex items-center justify-center">
-        <span className="text-[#6366F1]">#</span>
+      <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+        <span className="text-purple-400">#</span>
       </div>
     );
   }
   if (suggestion.type === 'sound') {
     return (
-      <div className="w-8 h-8 rounded-full bg-[#14B8A6]/20 flex items-center justify-center">
-        <svg className="w-4 h-4 text-[#14B8A6]" fill="currentColor" viewBox="0 0 24 24">
+      <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center">
+        <svg className="w-4 h-4 text-teal-400" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
         </svg>
       </div>

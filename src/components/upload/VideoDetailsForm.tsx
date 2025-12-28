@@ -84,7 +84,7 @@ export function VideoDetailsForm({
           placeholder="Write a caption..."
           maxLength={2200}
           rows={4}
-          className="w-full bg-[#1A1F2E] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 resize-none focus:ring-2 focus:ring-[#6366F1]"
+          className="w-full glass text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/40 resize-none focus:ring-2 focus:ring-purple-500/50"
         />
         <div className="text-right text-white/30 text-sm mt-1">
           {caption.length}/2200
@@ -98,7 +98,7 @@ export function VideoDetailsForm({
           {hashtags.map((tag) => (
             <span
               key={tag}
-              className="px-3 py-1 bg-[#6366F1]/20 text-[#6366F1] rounded-full text-sm flex items-center gap-1"
+              className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm flex items-center gap-1"
             >
               #{tag}
               <button
@@ -117,11 +117,11 @@ export function VideoDetailsForm({
             onChange={(e) => setHashtagInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleHashtagAdd())}
             placeholder="Add hashtag..."
-            className="flex-1 bg-[#1A1F2E] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+            className="flex-1 glass text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/40 focus:ring-2 focus:ring-purple-500/50"
           />
           <button
             onClick={handleHashtagAdd}
-            className="px-4 py-3 bg-[#1A1F2E] text-white rounded-xl hover:bg-[#252A3E]"
+            className="px-4 py-3 glass text-white rounded-xl hover:bg-white/10"
           >
             Add
           </button>
@@ -136,10 +136,10 @@ export function VideoDetailsForm({
             <button
               key={vibe.name}
               onClick={() => onVibeChange(selectedVibe === vibe.name ? null : vibe.name)}
-              className={`px-4 py-2 rounded-full text-sm flex items-center gap-1 transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm flex items-center gap-1 transition-all ${
                 selectedVibe === vibe.name
-                  ? 'bg-[#6366F1] text-white'
-                  : 'bg-[#1A1F2E] text-white/70 hover:bg-[#252A3E]'
+                  ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white'
+                  : 'glass text-white/70 hover:bg-white/10'
               }`}
             >
               <span>{vibe.emoji}</span>
@@ -161,10 +161,10 @@ export function VideoDetailsForm({
             <button
               key={option.value}
               onClick={() => onVisibilityChange(option.value as typeof visibility)}
-              className={`p-4 rounded-xl text-center transition-colors ${
+              className={`p-4 rounded-xl text-center transition-all ${
                 visibility === option.value
-                  ? 'bg-[#6366F1] text-white'
-                  : 'bg-[#1A1F2E] text-white/70 hover:bg-[#252A3E]'
+                  ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white'
+                  : 'glass text-white/70 hover:bg-white/10'
               }`}
             >
               <span className="text-2xl block mb-1">{option.icon}</span>
@@ -182,13 +182,13 @@ export function VideoDetailsForm({
       </div>
 
       {/* Schedule */}
-      <div className="p-4 bg-[#1A1F2E] rounded-xl">
+      <div className="p-4 glass-card rounded-xl">
         <button
           onClick={() => onShowScheduleChange(!showSchedule)}
           className="w-full flex items-center justify-between text-white"
         >
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-[#6366F1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <span>Schedule for later</span>
@@ -207,7 +207,7 @@ export function VideoDetailsForm({
                 value={scheduleDate}
                 onChange={(e) => onScheduleDateChange(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#6366F1]"
+                className="w-full glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/50"
               />
             </div>
             <div>
@@ -216,7 +216,7 @@ export function VideoDetailsForm({
                 type="time"
                 value={scheduleTime}
                 onChange={(e) => onScheduleTimeChange(e.target.value)}
-                className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-[#6366F1]"
+                className="w-full glass text-white px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/50"
               />
             </div>
           </div>
@@ -228,13 +228,13 @@ export function VideoDetailsForm({
         <button
           onClick={onSaveDraft}
           disabled={isSavingDraft}
-          className="flex-1 py-4 bg-[#1A1F2E] text-white font-semibold rounded-full hover:bg-[#252A3E] transition-colors disabled:opacity-50"
+          className="flex-1 py-4 glass text-white font-semibold rounded-full hover:bg-white/10 transition-colors disabled:opacity-50"
         >
           {isSavingDraft ? 'Saving...' : 'Save Draft'}
         </button>
         <button
           onClick={onPublish}
-          className="flex-1 py-4 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
+          className="flex-1 py-4 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
         >
           {showSchedule && scheduleDate && scheduleTime ? 'Schedule' : 'Post'}
         </button>
@@ -245,12 +245,12 @@ export function VideoDetailsForm({
 
 function ToggleRow({ label, enabled, onChange }: { label: string; enabled: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-[#1A1F2E] rounded-xl">
+    <div className="flex items-center justify-between p-4 glass-card rounded-xl">
       <span className="text-white">{label}</span>
       <button
         onClick={() => onChange(!enabled)}
         className={`w-12 h-7 rounded-full transition-colors ${
-          enabled ? 'bg-[#6366F1]' : 'bg-white/20'
+          enabled ? 'bg-gradient-to-r from-purple-500 to-teal-400' : 'bg-white/20'
         }`}
       >
         <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
