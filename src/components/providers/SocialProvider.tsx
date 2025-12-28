@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
 
@@ -10,20 +10,26 @@ import { useSocialStore } from '@/stores/socialStore';
  */
 export function SocialProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
-  const { loadFollowedUsers, reset, isLoaded } = useSocialStore();
+  const { loadFollowedUsers, reset } = useSocialStore();
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     // Wait for auth to finish loading
     if (authLoading) return;
 
-    if (isAuthenticated && !isLoaded) {
-      // Load social data when authenticated
-      loadFollowedUsers();
-    } else if (!isAuthenticated && isLoaded) {
+    if (isAuthenticated) {
+      // Force refresh on first load after auth
+      if (!hasLoadedRef.current) {
+        console.log('[SocialProvider] Auth complete, loading social data...');
+        hasLoadedRef.current = true;
+        loadFollowedUsers(true); // Force refresh
+      }
+    } else {
       // Clear social data when logged out
+      hasLoadedRef.current = false;
       reset();
     }
-  }, [isAuthenticated, authLoading, isLoaded, loadFollowedUsers, reset]);
+  }, [isAuthenticated, authLoading, loadFollowedUsers, reset]);
 
   return <>{children}</>;
 }

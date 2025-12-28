@@ -15,7 +15,7 @@ interface SocialState {
 }
 
 interface SocialActions {
-  loadFollowedUsers: () => Promise<void>;
+  loadFollowedUsers: (forceRefresh?: boolean) => Promise<void>;
   isFollowing: (userId: string) => boolean;
   followUser: (userId: string) => Promise<boolean>;
   unfollowUser: (userId: string) => Promise<boolean>;
@@ -42,22 +42,25 @@ export const useSocialStore = create<SocialStore>()(
       lastFetched: null,
 
       // Actions
-      loadFollowedUsers: async () => {
+      loadFollowedUsers: async (forceRefresh = false) => {
         const state = get();
         const now = Date.now();
 
         // Skip if already loading
         if (state.isLoading) return;
 
-        // Skip if cache is still valid
-        if (state.isLoaded && state.lastFetched && now - state.lastFetched < CACHE_EXPIRY) {
+        // Skip if cache is still valid (unless force refresh)
+        if (!forceRefresh && state.isLoaded && state.lastFetched && now - state.lastFetched < CACHE_EXPIRY) {
+          console.log('[SocialStore] Using cached followed users:', state.followedUserIds.size);
           return;
         }
 
         set({ isLoading: true });
+        console.log('[SocialStore] Fetching followed users from API...');
 
         try {
           const followedIds = await userApi.getFollowedUsers();
+          console.log('[SocialStore] Received followed users:', followedIds);
           set({
             followedUserIds: new Set(followedIds),
             isLoaded: true,
@@ -65,7 +68,7 @@ export const useSocialStore = create<SocialStore>()(
             lastFetched: now,
           });
         } catch (error) {
-          console.error('Failed to load followed users:', error);
+          console.error('[SocialStore] Failed to load followed users:', error);
           set({ isLoading: false });
         }
       },
