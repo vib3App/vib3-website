@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
+import { useSocialStore } from '@/stores/socialStore';
 import { userApi } from '@/services/api/user';
 
 interface FollowingUser {
@@ -16,17 +17,12 @@ interface FollowingUser {
 
 export function FollowingAccounts() {
   const { isAuthenticated, user } = useAuthStore();
+  const { loadFollowedUsers, isLoaded: socialLoaded } = useSocialStore();
   const [following, setFollowing] = useState<FollowingUser[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      loadFollowing();
-    }
-  }, [isAuthenticated, user]);
-
-  const loadFollowing = async () => {
+  const loadFollowing = useCallback(async () => {
     if (!user) return;
 
     setIsLoading(true);
@@ -41,13 +37,24 @@ export function FollowingAccounts() {
         isLive: false, // Would need live status from a separate API
       }));
       setFollowing(followingUsers);
+
+      // Also ensure social store is loaded
+      if (!socialLoaded) {
+        loadFollowedUsers();
+      }
     } catch (error) {
       console.error('Failed to load following:', error);
       setFollowing([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, socialLoaded, loadFollowedUsers]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      loadFollowing();
+    }
+  }, [isAuthenticated, user, loadFollowing]);
 
   const displayedUsers = isExpanded ? following : following.slice(0, 5);
   const hasMore = following.length > 5;

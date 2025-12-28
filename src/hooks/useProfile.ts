@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { useSocialStore } from '@/stores/socialStore';
 import { userApi } from '@/services/api';
 import type { Video } from '@/types';
 
@@ -22,6 +23,12 @@ export function useProfile() {
   const router = useRouter();
   const userId = params.userId as string;
   const { user: currentUser, isAuthenticated } = useAuthStore();
+  const {
+    isFollowing: checkIsFollowing,
+    toggleFollow,
+    loadFollowedUsers,
+    isLoaded: socialLoaded
+  } = useSocialStore();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -29,7 +36,6 @@ export function useProfile() {
   const [activeTab, setActiveTab] = useState<'videos' | 'liked'>('videos');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
@@ -37,6 +43,16 @@ export function useProfile() {
 
   const isOwnProfile = currentUser?.id === userId;
   const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/profile/${userId}` : '';
+
+  // Get follow status from social store
+  const isFollowing = checkIsFollowing(userId);
+
+  // Load followed users when authenticated
+  useEffect(() => {
+    if (isAuthenticated && !socialLoaded) {
+      loadFollowedUsers();
+    }
+  }, [isAuthenticated, socialLoaded, loadFollowedUsers]);
 
   const loadProfile = useCallback(async () => {
     setIsLoading(true);
@@ -53,13 +69,9 @@ export function useProfile() {
         setVideos([]);
       }
 
-      if (isAuthenticated && !isOwnProfile) {
-        try {
-          const following = await userApi.isFollowing(userId);
-          setIsFollowing(following);
-        } catch {
-          setIsFollowing(false);
-        }
+      // Load followed users if not already loaded
+      if (isAuthenticated && !socialLoaded) {
+        loadFollowedUsers();
       }
     } catch (err: unknown) {
       const error = err as { message?: string; response?: { status: number } };
@@ -73,7 +85,7 @@ export function useProfile() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, isAuthenticated, isOwnProfile]);
+  }, [userId, isAuthenticated, socialLoaded, loadFollowedUsers]);
 
   useEffect(() => {
     if (userId) loadProfile();
@@ -87,13 +99,12 @@ export function useProfile() {
 
     setIsFollowLoading(true);
     try {
-      const result = await userApi.toggleFollow(userId, isFollowing);
-      setIsFollowing(result.following);
+      const newFollowState = await toggleFollow(userId);
 
       if (profile) {
         setProfile({
           ...profile,
-          stats: { ...profile.stats, followers: profile.stats.followers + (result.following ? 1 : -1) }
+          stats: { ...profile.stats, followers: profile.stats.followers + (newFollowState ? 1 : -1) }
         });
       }
     } catch (err) {
@@ -101,7 +112,7 @@ export function useProfile() {
     } finally {
       setIsFollowLoading(false);
     }
-  }, [isAuthenticated, userId, isFollowing, profile, router]);
+  }, [isAuthenticated, userId, profile, router, toggleFollow]);
 
   const copyProfileLink = useCallback(() => {
     navigator.clipboard.writeText(profileUrl);
