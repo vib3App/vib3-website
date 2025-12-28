@@ -75,7 +75,7 @@ export const DEFAULT_BUTTONS: ButtonConfig[] = [
 ];
 
 export const DEFAULT_PREFERENCES: ActionButtonPreferences = {
-  layout: 'horizontal',
+  layout: 'vertical', // Match the Flutter app
   size: 'medium',
   buttons: DEFAULT_BUTTONS,
   positions: {
