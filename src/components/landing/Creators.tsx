@@ -4,6 +4,8 @@
  */
 'use client';
 
+import { Card3D, CardFloating } from '@/components/ui/Card3D';
+
 export function Creators() {
   return (
     <section id="creators" className="py-24 px-6 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent">
@@ -71,43 +73,45 @@ export function Creators() {
 
           {/* Right: Visual */}
           <div className="relative">
-            <div className="aspect-square max-w-md mx-auto bg-gradient-to-br from-white/5 to-black/20 rounded-3xl border border-white/5 p-8 relative overflow-hidden">
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl" />
+            <Card3D intensity={12} glowColor="purple" className="aspect-square max-w-md mx-auto">
+              <div className="p-8 relative overflow-hidden h-full">
+                {/* Decorative elements */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl" />
 
-              {/* Mock earnings card */}
-              <div className="relative bg-[#252B3B] rounded-2xl p-6 mb-6">
-                <div className="text-white/50 text-sm mb-2">This Month's Earnings</div>
-                <div className="text-4xl font-bold text-white mb-1">$12,847</div>
-                <div className="flex items-center gap-2 text-teal-400 text-sm">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                  </svg>
-                  +23% from last month
+                {/* Mock earnings card */}
+                <CardFloating delay={0} className="relative bg-[#252B3B]/80 p-6 mb-6">
+                  <div className="text-white/50 text-sm mb-2">This Month&apos;s Earnings</div>
+                  <div className="text-4xl font-bold text-white mb-1 breathe-glow">$12,847</div>
+                  <div className="flex items-center gap-2 text-teal-400 text-sm">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                    +23% from last month
+                  </div>
+                </CardFloating>
+
+                {/* Mock stats */}
+                <div className="grid grid-cols-2 gap-4">
+                  <CardFloating delay={0.1} className="bg-[#252B3B]/80 p-4">
+                    <div className="text-2xl font-bold text-white">2.4M</div>
+                    <div className="text-white/50 text-xs">Video Views</div>
+                  </CardFloating>
+                  <CardFloating delay={0.2} className="bg-[#252B3B]/80 p-4">
+                    <div className="text-2xl font-bold text-white">847K</div>
+                    <div className="text-white/50 text-xs">Followers</div>
+                  </CardFloating>
+                  <CardFloating delay={0.3} className="bg-[#252B3B]/80 p-4">
+                    <div className="text-2xl font-bold text-white">12.4K</div>
+                    <div className="text-white/50 text-xs">Gifts Received</div>
+                  </CardFloating>
+                  <CardFloating delay={0.4} className="bg-[#252B3B]/80 p-4">
+                    <div className="text-2xl font-bold text-white">3.2K</div>
+                    <div className="text-white/50 text-xs">Subscribers</div>
+                  </CardFloating>
                 </div>
               </div>
-
-              {/* Mock stats */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#252B3B] rounded-xl p-4">
-                  <div className="text-2xl font-bold text-white">2.4M</div>
-                  <div className="text-white/50 text-xs">Video Views</div>
-                </div>
-                <div className="bg-[#252B3B] rounded-xl p-4">
-                  <div className="text-2xl font-bold text-white">847K</div>
-                  <div className="text-white/50 text-xs">Followers</div>
-                </div>
-                <div className="bg-[#252B3B] rounded-xl p-4">
-                  <div className="text-2xl font-bold text-white">12.4K</div>
-                  <div className="text-white/50 text-xs">Gifts Received</div>
-                </div>
-                <div className="bg-[#252B3B] rounded-xl p-4">
-                  <div className="text-2xl font-bold text-white">3.2K</div>
-                  <div className="text-white/50 text-xs">Subscribers</div>
-                </div>
-              </div>
-            </div>
+            </Card3D>
           </div>
         </div>
       </div>

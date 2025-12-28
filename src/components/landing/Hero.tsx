@@ -9,14 +9,10 @@ import { AppStoreButtons } from './AppStoreButtons';
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl" />
-
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full border border-white/10 mb-8">
-          <span className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full border border-white/10 mb-8 float-gentle">
+          <span className="w-2 h-2 bg-teal-400 rounded-full breathe" />
           <span className="text-sm text-white/70">The future of social video</span>
         </div>
 
@@ -37,10 +33,10 @@ export function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <button className="px-8 py-4 bg-gradient-to-r from-purple-500 to-teal-400 rounded-xl font-semibold text-lg transition-all hover:shadow-lg hover:shadow-purple-500/30 hover:scale-105">
+          <button className="px-8 py-4 bg-gradient-to-r from-purple-500 to-teal-400 rounded-xl font-semibold text-lg transition-all hover:shadow-lg hover:shadow-purple-500/30 hover:scale-105 glow-pulse btn-magnetic">
             Start Creating
           </button>
-          <button className="px-8 py-4 glass border border-white/10 hover:border-purple-500/50 rounded-xl font-semibold text-lg transition-all hover:bg-white/10">
+          <button className="px-8 py-4 glass border border-white/10 hover:border-purple-500/50 rounded-xl font-semibold text-lg transition-all hover:bg-white/10 btn-magnetic">
             Watch Demo
           </button>
         </div>
@@ -50,20 +46,20 @@ export function Hero() {
 
         {/* Stats */}
         <div className="flex flex-wrap justify-center gap-12 mt-16 pt-16 border-t border-white/5">
-          <div className="text-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
+          <div className="text-center float-gentle" style={{ animationDelay: '0s' }}>
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent breathe-glow">
               10M+
             </div>
             <div className="text-white/50 text-sm mt-1">Active Creators</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
+          <div className="text-center float-gentle" style={{ animationDelay: '0.5s' }}>
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent breathe-glow">
               500M+
             </div>
             <div className="text-white/50 text-sm mt-1">Videos Shared</div>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
+          <div className="text-center float-gentle" style={{ animationDelay: '1s' }}>
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent breathe-glow">
               $50M+
             </div>
             <div className="text-white/50 text-sm mt-1">Paid to Creators</div>

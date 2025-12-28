@@ -1,8 +1,10 @@
 /**
  * Landing page features section
- * Grid of feature cards
+ * Grid of feature cards with 3D effects
  */
 'use client';
+
+import { CardElevated } from '@/components/ui/Card3D';
 
 const features = [
   {
@@ -63,12 +65,13 @@ export function Features() {
         {/* Features grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <div
+            <CardElevated
               key={index}
-              className="group p-8 glass-card border border-white/5 rounded-2xl hover:border-white/10 transition-all hover:translate-y-[-4px]"
+              glowColor={index % 3 === 0 ? 'purple' : index % 3 === 1 ? 'teal' : 'orange'}
+              className="group p-8"
             >
               {/* Icon with gradient background */}
-              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-2xl mb-5 shadow-lg`}>
+              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-2xl mb-5 shadow-lg float-bob`} style={{ animationDelay: `${index * 0.2}s` }}>
                 {feature.icon}
               </div>
 
@@ -79,7 +82,7 @@ export function Features() {
               <p className="text-white/50 leading-relaxed">
                 {feature.description}
               </p>
-            </div>
+            </CardElevated>
           ))}
         </div>
       </div>
