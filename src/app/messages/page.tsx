@@ -36,7 +36,7 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
       className="flex items-center gap-3 p-4 hover:bg-white/5 transition-colors"
     >
       <div className="relative flex-shrink-0">
-        <div className="w-14 h-14 rounded-full overflow-hidden bg-[#1A1F2E]">
+        <div className="w-14 h-14 rounded-full overflow-hidden glass">
           {(conversation.avatar || participant?.avatar) ? (
             <Image
               src={conversation.avatar || participant?.avatar || ''}
@@ -52,7 +52,7 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
           )}
         </div>
         {participant?.isOnline && (
-          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0A0E1A]" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-transparent" />
         )}
       </div>
 
@@ -71,7 +71,7 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
       </div>
 
       {conversation.unreadCount > 0 && (
-        <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 bg-[#6366F1] rounded-full flex items-center justify-center">
+        <div className="flex-shrink-0 min-w-[20px] h-5 px-1.5 bg-purple-500 rounded-full flex items-center justify-center">
           <span className="text-white text-xs font-medium">{conversation.unreadCount}</span>
         </div>
       )}
@@ -163,19 +163,19 @@ export default function MessagesPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+        <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10">
           <div className="flex items-center justify-between px-4 h-14">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-white">Messages</h1>
@@ -185,7 +185,7 @@ export default function MessagesPage() {
             </div>
             <button
               onClick={() => router.push('/messages/new')}
-              className="w-10 h-10 rounded-full bg-[#1A1F2E] flex items-center justify-center text-white hover:bg-[#252A3E] transition-colors"
+              className="w-10 h-10 rounded-full glass flex items-center justify-center text-white hover:bg-white/10 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -201,7 +201,7 @@ export default function MessagesPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search messages..."
-                className="w-full bg-[#1A1F2E] text-white px-10 py-2.5 rounded-full outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+                className="w-full glass text-white px-10 py-2.5 rounded-full outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500"
               />
               <svg
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30"
@@ -232,7 +232,7 @@ export default function MessagesPage() {
               </p>
               <button
                 onClick={() => router.push('/messages/new')}
-                className="mt-4 px-6 py-2 bg-[#6366F1] text-white rounded-full hover:bg-[#5558E3] transition-colors"
+                className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-500 to-teal-500 text-white rounded-full hover:from-purple-600 hover:to-teal-600 transition-colors"
               >
                 New Message
               </button>

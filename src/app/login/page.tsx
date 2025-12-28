@@ -32,11 +32,11 @@ export default function LoginPage() {
       <Script src="https://accounts.google.com/gsi/client" onLoad={() => form.setGoogleLoaded(true)} />
       <Script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" />
 
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center px-4">
+      <div className="min-h-screen aurora-bg flex items-center justify-center px-4">
         <div className="w-full max-w-md">
           <LoginHeader />
 
-          <div className="bg-[#1A1F2E] rounded-2xl p-8 border border-white/5">
+          <div className="glass-heavy rounded-3xl p-8 border border-white/10">
             {form.mode === 'forgot' ? (
               <>
                 <h1 className="text-2xl font-bold text-white text-center mb-2">Reset Password</h1>

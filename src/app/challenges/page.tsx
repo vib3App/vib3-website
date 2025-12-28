@@ -114,12 +114,12 @@ export default function ChallengesPage() {
       : challenges.filter((c) => c.category === activeCategory);
 
   return (
-    <div className="flex min-h-screen bg-neutral-950">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Hero Header */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-red-500 via-orange-500 to-amber-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-red-500/60 via-orange-500/60 to-amber-500/60 backdrop-blur-3xl" />
           <div className="relative px-6 py-12 text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
               <span>🏆</span> VIB3 Challenges
@@ -145,15 +145,15 @@ export default function ChallengesPage() {
         </div>
 
         {/* Category Tabs */}
-        <div className="flex gap-2 px-6 py-4 overflow-x-auto border-b border-white/10 scrollbar-hide">
+        <div className="flex gap-2 px-6 py-4 overflow-x-auto scrollbar-hide">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all border ${
                 activeCategory === cat.id
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-white/20 shadow-lg shadow-amber-500/20'
+                  : 'glass text-white/70 hover:bg-white/10'
               }`}
             >
               <span>{cat.icon}</span>
@@ -168,7 +168,7 @@ export default function ChallengesPage() {
             <Link
               key={challenge.id}
               href={`/hashtag/${challenge.hashtag}`}
-              className="bg-neutral-900 rounded-2xl overflow-hidden border border-white/10 hover:border-amber-500/50 transition-all hover:scale-[1.02] group"
+              className="glass-card overflow-hidden hover:border-amber-500/50 transition-all hover:scale-[1.02] group"
             >
               {/* Thumbnail */}
               <div className="relative aspect-video bg-gradient-to-br from-amber-500/20 to-orange-500/20">
@@ -250,11 +250,11 @@ export default function ChallengesPage() {
         {/* Create Challenge Modal */}
         {showCreateModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowCreateModal(false)}
           >
             <div
-              className="bg-neutral-900 rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
+              className="glass-heavy rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-2xl font-bold text-white mb-6">Create a Challenge</h2>
@@ -265,7 +265,7 @@ export default function ChallengesPage() {
                   <input
                     type="text"
                     placeholder="Give your challenge a catchy name"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                    className="w-full glass rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                 </div>
 
@@ -276,7 +276,7 @@ export default function ChallengesPage() {
                     <input
                       type="text"
                       placeholder="YourChallengeHashtag"
-                      className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white"
+                      className="w-full glass rounded-xl pl-8 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     />
                   </div>
                 </div>
@@ -286,13 +286,13 @@ export default function ChallengesPage() {
                   <textarea
                     placeholder="Describe what participants should do..."
                     rows={3}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white resize-none"
+                    className="w-full glass rounded-xl px-4 py-3 text-white resize-none placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                 </div>
 
                 <div>
                   <label className="block text-white/70 text-sm mb-2">Category</label>
-                  <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white">
+                  <select className="w-full glass rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50">
                     <option value="dance">Dance</option>
                     <option value="music">Music</option>
                     <option value="comedy">Comedy</option>
@@ -305,7 +305,7 @@ export default function ChallengesPage() {
                   <input
                     type="text"
                     placeholder="e.g., 1000 V3 Coins"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                    className="w-full glass rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                 </div>
 

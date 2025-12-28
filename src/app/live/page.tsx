@@ -18,55 +18,60 @@ function formatViewers(count: number): string {
 function LiveStreamCard({ stream }: { stream: LiveStream }) {
   return (
     <Link href={`/live/${stream.id}`} className="block group">
-      <div className="relative aspect-video bg-[#1A1F2E] rounded-xl overflow-hidden mb-3">
-        {stream.thumbnailUrl ? (
-          <Image
-            src={stream.thumbnailUrl}
-            alt={stream.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#6366F1]/20 to-[#14B8A6]/20 flex items-center justify-center">
-            <svg className="w-12 h-12 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-          </div>
-        )}
-
-        <div className="absolute top-3 left-3 flex items-center gap-2">
-          <span className="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded flex items-center gap-1">
-            <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-            LIVE
-          </span>
-          <span className="px-2 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded">
-            {formatViewers(stream.viewerCount)} watching
-          </span>
-        </div>
-
-        {stream.guests.length > 0 && (
-          <div className="absolute bottom-3 right-3 flex items-center gap-1 px-2 py-1 bg-black/50 backdrop-blur-sm rounded">
-            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-            </svg>
-            <span className="text-white text-xs">{stream.guests.length + 1}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1A1F2E] flex-shrink-0 ring-2 ring-red-500">
-          {stream.hostAvatar ? (
-            <Image src={stream.hostAvatar} alt={stream.hostUsername} width={40} height={40} className="object-cover" />
+      <div className="glass-card p-2 hover:border-red-500/30">
+        <div className="relative aspect-video rounded-xl overflow-hidden mb-3">
+          {stream.thumbnailUrl ? (
+            <Image
+              src={stream.thumbnailUrl}
+              alt={stream.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white/50 font-medium">
-              {stream.hostUsername.charAt(0).toUpperCase()}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-red-500/20 flex items-center justify-center">
+              <svg className="w-12 h-12 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+          )}
+
+          <div className="absolute top-3 left-3 flex items-center gap-2">
+            <span className="px-2.5 py-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full flex items-center gap-1.5 shadow-lg shadow-red-500/30">
+              <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              LIVE
+            </span>
+            <span className="px-2.5 py-1 glass text-white text-xs rounded-full">
+              {formatViewers(stream.viewerCount)} watching
+            </span>
+          </div>
+
+          {stream.guests.length > 0 && (
+            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1 glass rounded-full">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+              <span className="text-white text-xs font-medium">{stream.guests.length + 1}</span>
             </div>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="text-white font-medium truncate">{stream.title}</h3>
-          <p className="text-white/50 text-sm">@{stream.hostUsername}</p>
+
+        <div className="flex items-start gap-3 px-1">
+          <div className="relative flex-shrink-0">
+            <div className="absolute inset-0 bg-red-500 rounded-full blur-sm opacity-50 animate-pulse" />
+            <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-red-500">
+              {stream.hostAvatar ? (
+                <Image src={stream.hostAvatar} alt={stream.hostUsername} width={40} height={40} className="object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-red-500 flex items-center justify-center text-white font-bold">
+                  {stream.hostUsername.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-medium truncate group-hover:text-white/90">{stream.title}</h3>
+            <p className="text-white/50 text-sm">@{stream.hostUsername}</p>
+          </div>
         </div>
       </div>
     </Link>
@@ -128,50 +133,54 @@ export default function LivePage() {
   const displayedStreams = activeTab === 'following' ? followingStreams : streams;
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
-          <div className="flex items-center justify-between px-4 h-14">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              <h1 className="text-xl font-bold text-white">LIVE</h1>
+        <header className="sticky top-0 z-40">
+          <div className="glass-heavy mx-4 mt-3 rounded-2xl">
+            <div className="flex items-center justify-between px-4 h-14">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-red-500 rounded-full blur-md opacity-50 animate-pulse" />
+                  <span className="relative w-3 h-3 bg-red-500 rounded-full block" />
+                </div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-red-400 to-pink-400 bg-clip-text text-transparent">LIVE</h1>
+              </div>
+              <button
+                onClick={handleGoLive}
+                className="relative flex items-center gap-2 px-5 py-2 text-white text-sm font-semibold rounded-xl overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-pink-500 group-hover:opacity-90 transition-opacity" />
+                <svg className="relative w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span className="relative">Go Live</span>
+              </button>
             </div>
-            <button
-              onClick={handleGoLive}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white text-sm font-semibold rounded-full hover:opacity-90 transition-opacity"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Go Live
-            </button>
-          </div>
 
-          {isAuthenticated && (
-            <div className="flex border-b border-white/5">
-              <button
-                onClick={() => setActiveTab('discover')}
-                className={`flex-1 py-3 text-sm font-medium relative ${activeTab === 'discover' ? 'text-white' : 'text-white/50'}`}
-              >
-                Discover
-                {activeTab === 'discover' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />}
-              </button>
-              <button
-                onClick={() => setActiveTab('following')}
-                className={`flex-1 py-3 text-sm font-medium relative ${activeTab === 'following' ? 'text-white' : 'text-white/50'}`}
-              >
-                Following
-                {followingStreams.length > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                    {followingStreams.length}
-                  </span>
-                )}
-                {activeTab === 'following' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />}
-              </button>
-            </div>
-          )}
+            {isAuthenticated && (
+              <div className="flex px-2 pb-2">
+                <button
+                  onClick={() => setActiveTab('discover')}
+                  className={`flex-1 py-2 text-sm font-medium relative rounded-xl transition-all ${activeTab === 'discover' ? 'text-white bg-white/10' : 'text-white/50 hover:text-white/80'}`}
+                >
+                  Discover
+                </button>
+                <button
+                  onClick={() => setActiveTab('following')}
+                  className={`flex-1 py-2 text-sm font-medium relative rounded-xl transition-all flex items-center justify-center gap-2 ${activeTab === 'following' ? 'text-white bg-white/10' : 'text-white/50 hover:text-white/80'}`}
+                >
+                  Following
+                  {followingStreams.length > 0 && (
+                    <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full animate-pulse">
+                      {followingStreams.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         <div className="max-w-4xl mx-auto px-4 py-6">

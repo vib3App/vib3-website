@@ -55,11 +55,11 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
 
   return (
-    <div className="flex min-h-screen bg-neutral-950">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Header */}
-        <div className="px-6 py-8 border-b border-white/10">
+        <div className="px-6 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -72,10 +72,10 @@ export default function AnalyticsPage() {
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     timeRange === range
-                      ? 'bg-amber-500 text-white'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10'
+                      ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white'
+                      : 'glass text-white/70 hover:bg-white/10'
                   }`}
                 >
                   {range === '7d' && 'Last 7 days'}
@@ -96,7 +96,7 @@ export default function AnalyticsPage() {
               {overviewStats.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-neutral-900 rounded-xl p-4 border border-white/10"
+                  className="glass-card p-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-2xl">{stat.icon}</span>
@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
           {/* Chart Placeholder */}
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">Views Over Time</h2>
-            <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+            <div className="glass-card p-6">
               <div className="h-64 flex items-end justify-between gap-2">
                 {[45, 62, 78, 55, 89, 95, 72, 88, 92, 68, 75, 82, 90, 85].map((height, i) => (
                   <div
@@ -139,7 +139,7 @@ export default function AnalyticsPage() {
           {/* Top Videos */}
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">Top Performing Videos</h2>
-            <div className="bg-neutral-900 rounded-xl border border-white/10 overflow-hidden">
+            <div className="glass-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -194,7 +194,7 @@ export default function AnalyticsPage() {
             <h2 className="text-xl font-semibold text-white mb-4">Audience Insights</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Age Distribution */}
-              <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+              <div className="glass-card p-6">
                 <h3 className="text-white font-medium mb-4">Age Distribution</h3>
                 <div className="space-y-3">
                   {audienceData.ageGroups.map((group) => (
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full"
+                          className="h-full bg-gradient-to-r from-purple-500 to-teal-400 rounded-full"
                           style={{ width: `${group.percentage}%` }}
                         />
                       </div>
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Gender Split */}
-              <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+              <div className="glass-card p-6">
                 <h3 className="text-white font-medium mb-4">Gender Split</h3>
                 <div className="flex justify-center mb-4">
                   <div className="relative w-32 h-32">
@@ -255,7 +255,7 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Top Countries */}
-              <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+              <div className="glass-card p-6">
                 <h3 className="text-white font-medium mb-4">Top Countries</h3>
                 <div className="space-y-3">
                   {audienceData.topCountries.map((country, index) => (

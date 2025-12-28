@@ -14,16 +14,16 @@ export default function ConversationPage() {
 
   if (!conv.isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex flex-col">
+    <div className="min-h-screen aurora-bg flex flex-col">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+      <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10">
         <div className="flex items-center gap-3 px-4 h-14">
           <button onClick={conv.goBack} className="text-white/70 hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,7 @@ export default function ConversationPage() {
           {conv.conversation && (
             <>
               <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1A1F2E]">
+                <div className="w-10 h-10 rounded-full overflow-hidden glass">
                   {(conv.conversation.avatar || conv.participant?.avatar) ? (
                     <Image
                       src={conv.conversation.avatar || conv.participant?.avatar || ''}
@@ -50,7 +50,7 @@ export default function ConversationPage() {
                   )}
                 </div>
                 {conv.participant?.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0A0E1A]" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-transparent" />
                 )}
               </div>
 
@@ -91,7 +91,7 @@ export default function ConversationPage() {
                 <div key={message.id}>
                   {showDateHeader && (
                     <div className="flex justify-center my-4">
-                      <span className="text-white/30 text-xs bg-[#1A1F2E] px-3 py-1 rounded-full">
+                      <span className="text-white/30 text-xs glass px-3 py-1 rounded-full">
                         {formatDateHeader(message.createdAt)}
                       </span>
                     </div>
@@ -106,7 +106,7 @@ export default function ConversationPage() {
       </div>
 
       {/* Input */}
-      <div className="sticky bottom-0 bg-[#0A0E1A] border-t border-white/5 p-4">
+      <div className="sticky bottom-0 glass-heavy border-t border-white/10 p-4">
         <div className="flex items-center gap-3">
           <button onClick={() => conv.setShowEmojiPicker(!conv.showEmojiPicker)} className="text-white/50 hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +114,7 @@ export default function ConversationPage() {
             </svg>
           </button>
 
-          <div className="flex-1 bg-[#1A1F2E] rounded-full px-4 py-2">
+          <div className="flex-1 glass rounded-full px-4 py-2">
             <input
               ref={conv.inputRef}
               type="text"
@@ -130,7 +130,7 @@ export default function ConversationPage() {
             <button
               onClick={conv.handleSend}
               disabled={conv.isSending}
-              className="w-10 h-10 bg-[#6366F1] rounded-full flex items-center justify-center hover:bg-[#5558E3] disabled:opacity-50"
+              className="w-10 h-10 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full flex items-center justify-center hover:from-purple-600 hover:to-teal-600 disabled:opacity-50"
             >
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />

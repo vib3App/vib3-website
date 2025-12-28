@@ -28,12 +28,12 @@ export default function CoinsPage() {
   const [showGiftModal, setShowGiftModal] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-neutral-950">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Hero Section */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500 via-orange-500 to-yellow-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/60 via-orange-500/60 to-yellow-500/60 backdrop-blur-3xl" />
 
           {/* Animated scrolling text */}
           <div className="absolute top-4 left-0 w-[200%] text-white/20 text-sm whitespace-nowrap animate-scroll">
@@ -45,15 +45,15 @@ export default function CoinsPage() {
             <h1 className="text-4xl md:text-6xl font-bold mb-4">VIB3 Coins</h1>
             <p className="text-xl text-white/90 mb-8">Your virtual currency for the VIB3 ecosystem</p>
 
-            {/* Balance Cards */}
+            {/* Balance Cards - Glass */}
             <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
-              <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-6 min-w-[200px]">
-                <div className="text-4xl font-bold">{coinBalance.toLocaleString()}</div>
-                <div className="text-white/80">Your VIB3 Coins</div>
+              <div className="glass-heavy rounded-2xl px-8 py-6 min-w-[200px]">
+                <div className="text-4xl font-bold bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text text-transparent">{coinBalance.toLocaleString()}</div>
+                <div className="text-white/70">Your VIB3 Coins</div>
               </div>
-              <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-6 min-w-[200px]">
-                <div className="text-4xl font-bold">${(coinBalance * 0.01).toFixed(2)}</div>
-                <div className="text-white/80">USD Value</div>
+              <div className="glass-heavy rounded-2xl px-8 py-6 min-w-[200px]">
+                <div className="text-4xl font-bold text-white">${(coinBalance * 0.01).toFixed(2)}</div>
+                <div className="text-white/70">USD Value</div>
               </div>
             </div>
 
@@ -105,10 +105,10 @@ export default function CoinsPage() {
               {coinPackages.map((pkg) => (
                 <div
                   key={pkg.id}
-                  className={`relative bg-neutral-900 rounded-2xl p-6 border transition-all hover:scale-105 cursor-pointer ${
+                  className={`relative glass-card p-6 transition-all hover:scale-105 cursor-pointer ${
                     pkg.popular
                       ? 'border-amber-500 ring-2 ring-amber-500/20'
-                      : 'border-white/10 hover:border-white/20'
+                      : 'hover:border-amber-500/30'
                   }`}
                 >
                   {pkg.popular && (
@@ -138,55 +138,55 @@ export default function CoinsPage() {
 
           {activeTab === 'earn' && (
             <div className="space-y-4">
-              <div className="bg-neutral-900 rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-2xl">
+              <div className="glass-card p-6 hover:border-pink-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-2xl">
                     📹
                   </div>
                   <div>
                     <h3 className="text-white font-semibold text-lg">Create Viral Content</h3>
                     <p className="text-white/50">Earn up to 1000 coins per viral video</p>
                   </div>
-                  <div className="ml-auto text-amber-500 font-bold">+1000</div>
+                  <div className="ml-auto px-3 py-1 bg-amber-500/20 text-amber-400 font-bold rounded-full">+1000</div>
                 </div>
               </div>
 
-              <div className="bg-neutral-900 rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl">
+              <div className="glass-card p-6 hover:border-cyan-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl">
                     👥
                   </div>
                   <div>
                     <h3 className="text-white font-semibold text-lg">Invite Friends</h3>
                     <p className="text-white/50">Get 50 coins for each friend who joins</p>
                   </div>
-                  <div className="ml-auto text-amber-500 font-bold">+50</div>
+                  <div className="ml-auto px-3 py-1 bg-amber-500/20 text-amber-400 font-bold rounded-full">+50</div>
                 </div>
               </div>
 
-              <div className="bg-neutral-900 rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl">
+              <div className="glass-card p-6 hover:border-green-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-2xl">
                     ✅
                   </div>
                   <div>
                     <h3 className="text-white font-semibold text-lg">Daily Check-in</h3>
                     <p className="text-white/50">Earn 5-25 coins daily just for opening the app</p>
                   </div>
-                  <div className="ml-auto text-amber-500 font-bold">+5-25</div>
+                  <div className="ml-auto px-3 py-1 bg-amber-500/20 text-amber-400 font-bold rounded-full">+5-25</div>
                 </div>
               </div>
 
-              <div className="bg-neutral-900 rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-2xl">
+              <div className="glass-card p-6 hover:border-amber-500/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-2xl">
                     🏆
                   </div>
                   <div>
                     <h3 className="text-white font-semibold text-lg">Complete Challenges</h3>
                     <p className="text-white/50">Participate in weekly challenges for coins</p>
                   </div>
-                  <div className="ml-auto text-amber-500 font-bold">+100-500</div>
+                  <div className="ml-auto px-3 py-1 bg-amber-500/20 text-amber-400 font-bold rounded-full">+100-500</div>
                 </div>
               </div>
             </div>

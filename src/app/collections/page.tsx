@@ -11,25 +11,25 @@ export default function CollectionsPage() {
 
   if (!c.isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
             <h1 className="text-xl font-bold text-white">Collections</h1>
             {c.activeTab === 'playlists' && (
               <button
                 onClick={() => c.setShowCreateModal(true)}
-                className="p-2 text-[#6366F1] hover:text-[#5558E3]"
+                className="p-2 text-purple-400 hover:text-purple-300"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -56,7 +56,7 @@ export default function CollectionsPage() {
                 <p className="text-white/50">No playlists yet</p>
                 <button
                   onClick={() => c.setShowCreateModal(true)}
-                  className="mt-4 px-6 py-2 bg-[#6366F1] text-white rounded-full hover:opacity-90 transition-opacity"
+                  className="mt-4 px-6 py-2 bg-gradient-to-r from-purple-500 to-teal-400 text-white rounded-full hover:opacity-90 transition-opacity"
                 >
                   Create your first playlist
                 </button>
@@ -81,7 +81,7 @@ export default function CollectionsPage() {
               </p>
               <Link
                 href="/feed"
-                className="inline-block mt-4 px-6 py-2 bg-[#6366F1] text-white rounded-full hover:opacity-90 transition-opacity"
+                className="inline-block mt-4 px-6 py-2 bg-gradient-to-r from-purple-500 to-teal-400 text-white rounded-full hover:opacity-90 transition-opacity"
               >
                 Browse videos
               </Link>

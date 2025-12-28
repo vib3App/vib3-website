@@ -29,8 +29,8 @@ export default function ProfilePage() {
   }, [isAuthenticated, isLoading, user, router]);
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex flex-col items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1] mb-4" />
+    <div className="min-h-screen aurora-bg flex flex-col items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4" />
       <div className="text-white/30 text-xs">{debugInfo}</div>
     </div>
   );

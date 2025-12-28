@@ -66,12 +66,12 @@ export default function CreatorFundPage() {
   const availableBalance = 1870.46;
 
   return (
-    <div className="flex min-h-screen bg-neutral-950">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Hero Header */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-600 via-emerald-500 to-teal-500" />
+          <div className="absolute inset-0 bg-gradient-to-br from-green-600/60 via-emerald-500/60 to-teal-500/60 backdrop-blur-3xl" />
           <div className="relative px-6 py-12 text-center text-white">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-4">
               <span className="w-2 h-2 bg-green-300 rounded-full animate-pulse" />
@@ -85,17 +85,17 @@ export default function CreatorFundPage() {
             {/* Balance Cards */}
             {isEnrolled && (
               <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-6">
-                <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-6 min-w-[200px]">
-                  <div className="text-4xl font-bold">${totalEarnings.toFixed(2)}</div>
-                  <div className="text-white/80">Total Earnings</div>
+                <div className="glass-heavy rounded-2xl px-8 py-6 min-w-[200px]">
+                  <div className="text-4xl font-bold bg-gradient-to-r from-green-300 to-emerald-300 bg-clip-text text-transparent">${totalEarnings.toFixed(2)}</div>
+                  <div className="text-white/70">Total Earnings</div>
                 </div>
-                <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-6 min-w-[200px]">
-                  <div className="text-4xl font-bold">${availableBalance.toFixed(2)}</div>
-                  <div className="text-white/80">Available to Withdraw</div>
+                <div className="glass-heavy rounded-2xl px-8 py-6 min-w-[200px]">
+                  <div className="text-4xl font-bold text-white">${availableBalance.toFixed(2)}</div>
+                  <div className="text-white/70">Available to Withdraw</div>
                 </div>
-                <div className="bg-white/20 backdrop-blur-md rounded-2xl px-8 py-6 min-w-[200px]">
-                  <div className="text-4xl font-bold">${pendingBalance.toFixed(2)}</div>
-                  <div className="text-white/80">Pending</div>
+                <div className="glass-heavy rounded-2xl px-8 py-6 min-w-[200px]">
+                  <div className="text-4xl font-bold text-white">${pendingBalance.toFixed(2)}</div>
+                  <div className="text-white/70">Pending</div>
                 </div>
               </div>
             )}
@@ -120,7 +120,7 @@ export default function CreatorFundPage() {
                   className={`relative rounded-xl p-4 border-2 transition-all ${
                     tier.current
                       ? 'border-white bg-gradient-to-br ' + tier.color
-                      : 'border-white/10 bg-neutral-900'
+                      : 'glass-card'
                   }`}
                 >
                   {tier.current && (
@@ -145,7 +145,7 @@ export default function CreatorFundPage() {
           {/* Eligibility Requirements */}
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">Eligibility Requirements</h2>
-            <div className="bg-neutral-900 rounded-xl border border-white/10 overflow-hidden">
+            <div className="glass-card overflow-hidden">
               {requirements.map((req, index) => (
                 <div
                   key={req.id}
@@ -180,7 +180,7 @@ export default function CreatorFundPage() {
           {/* Earnings History */}
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">Earnings History</h2>
-            <div className="bg-neutral-900 rounded-xl border border-white/10 overflow-hidden">
+            <div className="glass-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -224,21 +224,21 @@ export default function CreatorFundPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">Tips to Earn More</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+              <div className="glass-card p-6 hover:border-green-500/30">
                 <div className="text-3xl mb-3">📈</div>
                 <h3 className="text-white font-semibold mb-2">Post Consistently</h3>
                 <p className="text-white/50 text-sm">
                   Upload at least 3-5 videos per week to maintain engagement and grow your audience.
                 </p>
               </div>
-              <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+              <div className="glass-card p-6 hover:border-green-500/30">
                 <div className="text-3xl mb-3">🎯</div>
                 <h3 className="text-white font-semibold mb-2">Join Challenges</h3>
                 <p className="text-white/50 text-sm">
                   Participate in trending challenges to increase your visibility and reach new audiences.
                 </p>
               </div>
-              <div className="bg-neutral-900 rounded-xl p-6 border border-white/10">
+              <div className="glass-card p-6 hover:border-green-500/30">
                 <div className="text-3xl mb-3">💬</div>
                 <h3 className="text-white font-semibold mb-2">Engage with Community</h3>
                 <p className="text-white/50 text-sm">
@@ -252,11 +252,11 @@ export default function CreatorFundPage() {
         {/* Withdraw Modal */}
         {showWithdrawModal && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowWithdrawModal(false)}
           >
             <div
-              className="bg-neutral-900 rounded-2xl p-6 max-w-md w-full"
+              className="glass-heavy rounded-2xl p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-2xl font-bold text-white mb-2">Withdraw Funds</h2>
@@ -270,14 +270,14 @@ export default function CreatorFundPage() {
                     type="number"
                     placeholder="0.00"
                     max={availableBalance}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white"
+                    className="w-full glass rounded-xl pl-8 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-green-500/50"
                   />
                 </div>
               </div>
 
               <div className="mb-6">
                 <label className="block text-white/70 text-sm mb-2">Withdraw to</label>
-                <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white">
+                <select className="w-full glass rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-green-500/50">
                   <option>PayPal (***@email.com)</option>
                   <option>Bank Account (****1234)</option>
                   <option>Add new payment method</option>

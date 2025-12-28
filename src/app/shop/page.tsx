@@ -109,19 +109,22 @@ export default function ShopPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-neutral-950">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
-        {/* Hero Header */}
+        {/* Hero Header - Liquid Glass */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400" />
-          <div className="relative px-6 py-12 text-center text-white">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">VIB3 Shop</h1>
-            <p className="text-xl text-white/90 mb-6">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/50 via-pink-500/50 to-teal-400/50" />
+          <div className="absolute inset-0 backdrop-blur-3xl" />
+          <div className="relative px-6 py-16 text-center text-white">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
+              VIB3 Shop
+            </h1>
+            <p className="text-xl text-white/80 mb-8">
               Exclusive items, effects, and creator tools
             </p>
 
-            {/* Search */}
+            {/* Search - Glass Style */}
             <div className="max-w-md mx-auto relative">
               <svg
                 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50"
@@ -141,13 +144,13 @@ export default function ShopPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search products..."
-                className="w-full bg-white/20 backdrop-blur-sm border border-white/30 rounded-full py-3 pl-12 pr-4 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="w-full glass-heavy rounded-2xl py-4 pl-12 pr-4 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
               />
             </div>
 
-            {/* Cart indicator */}
+            {/* Cart indicator - Glass */}
             {cartItems.length > 0 && (
-              <div className="absolute top-4 right-4 bg-white text-purple-600 px-4 py-2 rounded-full font-semibold flex items-center gap-2">
+              <div className="absolute top-4 right-4 glass px-4 py-2 rounded-xl font-semibold flex items-center gap-2 text-white">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -156,26 +159,26 @@ export default function ShopPage() {
                     d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
                   />
                 </svg>
-                {cartItems.length} items
+                <span className="px-2 py-0.5 bg-purple-500 rounded-full text-sm">{cartItems.length}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex gap-2 px-6 py-4 overflow-x-auto border-b border-white/10 scrollbar-hide">
+        {/* Category Tabs - Glass Pills */}
+        <div className="flex gap-2 px-6 py-4 overflow-x-auto scrollbar-hide">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all border ${
                 activeCategory === cat.id
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'bg-white/5 text-white/70 hover:bg-white/10'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-white/20 shadow-lg shadow-purple-500/20'
+                  : 'glass text-white/70 hover:text-white hover:bg-white/10'
               }`}
             >
               <span>{cat.icon}</span>
-              <span>{cat.label}</span>
+              <span className="font-medium">{cat.label}</span>
             </button>
           ))}
         </div>
@@ -185,7 +188,7 @@ export default function ShopPage() {
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-neutral-900 rounded-2xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all group"
+              className="glass-card hover:border-purple-500/30 transition-all group"
             >
               {/* Product Image */}
               <div className="relative aspect-square bg-gradient-to-br from-purple-500/20 to-pink-500/20">

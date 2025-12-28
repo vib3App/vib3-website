@@ -33,7 +33,7 @@ function SearchContent() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+      <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
         <SearchHeader
           searchQuery={search.searchQuery}
           onSearchQueryChange={search.setSearchQuery}
@@ -102,7 +102,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">

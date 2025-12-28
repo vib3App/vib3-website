@@ -28,9 +28,9 @@ const SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
 
 function ProfileCard({ user }: { user: { username: string; email: string; profilePicture?: string } | null }) {
   return (
-    <Link href="/profile" className="flex items-center gap-4 p-4 bg-[#1A1F2E] rounded-2xl mb-6 hover:bg-[#252A3E] transition-colors">
-      <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-[#6366F1] to-[#14B8A6] p-0.5">
-        <div className="w-full h-full rounded-full overflow-hidden bg-[#1A1F2E]">
+    <Link href="/profile" className="flex items-center gap-4 p-4 glass-card rounded-2xl mb-6 hover:bg-white/10 transition-colors">
+      <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-teal-400 p-0.5">
+        <div className="w-full h-full rounded-full overflow-hidden glass-card">
           {user?.profilePicture ? (
             <Image src={user.profilePicture} alt={user.username} width={64} height={64} className="object-cover" />
           ) : (
@@ -68,17 +68,17 @@ export default function SettingsPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center gap-4 px-4 h-14">
             <button onClick={() => router.back()} className="text-white/50 hover:text-white md:hidden">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,10 +97,10 @@ export default function SettingsPage() {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
                   activeSection === section.id
-                    ? 'bg-[#6366F1] text-white'
-                    : 'bg-[#1A1F2E] text-white/70 hover:bg-[#252A3E]'
+                    ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white'
+                    : 'glass text-white/70 hover:bg-white/10'
                 }`}
               >
                 <span>{section.icon}</span>

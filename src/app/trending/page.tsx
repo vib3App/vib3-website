@@ -66,12 +66,12 @@ export default function TrendingPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
               <span className="text-2xl">🔥</span>
@@ -80,7 +80,7 @@ export default function TrendingPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/5">
+          <div className="flex gap-2 p-2">
             {[
               { id: 'videos', label: 'Videos' },
               { id: 'hashtags', label: 'Hashtags' },
@@ -89,14 +89,13 @@ export default function TrendingPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex-1 py-3 text-sm font-medium relative ${
-                  activeTab === tab.id ? 'text-white' : 'text-white/50'
+                className={`flex-1 py-2 text-sm font-medium rounded-xl transition-all ${
+                  activeTab === tab.id
+                    ? 'glass-heavy text-white'
+                    : 'text-white/50 hover:text-white/70'
                 }`}
               >
                 {tab.label}
-                {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />
-                )}
               </button>
             ))}
           </div>
@@ -106,7 +105,7 @@ export default function TrendingPage() {
           {isLoading ? (
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
               {[...Array(12)].map((_, i) => (
-                <div key={i} className="aspect-[9/16] bg-[#1A1F2E] rounded-lg animate-pulse" />
+                <div key={i} className="aspect-[9/16] glass rounded-lg animate-pulse" />
               ))}
             </div>
           ) : (
@@ -118,7 +117,7 @@ export default function TrendingPage() {
                     <Link
                       key={video.id}
                       href={`/feed?video=${video.id}`}
-                      className="relative aspect-[9/16] bg-[#1A1F2E] rounded-lg overflow-hidden group"
+                      className="relative aspect-[9/16] glass-card rounded-lg overflow-hidden group"
                     >
                       {video.thumbnailUrl ? (
                         <Image
@@ -164,10 +163,10 @@ export default function TrendingPage() {
                     <Link
                       key={hashtag.tag}
                       href={`/hashtag/${hashtag.tag}`}
-                      className="flex items-center gap-4 p-4 bg-[#1A1F2E] rounded-xl hover:bg-[#252A3E] transition-colors"
+                      className="flex items-center gap-4 p-4 glass-card hover:bg-white/10 transition-colors"
                     >
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                        index < 3 ? 'bg-gradient-to-br from-[#6366F1] to-[#14B8A6]' : 'bg-white/10'
+                        index < 3 ? 'bg-gradient-to-br from-purple-500 to-teal-400' : 'bg-white/10'
                       }`}>
                         {index + 1}
                       </div>

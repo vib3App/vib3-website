@@ -29,8 +29,8 @@ export default function UploadPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-purple-500 animate-spin" />
       </div>
     );
   }
@@ -39,7 +39,7 @@ export default function UploadPage() {
   const scheduledDate = isScheduled ? `${upload.scheduleDate}T${upload.scheduleTime}` : undefined;
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
@@ -165,22 +165,32 @@ function UploadHeader({
 
   return (
     <div className="flex items-center justify-between mb-8">
-      <h1 className="text-2xl font-bold text-white">Create</h1>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        {showBackButton && (
+          <button
+            onClick={onBack}
+            className="p-2 glass rounded-xl text-white/60 hover:text-white transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        )}
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-teal-400 bg-clip-text text-transparent">
+          Create
+        </h1>
+      </div>
+      <div className="flex items-center gap-3">
         {draftsCount > 0 && step === 'select' && (
           <button
             onClick={onToggleDrafts}
-            className="flex items-center gap-2 text-white/70 hover:text-white"
+            className="flex items-center gap-2 px-4 py-2 glass rounded-xl text-white/70 hover:text-white transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Drafts ({draftsCount})
-          </button>
-        )}
-        {showBackButton && (
-          <button onClick={onBack} className="text-white/50 hover:text-white">
-            Back
+            Drafts
+            <span className="px-1.5 py-0.5 bg-purple-500/30 text-purple-300 text-xs rounded-full">{draftsCount}</span>
           </button>
         )}
       </div>

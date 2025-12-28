@@ -8,9 +8,9 @@ export default function CollabRoomsPage() {
   const c = useCollabRooms();
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen aurora-bg text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
+      <header className="sticky top-0 z-50 glass-heavy mx-4 mt-3 rounded-2xl">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <h1 className="text-xl font-bold">Collab Rooms</h1>
           <div className="flex items-center gap-3">
@@ -33,7 +33,7 @@ export default function CollabRoomsPage() {
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {/* Explainer Section */}
-        <div className="mb-8 p-6 bg-gradient-to-r from-blue-500/20 to-teal-500/20 border border-blue-500/30 rounded-2xl">
+        <div className="mb-8 p-6 glass-card bg-gradient-to-r from-blue-500/20 to-teal-500/20">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center flex-shrink-0">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,16 +59,16 @@ export default function CollabRoomsPage() {
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => c.switchTab('discover')}
-            className={`px-4 py-2 rounded-full font-medium transition ${
-              c.tab === 'discover' ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20'
+            className={`px-4 py-2 rounded-full font-medium transition-all ${
+              c.tab === 'discover' ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white' : 'glass hover:bg-white/10'
             }`}
           >
             Discover
           </button>
           <button
             onClick={() => c.switchTab('my')}
-            className={`px-4 py-2 rounded-full font-medium transition ${
-              c.tab === 'my' ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20'
+            className={`px-4 py-2 rounded-full font-medium transition-all ${
+              c.tab === 'my' ? 'bg-gradient-to-r from-purple-500 to-teal-400 text-white' : 'glass hover:bg-white/10'
             }`}
           >
             My Collabs

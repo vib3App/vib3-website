@@ -10,19 +10,19 @@ export default function NotificationsPage() {
 
   if (!n.isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
             <h1 className="text-xl font-bold text-white">Notifications</h1>
             {n.unreadCount > 0 && (
@@ -40,7 +40,7 @@ export default function NotificationsPage() {
             <div className="px-4 pb-3">
               <button
                 onClick={n.handleEnableNotifications}
-                className="w-full bg-[#1A1F2E] text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-[#252A3E] transition-colors"
+                className="w-full glass text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-white/10 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -51,28 +51,26 @@ export default function NotificationsPage() {
           )}
 
           {/* Tabs */}
-          <div className="flex border-b border-white/5">
+          <div className="flex gap-2 p-2">
             <button
               onClick={() => n.setActiveTab('all')}
-              className={`flex-1 py-3 text-sm font-medium relative ${
-                n.activeTab === 'all' ? 'text-white' : 'text-white/50'
+              className={`flex-1 py-2 text-sm font-medium rounded-xl transition-all ${
+                n.activeTab === 'all'
+                  ? 'glass-heavy text-white'
+                  : 'text-white/50 hover:text-white/70'
               }`}
             >
               All Activity
-              {n.activeTab === 'all' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />
-              )}
             </button>
             <button
               onClick={() => n.setActiveTab('mentions')}
-              className={`flex-1 py-3 text-sm font-medium relative ${
-                n.activeTab === 'mentions' ? 'text-white' : 'text-white/50'
+              className={`flex-1 py-2 text-sm font-medium rounded-xl transition-all ${
+                n.activeTab === 'mentions'
+                  ? 'glass-heavy text-white'
+                  : 'text-white/50 hover:text-white/70'
               }`}
             >
               Mentions
-              {n.activeTab === 'mentions' && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />
-              )}
             </button>
           </div>
         </header>

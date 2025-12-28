@@ -71,16 +71,16 @@ export default function NewMessagePage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A]">
+    <div className="min-h-screen aurora-bg">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+      <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10">
         <div className="flex items-center gap-3 px-4 h-14">
           <button onClick={() => router.back()} className="text-white/70 hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +100,7 @@ export default function NewMessagePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search for people..."
               autoFocus
-              className="w-full bg-[#1A1F2E] text-white pl-12 pr-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+              className="w-full glass text-white pl-12 pr-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500"
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function NewMessagePage() {
       <div className="p-4">
         {isSearching ? (
           <div className="flex justify-center py-8">
-            <div className="w-6 h-6 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : searchResults.length > 0 ? (
           <div className="space-y-2">
@@ -124,7 +124,7 @@ export default function NewMessagePage() {
                 disabled={isCreating}
                 className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors disabled:opacity-50"
               >
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1A1F2E] flex-shrink-0">
+                <div className="w-12 h-12 rounded-full overflow-hidden glass flex-shrink-0">
                   {user.profilePicture ? (
                     <Image
                       src={user.profilePicture}
@@ -146,7 +146,7 @@ export default function NewMessagePage() {
                       {user.displayName || user.username}
                     </span>
                     {user.isVerified && (
-                      <svg className="w-4 h-4 text-[#6366F1]" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     )}

@@ -10,7 +10,7 @@ import type { Video } from '@/types';
 
 function VideoThumbnail({ video }: { video: Video }) {
   return (
-    <Link href={`/feed?video=${video.id}`} className="relative aspect-[9/16] bg-[#1A1F2E] rounded-lg overflow-hidden group">
+    <Link href={`/feed?video=${video.id}`} className="relative aspect-[9/16] glass-card rounded-lg overflow-hidden group">
       {video.thumbnailUrl ? (
         <Image src={video.thumbnailUrl} alt={video.title || video.caption || 'Video thumbnail'} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
       ) : (
@@ -34,15 +34,15 @@ export default function ProfilePage() {
 
   if (p.isLoading) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
 
   if (p.error || !p.profile) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen aurora-bg flex flex-col items-center justify-center px-4">
         <div className="text-white/50 text-lg mb-4">{p.error || 'User not found'}</div>
         <Link href="/feed" className="text-[#6366F1] hover:underline">Go back to feed</Link>
       </div>
@@ -50,7 +50,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A]">
+    <div className="min-h-screen aurora-bg">
       <ProfileHeader profile={p.profile} onBack={p.goBack} onQRClick={() => p.setShowQRModal(true)} showMoreMenu={p.showMoreMenu} onToggleMenu={() => p.setShowMoreMenu(!p.showMoreMenu)} onCopyLink={p.copyProfileLink} isOwnProfile={p.isOwnProfile} isAuthenticated={p.isAuthenticated} />
 
       <div className="max-w-3xl mx-auto px-4 py-6">
@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
 function ProfileHeader({ profile, onBack, onQRClick, showMoreMenu, onToggleMenu, onCopyLink, isOwnProfile, isAuthenticated }: { profile: UserProfile; onBack: () => void; onQRClick: () => void; showMoreMenu: boolean; onToggleMenu: () => void; onCopyLink: () => void; isOwnProfile: boolean; isAuthenticated: boolean }) {
   return (
-    <header className="sticky top-0 z-50 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+    <header className="sticky top-0 z-50 glass-card border-b border-white/10">
       <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
         <button onClick={onBack} className="text-white p-2 -ml-2">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -87,7 +87,7 @@ function ProfileHeader({ profile, onBack, onQRClick, showMoreMenu, onToggleMenu,
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" /></svg>
             </button>
             {showMoreMenu && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-[#1A1F2E] rounded-xl shadow-xl border border-white/10 py-2 z-50">
+              <div className="absolute right-0 top-full mt-2 w-48 glass-card rounded-xl shadow-xl py-2 z-50">
                 <button onClick={onCopyLink} className="w-full px-4 py-2 text-left text-white hover:bg-white/5 flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                   Copy Link
@@ -117,7 +117,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
   return (
     <div className="flex flex-col items-center text-center mb-6">
       <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-[#6366F1] to-[#14B8A6] p-0.5 mb-4">
-        <div className="w-full h-full rounded-full overflow-hidden bg-[#1A1F2E]">
+        <div className="w-full h-full rounded-full overflow-hidden glass-card">
           {profile.profilePicture ? (
             <Image src={profile.profilePicture} alt={profile.username} fill className="object-cover" />
           ) : (
@@ -134,11 +134,11 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
       <p className="text-white/50 text-sm mb-3">@{profile.username}</p>
       {profile.bio && <p className="text-white/70 text-sm max-w-md mb-4">{profile.bio}</p>}
       {!isOwnProfile ? (
-        <button onClick={onFollow} disabled={isFollowLoading} className={`px-8 py-2 rounded-full font-semibold text-sm transition-all ${isFollowing ? 'bg-[#1A1F2E] text-white border border-white/20' : 'bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white'} disabled:opacity-50`}>
+        <button onClick={onFollow} disabled={isFollowLoading} className={`px-8 py-2 rounded-full font-semibold text-sm transition-all ${isFollowing ? 'glass-card text-white' : 'bg-gradient-to-r from-purple-500 to-teal-400 text-white'} disabled:opacity-50`}>
           {isFollowLoading ? <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg></span> : isFollowing ? 'Following' : 'Follow'}
         </button>
       ) : (
-        <button onClick={onEditClick} className="px-8 py-2 rounded-full font-semibold text-sm bg-[#1A1F2E] text-white border border-white/20">Edit Profile</button>
+        <button onClick={onEditClick} className="px-8 py-2 rounded-full font-semibold text-sm glass-card text-white">Edit Profile</button>
       )}
     </div>
   );
