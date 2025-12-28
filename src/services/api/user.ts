@@ -114,7 +114,11 @@ export const userApi = {
    * Get user's followed user IDs
    */
   async getFollowedUsers(): Promise<string[]> {
-    const { data } = await apiClient.get<{ followedUserIds: string[] }>('/user/followed-users');
+    const { data } = await apiClient.get<string[] | { followedUserIds: string[] }>('/user/followed-users');
+    // Backend returns array directly, handle both formats for compatibility
+    if (Array.isArray(data)) {
+      return data;
+    }
     return data.followedUserIds || [];
   },
 
@@ -169,11 +173,41 @@ export const userApi = {
    * Get users that a user is following
    */
   async getFollowing(userId: string, page = 1, limit = 20): Promise<{ users: UserProfile[]; hasMore: boolean }> {
-    const { data } = await apiClient.get<{ users: UserProfile[]; hasMore: boolean }>(
-      `/users/${userId}/following`,
-      { params: { page, limit } }
-    );
-    return data;
+    try {
+      // Backend returns { following: [ids...] } - just IDs, not full user objects
+      const { data } = await apiClient.get<{ following: string[]; users?: UserProfile[] }>(
+        `/users/${userId}/following`,
+        { params: { page, limit } }
+      );
+
+      // If backend returns full users (future), use those
+      if (data.users) {
+        return { users: data.users, hasMore: false };
+      }
+
+      // Otherwise fetch user details for each ID
+      const followingIds = data.following || [];
+      if (followingIds.length === 0) {
+        return { users: [], hasMore: false };
+      }
+
+      // Fetch user details for each following ID (limit to avoid too many requests)
+      const userPromises = followingIds.slice(0, limit).map(async (id) => {
+        try {
+          return await this.getProfile(id);
+        } catch {
+          return null;
+        }
+      });
+
+      const usersRaw = await Promise.all(userPromises);
+      const users = usersRaw.filter((u): u is UserProfile => u !== null);
+
+      return { users, hasMore: followingIds.length > limit };
+    } catch (error) {
+      console.error('Failed to get following:', error);
+      return { users: [], hasMore: false };
+    }
   },
 
   /**
