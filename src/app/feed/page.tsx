@@ -234,10 +234,17 @@ function FeedContent() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Load videos
   const loadVideos = useCallback(async (reset = false) => {
-    try {
+    if (reset) {
       setIsLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
       const currentPage = reset ? 1 : page;
 
       const response = activeTab === 'following'
@@ -256,12 +263,27 @@ function FeedContent() {
       console.error('Failed to load videos:', err);
     } finally {
       setIsLoading(false);
+      setLoadingMore(false);
     }
   }, [activeTab, page]);
 
   useEffect(() => {
     loadVideos(true);
   }, [activeTab]);
+
+  // Infinite scroll - load more when near end
+  useEffect(() => {
+    if (currentIndex >= videos.length - 3 && hasMore && !loadingMore && !isLoading && videos.length > 0) {
+      setPage(prev => prev + 1);
+    }
+  }, [currentIndex, videos.length, hasMore, loadingMore, isLoading]);
+
+  // Trigger load when page changes
+  useEffect(() => {
+    if (page > 1) {
+      loadVideos(false);
+    }
+  }, [page]);
 
   // Handle URL video parameter
   useEffect(() => {
@@ -292,11 +314,6 @@ function FeedContent() {
             const index = Number(entry.target.getAttribute('data-index'));
             if (!isNaN(index)) {
               setCurrentIndex(index);
-              // Load more when near end
-              if (index >= videos.length - 2 && hasMore && !isLoading) {
-                setPage(prev => prev + 1);
-                loadVideos();
-              }
             }
           }
         });
@@ -305,7 +322,7 @@ function FeedContent() {
     );
 
     return () => observerRef.current?.disconnect();
-  }, [videos.length, hasMore, isLoading, loadVideos]);
+  }, []);
 
   // Observe video elements
   useEffect(() => {
@@ -519,22 +536,56 @@ function FeedContent() {
             </div>
           </div>
         ) : (
-          videos.map((video, index) => (
-            <div key={video.id} data-index={index} className="h-full w-full">
-              <VideoItem
-                video={video}
-                isActive={index === currentIndex}
-                isMuted={isMuted}
-                onMuteToggle={() => setIsMuted(!isMuted)}
-                onLike={() => handleLike(index)}
-                onSave={() => handleSave(index)}
-                onFollow={() => handleFollow(index)}
-                onComment={() => handleComment(video.id)}
-                onShare={() => handleShare(video.id)}
-                userId={user?.id}
-              />
-            </div>
-          ))
+          <>
+            {videos.map((video, index) => (
+              <div key={video.id} data-index={index} className="h-full w-full">
+                <VideoItem
+                  video={video}
+                  isActive={index === currentIndex}
+                  isMuted={isMuted}
+                  onMuteToggle={() => setIsMuted(!isMuted)}
+                  onLike={() => handleLike(index)}
+                  onSave={() => handleSave(index)}
+                  onFollow={() => handleFollow(index)}
+                  onComment={() => handleComment(video.id)}
+                  onShare={() => handleShare(video.id)}
+                  userId={user?.id}
+                />
+              </div>
+            ))}
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className="h-full w-full flex items-center justify-center snap-start">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-10 h-10 border-3 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
+                  <p className="text-white/50 text-sm">Loading more...</p>
+                </div>
+              </div>
+            )}
+            {/* End of feed */}
+            {!hasMore && videos.length > 0 && (
+              <div className="h-full w-full flex items-center justify-center snap-start bg-[#0A0E1A]">
+                <div className="flex flex-col items-center gap-4 text-center px-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#6366F1] to-[#14B8A6] rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-white text-xl font-semibold">You&apos;re all caught up!</h3>
+                  <p className="text-white/50">You&apos;ve seen all the latest videos</p>
+                  <button
+                    onClick={() => {
+                      scrollToVideo(0);
+                      loadVideos(true);
+                    }}
+                    className="mt-4 px-6 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full"
+                  >
+                    Refresh Feed
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
