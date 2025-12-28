@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { searchApi } from '@/services/api/search';
+import { userApi } from '@/services/api/user';
 
 interface SearchResult {
   id: string;
@@ -12,6 +14,12 @@ interface SearchResult {
   subtitle?: string;
   image?: string;
   href: string;
+}
+
+function formatCount(count: number): string {
+  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+  return count.toString();
 }
 
 export function SidebarSearch() {
@@ -24,8 +32,8 @@ export function SidebarSearch() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Debounced search
-  const searchUsers = useCallback(async (searchQuery: string) => {
+  // Debounced search - calls real API
+  const performSearch = useCallback(async (searchQuery: string) => {
     if (searchQuery.length < 2) {
       setResults([]);
       return;
@@ -33,57 +41,53 @@ export function SidebarSearch() {
 
     setIsLoading(true);
     try {
-      // Check if it's a @mention
       const isMention = searchQuery.startsWith('@');
-      const cleanQuery = isMention ? searchQuery.slice(1) : searchQuery;
+      const isHashtag = searchQuery.startsWith('#');
+      const cleanQuery = isMention || isHashtag ? searchQuery.slice(1) : searchQuery;
 
-      // Mock results for now - replace with actual API call
-      const mockResults: SearchResult[] = [];
+      const searchResults: SearchResult[] = [];
 
-      // Add user results
-      if (isMention || !searchQuery.startsWith('#')) {
-        mockResults.push(
-          {
-            id: '1',
-            type: 'user',
-            title: `@${cleanQuery}user`,
-            subtitle: '1.2K followers',
-            href: `/profile/${cleanQuery}user`,
-          },
-          {
-            id: '2',
-            type: 'user',
-            title: `@${cleanQuery}_creator`,
-            subtitle: '5.4K followers',
-            href: `/profile/${cleanQuery}_creator`,
-          }
-        );
+      // Search users if @mention or general search
+      if (isMention || !isHashtag) {
+        try {
+          const users = await userApi.searchUsers(cleanQuery, 5);
+          users.forEach((user) => {
+            searchResults.push({
+              id: user._id,
+              type: 'user',
+              title: `@${user.username}`,
+              subtitle: `${formatCount(user.stats?.followers || 0)} followers`,
+              image: user.profilePicture,
+              href: `/profile/${user._id}`,
+            });
+          });
+        } catch (err) {
+          console.error('User search error:', err);
+        }
       }
 
-      // Add hashtag results
-      if (searchQuery.startsWith('#') || !isMention) {
-        const hashQuery = searchQuery.startsWith('#') ? searchQuery.slice(1) : searchQuery;
-        mockResults.push(
-          {
-            id: '3',
-            type: 'hashtag',
-            title: `#${hashQuery}`,
-            subtitle: '2.3M views',
-            href: `/hashtag/${hashQuery}`,
-          },
-          {
-            id: '4',
-            type: 'hashtag',
-            title: `#${hashQuery}challenge`,
-            subtitle: '890K views',
-            href: `/hashtag/${hashQuery}challenge`,
-          }
-        );
+      // Search hashtags if #hashtag or general search
+      if (isHashtag || !isMention) {
+        try {
+          const hashtags = await searchApi.searchHashtags(cleanQuery, 5);
+          hashtags.forEach((tag) => {
+            searchResults.push({
+              id: tag.name,
+              type: 'hashtag',
+              title: `#${tag.name}`,
+              subtitle: `${formatCount(tag.viewCount || tag.videoCount || 0)} views`,
+              href: `/hashtag/${tag.name}`,
+            });
+          });
+        } catch (err) {
+          console.error('Hashtag search error:', err);
+        }
       }
 
-      setResults(mockResults);
+      setResults(searchResults);
     } catch (error) {
       console.error('Search error:', error);
+      setResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -92,14 +96,14 @@ export function SidebarSearch() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (query) {
-        searchUsers(query);
+        performSearch(query);
       } else {
         setResults([]);
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query, searchUsers]);
+  }, [query, performSearch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

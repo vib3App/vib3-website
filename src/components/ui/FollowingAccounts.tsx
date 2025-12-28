@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
+import { userApi } from '@/services/api/user';
 
 interface FollowingUser {
   id: string;
@@ -14,34 +15,35 @@ interface FollowingUser {
 }
 
 export function FollowingAccounts() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [following, setFollowing] = useState<FollowingUser[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       loadFollowing();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   const loadFollowing = async () => {
+    if (!user) return;
+
     setIsLoading(true);
     try {
-      // Mock data - replace with actual API call
-      const mockFollowing: FollowingUser[] = [
-        { id: '1', username: 'creator1', displayName: 'Top Creator', isLive: true },
-        { id: '2', username: 'musicpro', displayName: 'Music Pro' },
-        { id: '3', username: 'dancer99', displayName: 'Dance Queen', isLive: true },
-        { id: '4', username: 'comedian', displayName: 'Funny Guy' },
-        { id: '5', username: 'artist_x', displayName: 'Artist X' },
-        { id: '6', username: 'gamer_z', displayName: 'Gamer Z' },
-        { id: '7', username: 'chef_master', displayName: 'Chef Master' },
-        { id: '8', username: 'fitness_guru', displayName: 'Fitness Guru' },
-      ];
-      setFollowing(mockFollowing);
+      // Get real following list from API
+      const response = await userApi.getFollowing(user.id, 1, 20);
+      const followingUsers: FollowingUser[] = (response.users || []).map((u) => ({
+        id: u._id,
+        username: u.username,
+        displayName: u.displayName || u.username,
+        profilePicture: u.profilePicture,
+        isLive: false, // Would need live status from a separate API
+      }));
+      setFollowing(followingUsers);
     } catch (error) {
       console.error('Failed to load following:', error);
+      setFollowing([]);
     } finally {
       setIsLoading(false);
     }
@@ -108,31 +110,31 @@ export function FollowingAccounts() {
         Following
       </p>
       <div className="space-y-1">
-        {displayedUsers.map((user) => (
+        {displayedUsers.map((followedUser) => (
           <Link
-            key={user.id}
-            href={`/profile/${user.username}`}
+            key={followedUser.id}
+            href={`/profile/${followedUser.id}`}
             className="flex items-center gap-3 py-2 px-2 -mx-2 rounded-lg hover:bg-white/5 transition-colors group"
           >
             <div className="relative">
               <div className={`w-8 h-8 rounded-full overflow-hidden ${
-                user.isLive ? 'ring-2 ring-red-500 ring-offset-1 ring-offset-neutral-900' : ''
+                followedUser.isLive ? 'ring-2 ring-red-500 ring-offset-1 ring-offset-neutral-900' : ''
               }`}>
-                {user.profilePicture ? (
+                {followedUser.profilePicture ? (
                   <Image
-                    src={user.profilePicture}
-                    alt={user.username}
+                    src={followedUser.profilePicture}
+                    alt={followedUser.username}
                     width={32}
                     height={32}
                     className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
-                    {user.username[0].toUpperCase()}
+                    {followedUser.username[0].toUpperCase()}
                   </div>
                 )}
               </div>
-              {user.isLive && (
+              {followedUser.isLive && (
                 <div className="absolute -bottom-0.5 -right-0.5 bg-red-500 text-white text-[8px] font-bold px-1 rounded">
                   LIVE
                 </div>
@@ -140,7 +142,7 @@ export function FollowingAccounts() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-white/80 text-sm truncate group-hover:text-white transition-colors">
-                {user.username}
+                {followedUser.username}
               </p>
             </div>
           </Link>
