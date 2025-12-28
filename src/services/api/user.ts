@@ -51,15 +51,14 @@ export const userApi = {
 
   /**
    * Get user's videos
-   * Uses /videos/user/:userId endpoint to properly filter by user
+   * Uses /user/videos endpoint with userId param to properly filter by user
    */
   async getUserVideos(userId: string, page: number = 1, limit: number = 20): Promise<UserVideosResponse> {
-    const { data } = await apiClient.get<{ posts?: Array<Video & { _id?: string }>, videos?: Array<Video & { _id?: string }> }>(`/videos/user/${userId}`, {
-      params: { page, limit }
+    const { data } = await apiClient.get<{ videos?: Array<Video & { _id?: string }> }>(`/user/videos`, {
+      params: { userId, page, limit }
     });
-    // Backend returns as 'posts', transform to videos for consistency
-    const rawVideos = data.posts || data.videos || [];
-    const videos = rawVideos.map(v => ({
+    // Transform _id to id for consistency
+    const videos = (data.videos || []).map(v => ({
       ...v,
       id: v.id || v._id || '',
     }));
