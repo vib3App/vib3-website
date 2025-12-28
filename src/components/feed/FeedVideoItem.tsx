@@ -170,7 +170,7 @@ function ActionButtons({
                 <Image src={video.userAvatar} alt={video.username} width={44} height={44} className="object-cover w-full h-full" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg">
-                  {video.username[0].toUpperCase()}
+                  {(video.username || 'U')[0].toUpperCase()}
                 </div>
               )}
             </div>
