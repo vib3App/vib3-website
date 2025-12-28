@@ -1,6 +1,6 @@
 'use client';
 
-import { ActionButton, SettingsButton } from './ActionButton';
+import { ActionButton } from './ActionButton';
 import { useActionButtonDrag } from '@/hooks/useActionButtonDrag';
 import type { LayoutProps } from '@/types/actionButtons';
 
@@ -85,7 +85,6 @@ export function HorizontalBar({
             onClick={getOnClick(btn.id)}
           />
         ))}
-        <SettingsButton size={size} onClick={onOpenSettings} />
       </div>
     </div>
   );
