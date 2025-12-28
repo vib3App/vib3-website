@@ -89,12 +89,25 @@ export default function WatchPartiesPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Description */}
-        <div className="mb-8 p-6 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 rounded-2xl">
-          <h2 className="text-xl font-semibold mb-2">Watch videos together!</h2>
-          <p className="text-gray-400">
-            Create a watch party to watch videos with friends in real-time. Chat, react, and enjoy content together.
-          </p>
+        {/* Explainer Section */}
+        <div className="mb-8 p-6 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 rounded-2xl">
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+              <TvIcon className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold mb-2">Watch Videos Together in Real-Time</h2>
+              <p className="text-gray-400 mb-3">
+                Sync up with friends and watch the same videos at the same time. Chat, react with emojis,
+                and share the experience - no matter where everyone is located.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-pink-500/20 text-pink-400 rounded-full text-sm">Live sync</span>
+                <span className="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm">Group chat</span>
+                <span className="px-3 py-1 bg-fuchsia-500/20 text-fuchsia-400 rounded-full text-sm">React together</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {loading ? (

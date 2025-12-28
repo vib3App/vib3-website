@@ -22,7 +22,7 @@ export default function CollabRoomsPage() {
             </button>
             <button
               onClick={() => c.setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full font-medium text-sm hover:opacity-90 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full font-medium text-sm hover:opacity-90 transition"
             >
               <PlusIcon className="w-4 h-4" />
               Create Room
@@ -32,6 +32,29 @@ export default function CollabRoomsPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* Explainer Section */}
+        <div className="mb-8 p-6 bg-gradient-to-r from-blue-500/20 to-teal-500/20 border border-blue-500/30 rounded-2xl">
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center flex-shrink-0">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold mb-2">Create Videos Together</h2>
+              <p className="text-gray-400 mb-3">
+                Record your part, invite friends to add theirs, and combine into one awesome video.
+                Perfect for reaction videos, group challenges, or creative collaborations.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">Record together</span>
+                <span className="px-3 py-1 bg-teal-500/20 text-teal-400 rounded-full text-sm">Side-by-side</span>
+                <span className="px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full text-sm">Edit & publish</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-4 mb-6">
           <button
@@ -69,7 +92,7 @@ export default function CollabRoomsPage() {
             </p>
             <button
               onClick={() => c.setShowCreateModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full font-medium hover:opacity-90 transition"
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full font-medium hover:opacity-90 transition"
             >
               Create Collab Room
             </button>

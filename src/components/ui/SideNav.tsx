@@ -125,13 +125,13 @@ export function SideNav() {
   const { user, isAuthenticated } = useAuthStore();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-[#0A0E1A] border-r border-white/5 p-4">
+    <aside className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 bg-gradient-to-b from-neutral-900 to-stone-950 border-r border-amber-900/20 p-4">
       {/* Logo */}
       <Link href="/feed" className="flex items-center gap-2 px-3 py-4 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#14B8A6] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
           <span className="text-white font-bold text-xl">V</span>
         </div>
-        <span className="text-2xl font-bold bg-gradient-to-r from-[#6366F1] to-[#14B8A6] bg-clip-text text-transparent">
+        <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
           VIB3
         </span>
       </Link>
@@ -227,10 +227,10 @@ export function SideNav() {
       {isAuthenticated && user ? (
         <Link
           href="/profile"
-          className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors mt-auto"
+          className="flex items-center gap-3 p-3 rounded-xl hover:bg-amber-900/20 transition-colors mt-auto"
         >
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#6366F1] to-[#14B8A6] p-0.5">
-            <div className="w-full h-full rounded-full overflow-hidden bg-[#1A1F2E]">
+          <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-amber-500 to-orange-600 p-0.5">
+            <div className="w-full h-full rounded-lg overflow-hidden bg-neutral-900">
               {user.profilePicture ? (
                 <Image
                   src={user.profilePicture}
@@ -248,13 +248,13 @@ export function SideNav() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-white font-medium truncate">{user.username}</div>
-            <div className="text-white/50 text-sm truncate">View profile</div>
+            <div className="text-amber-500/70 text-sm truncate">View profile</div>
           </div>
         </Link>
       ) : (
         <Link
           href="/login"
-          className="flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold hover:opacity-90 transition-opacity mt-auto"
+          className="flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold hover:opacity-90 transition-opacity mt-auto"
         >
           Log in
         </Link>
