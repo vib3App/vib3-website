@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
+import { useSocialStore } from '@/stores/socialStore';
 import type { Video } from '@/types';
 
 function formatCount(count: number): string {
@@ -159,6 +160,11 @@ function ActionButtons({
   onComment: () => void;
   onShare: () => void;
 }) {
+  // Use social store to check real follow status
+  const { isFollowing } = useSocialStore();
+  const isFollowingCreator = isFollowing(video.userId);
+  const isOwnVideo = video.userId === userId;
+
   return (
     <>
       {/* Creator info - Top left */}
@@ -174,14 +180,22 @@ function ActionButtons({
                 </div>
               )}
             </div>
-            {!video.isFollowing && video.userId !== userId && (
+            {!isOwnVideo && (
               <button
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); onFollow(); }}
-                className="absolute -bottom-1 -right-1 w-5 h-5 bg-amber-500 rounded-md flex items-center justify-center"
+                className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md flex items-center justify-center ${
+                  isFollowingCreator ? 'bg-green-500' : 'bg-amber-500'
+                }`}
               >
-                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-                </svg>
+                {isFollowingCreator ? (
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                  </svg>
+                )}
               </button>
             )}
           </div>

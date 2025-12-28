@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { videoApi, userApi } from '@/services/api';
+import { videoApi } from '@/services/api';
+import { useSocialStore } from '@/stores/socialStore';
 import type { Video } from '@/types';
 
 interface UseFeedActionsOptions {
@@ -60,15 +61,21 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
     if (!video) return;
     if (!isAuthenticated) { router.push('/login'); return; }
 
+    // Use social store for follow toggle - it handles API call and state update
+    const { toggleFollow, isFollowing } = useSocialStore.getState();
+    const wasFollowing = isFollowing(video.userId);
+
+    // Optimistically update video state
     setVideos(prev => prev.map(v =>
-      v.userId === video.userId ? { ...v, isFollowing: !v.isFollowing } : v
+      v.userId === video.userId ? { ...v, isFollowing: !wasFollowing } : v
     ));
 
     try {
-      await userApi.toggleFollow(video.userId, video.isFollowing || false);
+      await toggleFollow(video.userId);
     } catch {
+      // Revert on error
       setVideos(prev => prev.map(v =>
-        v.userId === video.userId ? { ...v, isFollowing: !v.isFollowing } : v
+        v.userId === video.userId ? { ...v, isFollowing: wasFollowing } : v
       ));
     }
   }, [videos, isAuthenticated, router, setVideos]);
