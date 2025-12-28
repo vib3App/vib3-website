@@ -65,17 +65,26 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     }
   }, []);
 
+  // Store pointerId for capture/release
+  const pointerIdRef = useRef<number | null>(null);
+
   // Handle pointer down - start long press timer
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (disabled) return;
 
-    // Store the element for later reference
+    // Only track if it's directly on this element, not child buttons
+    if (e.target !== e.currentTarget) {
+      return; // Let child handle it
+    }
+
+    // Store the element and pointer for later reference
     containerRef.current = e.currentTarget as HTMLElement;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     hasDraggedRef.current = false;
+    pointerIdRef.current = e.pointerId;
 
-    // Capture pointer for tracking outside element
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    // DON'T capture pointer yet - only capture when drag actually starts
+    // This allows clicks on child buttons to work normally
 
     // Start long press timer
     clearLongPressTimer();
@@ -83,6 +92,15 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       setIsLongPressing(true);
       setIsDragging(true);
       onDragStart?.();
+
+      // NOW capture pointer for tracking outside element during drag
+      if (containerRef.current && pointerIdRef.current !== null) {
+        try {
+          containerRef.current.setPointerCapture(pointerIdRef.current);
+        } catch {
+          // Ignore if pointer is no longer active
+        }
+      }
 
       // Vibrate on mobile to indicate drag mode
       if (navigator.vibrate) {
@@ -119,11 +137,13 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
     clearLongPressTimer();
 
-    // Release pointer capture
-    try {
-      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignore if already released
+    // Release pointer capture if we captured it
+    if (isDragging && containerRef.current && pointerIdRef.current !== null) {
+      try {
+        containerRef.current.releasePointerCapture(pointerIdRef.current);
+      } catch {
+        // Ignore if already released
+      }
     }
 
     if (isDragging && position) {
@@ -133,6 +153,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     setIsDragging(false);
     setIsLongPressing(false);
     startPosRef.current = null;
+    pointerIdRef.current = null;
   }, [isDragging, position, onDragEnd, clearLongPressTimer]);
 
   // Handle pointer cancel (e.g., touch interrupted)
