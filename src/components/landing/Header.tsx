@@ -5,6 +5,8 @@
 'use client';
 
 import Link from 'next/link';
+import { SoundToggle } from '@/components/audio';
+import { ThemeToggle } from '@/components/personalization';
 
 export function Header() {
   return (
@@ -34,6 +36,10 @@ export function Header() {
           <a href="https://vib3app.net/contact.html" className="text-white/60 hover:text-white transition-colors text-sm font-medium">
             Contact
           </a>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <SoundToggle />
+          </div>
           <Link
             href="/login"
             className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"

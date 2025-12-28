@@ -15,14 +15,21 @@ import {
   ContentSection,
   AboutSection,
 } from '@/components/settings';
+import { ThemeCustomizer, PreferenceSyncPanel } from '@/components/personalization';
+import { SoundSettings } from '@/components/audio';
+import { AccessibilityPanel } from '@/components/haptic';
+import { FeatureLab } from '@/components/future';
 
-type SettingsSection = 'account' | 'privacy' | 'notifications' | 'content' | 'about';
+type SettingsSection = 'account' | 'privacy' | 'notifications' | 'content' | 'appearance' | 'accessibility' | 'lab' | 'about';
 
 const SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
   { id: 'account', label: 'Account', icon: '👤' },
   { id: 'privacy', label: 'Privacy', icon: '🔒' },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'content', label: 'Content', icon: '🎬' },
+  { id: 'appearance', label: 'Appearance', icon: '🎨' },
+  { id: 'accessibility', label: 'Accessibility', icon: '♿' },
+  { id: 'lab', label: 'Lab', icon: '🧪' },
   { id: 'about', label: 'About', icon: 'ℹ️' },
 ];
 
@@ -113,6 +120,15 @@ export default function SettingsPage() {
           {activeSection === 'privacy' && <PrivacySection />}
           {activeSection === 'notifications' && <NotificationsSection />}
           {activeSection === 'content' && <ContentSection />}
+          {activeSection === 'appearance' && (
+            <div className="space-y-6">
+              <ThemeCustomizer />
+              <SoundSettings />
+              <PreferenceSyncPanel />
+            </div>
+          )}
+          {activeSection === 'accessibility' && <AccessibilityPanel />}
+          {activeSection === 'lab' && <FeatureLab />}
           {activeSection === 'about' && <AboutSection />}
 
           <button

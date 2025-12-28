@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
+import { CursorSpotlight } from "@/components/3d";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-950`}
       >
         <AuroraBackground />
+        <CursorSpotlight />
         <Providers>{children}</Providers>
       </body>
     </html>

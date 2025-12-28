@@ -5,17 +5,34 @@
 'use client';
 
 import { AppStoreButtons } from './AppStoreButtons';
-import { FadeUp, AnimatedButton, AnimatedStat } from '@/components/motion';
+import { FadeUp, AnimatedButton, AnimatedStat, ScaleUp, StaggerContainer } from '@/components/motion';
+import { Logo3D, ParticleField } from '@/components/3d';
+import { MoodIndicator } from '@/components/ai';
 
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+      {/* 3D Particle Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <ParticleField count={50} />
+      </div>
+
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full border border-white/10 mb-8 float-gentle">
-          <span className="w-2 h-2 bg-teal-400 rounded-full breathe" />
-          <span className="text-sm text-white/70">The future of social video</span>
-        </div>
+        {/* 3D Logo */}
+        <ScaleUp>
+          <div className="w-32 h-32 mx-auto mb-8">
+            <Logo3D />
+          </div>
+        </ScaleUp>
+
+        {/* Badge with Mood Indicator */}
+        <FadeUp delay={0.1}>
+          <div className="inline-flex items-center gap-4 px-4 py-2 glass rounded-full border border-white/10 mb-8 float-gentle">
+            <MoodIndicator showLabel={false} />
+            <span className="text-sm text-white/70">The future of social video</span>
+            <span className="w-2 h-2 bg-teal-400 rounded-full breathe" />
+          </div>
+        </FadeUp>
 
         {/* Main headline */}
         <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
