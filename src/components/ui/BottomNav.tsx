@@ -62,11 +62,14 @@ const menuItems = [
   { href: '/collab', label: 'Collab Rooms', icon: '👥' },
   { href: '/watch-party', label: 'Watch Party', icon: '🎉' },
   { href: '/capsule', label: 'Time Capsules', icon: '⏰' },
+  { href: '/challenges', label: 'Challenges', icon: '🏆' },
+  { href: '/coins', label: 'VIB3 Coins', icon: '🪙' },
   { href: '/collections', label: 'Collections', icon: '📁' },
   { href: '/live', label: 'Go Live', icon: '🔴' },
-  { href: '/camera', label: 'Camera', icon: '📷' },
+  { href: '/shop', label: 'Shop', icon: '🛍️' },
+  { href: '/analytics', label: 'Analytics', icon: '📊' },
+  { href: '/creator-fund', label: 'Creator Fund', icon: '💰' },
   { href: '/messages', label: 'Messages', icon: '💬' },
-  { href: '/settings', label: 'Settings', icon: '⚙️' },
 ];
 
 export function BottomNav() {
