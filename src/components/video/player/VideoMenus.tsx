@@ -76,7 +76,7 @@ export function SpeedMenu({ isOpen, currentSpeed, onClose, onChangeSpeed }: Spee
             key={speed}
             onClick={() => onChangeSpeed(speed)}
             className={`w-full text-left px-3 py-1.5 text-sm hover:bg-white/10 ${
-              currentSpeed === speed ? 'text-[#6366F1]' : 'text-white'
+              currentSpeed === speed ? 'text-purple-400' : 'text-white'
             }`}
           >
             {speed}x {currentSpeed === speed && '✓'}
@@ -113,7 +113,7 @@ export function QualityMenu({ isOpen, qualityLevels, currentQuality, onClose, on
         <button
           onClick={() => onChangeQuality(-1)}
           className={`w-full text-left px-3 py-1.5 text-sm hover:bg-white/10 ${
-            currentQuality === -1 ? 'text-[#6366F1]' : 'text-white'
+            currentQuality === -1 ? 'text-purple-400' : 'text-white'
           }`}
         >
           Auto {currentQuality === -1 && '✓'}
@@ -123,7 +123,7 @@ export function QualityMenu({ isOpen, qualityLevels, currentQuality, onClose, on
             key={i}
             onClick={() => onChangeQuality(i)}
             className={`w-full text-left px-3 py-1.5 text-sm hover:bg-white/10 ${
-              currentQuality === i ? 'text-[#6366F1]' : 'text-white'
+              currentQuality === i ? 'text-purple-400' : 'text-white'
             }`}
           >
             {level.label} {currentQuality === i && '✓'}
@@ -153,7 +153,7 @@ export function ChapterMenu({ isOpen, chapters, currentChapter, onClose, onSeekT
           key={i}
           onClick={() => { onSeekToChapter(chapter.startTime); onClose(); }}
           className={`w-full text-left px-3 py-2 text-sm hover:bg-white/10 ${
-            currentChapter === chapter ? 'text-[#6366F1]' : 'text-white'
+            currentChapter === chapter ? 'text-purple-400' : 'text-white'
           }`}
         >
           <div className="flex justify-between items-center">

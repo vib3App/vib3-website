@@ -19,7 +19,7 @@ export function MessageBubble({ message, isOwn, showAvatar }: MessageBubbleProps
   return (
     <div className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
       {!isOwn && showAvatar && (
-        <div className="w-8 h-8 rounded-full overflow-hidden bg-[#1A1F2E] flex-shrink-0">
+        <div className="w-8 h-8 rounded-full overflow-hidden glass flex-shrink-0">
           {message.senderAvatar ? (
             <Image src={message.senderAvatar} alt={message.senderUsername} width={32} height={32} className="object-cover" />
           ) : (
@@ -39,7 +39,7 @@ export function MessageBubble({ message, isOwn, showAvatar }: MessageBubbleProps
             <Image src={message.mediaUrl} alt="Image" width={250} height={250} className="object-cover" />
           </div>
         ) : (
-          <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-[#6366F1] text-white rounded-br-md' : 'bg-[#1A1F2E] text-white rounded-bl-md'}`}>
+          <div className={`px-4 py-2.5 rounded-2xl ${isOwn ? 'bg-purple-500 text-white rounded-br-md' : 'glass text-white rounded-bl-md'}`}>
             <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
           </div>
         )}
@@ -49,7 +49,7 @@ export function MessageBubble({ message, isOwn, showAvatar }: MessageBubbleProps
           {isOwn && (
             <span className="text-white/30 text-xs">
               {message.status === 'read' ? (
-                <svg className="w-3.5 h-3.5 text-[#6366F1]" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z" />
                 </svg>
               ) : message.status === 'delivered' ? (
@@ -90,7 +90,7 @@ function VoiceMessage({ url, duration, isOwn }: { url: string; duration?: number
   };
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${isOwn ? 'bg-[#6366F1]' : 'bg-[#1A1F2E]'}`}>
+    <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${isOwn ? 'bg-purple-500' : 'glass'}`}>
       <button onClick={togglePlay} className="w-8 h-8 flex items-center justify-center">
         {isPlaying ? (
           <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" /></svg>

@@ -23,7 +23,7 @@ export function OAuthButtons({ isSubmitting, googleLoaded, onGoogleClick, onAppl
             type="button"
             onClick={onGoogleClick}
             disabled={isSubmitting || !googleLoaded}
-            className="w-full flex items-center justify-center gap-2 bg-[#0A0E1A] border border-white/10 rounded-lg py-3 text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 glass border border-white/10 rounded-lg py-3 text-white hover:bg-white/5 transition-colors disabled:opacity-50"
           >
             <GoogleIcon />
             Google
@@ -34,7 +34,7 @@ export function OAuthButtons({ isSubmitting, googleLoaded, onGoogleClick, onAppl
           type="button"
           onClick={onAppleClick}
           disabled={isSubmitting}
-          className="flex items-center justify-center gap-2 bg-[#0A0E1A] border border-white/10 rounded-lg py-3 text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+          className="flex items-center justify-center gap-2 glass border border-white/10 rounded-lg py-3 text-white hover:bg-white/5 transition-colors disabled:opacity-50"
         >
           <AppleIcon />
           Apple
@@ -43,9 +43,9 @@ export function OAuthButtons({ isSubmitting, googleLoaded, onGoogleClick, onAppl
 
       <p className="text-white/30 text-xs text-center mt-6">
         By continuing, you agree to our{' '}
-        <a href="https://vib3app.net/terms.html" className="text-[#6366F1] hover:underline">Terms of Service</a>
+        <a href="https://vib3app.net/terms.html" className="text-purple-400 hover:underline">Terms of Service</a>
         {' '}and{' '}
-        <a href="https://vib3app.net/privacy.html" className="text-[#6366F1] hover:underline">Privacy Policy</a>
+        <a href="https://vib3app.net/privacy.html" className="text-purple-400 hover:underline">Privacy Policy</a>
       </p>
     </>
   );

@@ -20,7 +20,7 @@ export function AudioPanel({ volume, onVolumeChange }: AudioPanelProps) {
           step="0.01"
           value={volume}
           onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-          className="w-full accent-[#6366F1]"
+          className="w-full accent-purple-500"
         />
       </div>
 

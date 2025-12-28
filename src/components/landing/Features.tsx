@@ -9,13 +9,13 @@ const features = [
     icon: '🎬',
     title: 'Create Videos',
     description: 'Powerful editing tools, AR filters, music library, and effects to make your content stand out.',
-    gradient: 'from-[#6366F1] to-[#8B5CF6]',
+    gradient: 'from-purple-500 to-purple-400',
   },
   {
     icon: '📡',
     title: 'Go Live',
     description: 'Stream to your followers in real-time. Receive gifts, interact with comments, and grow your audience.',
-    gradient: 'from-[#14B8A6] to-[#06B6D4]',
+    gradient: 'from-teal-500 to-cyan-400',
   },
   {
     icon: '🎵',
@@ -51,7 +51,7 @@ export function Features() {
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="text-white">Everything you need to </span>
-            <span className="bg-gradient-to-r from-[#6366F1] to-[#14B8A6] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
               go viral
             </span>
           </h2>
@@ -65,14 +65,14 @@ export function Features() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group p-8 bg-[#1A1F2E] border border-white/5 rounded-2xl hover:border-white/10 transition-all hover:translate-y-[-4px]"
+              className="group p-8 glass-card border border-white/5 rounded-2xl hover:border-white/10 transition-all hover:translate-y-[-4px]"
             >
               {/* Icon with gradient background */}
               <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-2xl mb-5 shadow-lg`}>
                 {feature.icon}
               </div>
 
-              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-[#6366F1] transition-colors">
+              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-purple-400 transition-colors">
                 {feature.title}
               </h3>
 

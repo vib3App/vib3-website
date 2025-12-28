@@ -8,7 +8,7 @@ import { BottomNav } from '@/components/ui/BottomNav';
 function EditLoading() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
     </div>
   );
 }
@@ -21,7 +21,7 @@ function EditContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0A0E1A]">
+    <div className="flex flex-col min-h-screen aurora-bg">
       <EditorHeader onCancel={editor.goBack} onDone={editor.handleDone} />
 
       <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
@@ -70,7 +70,7 @@ function EditContent() {
         </div>
       </div>
 
-      <div className="bg-[#1A1F2E] border-t border-white/5">
+      <div className="glass-card border-t border-white/5">
         <EditorTabs activeMode={editor.editMode} onModeChange={editor.setEditMode} />
 
         <div className="p-4 min-h-[200px]">

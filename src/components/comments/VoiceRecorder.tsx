@@ -132,7 +132,7 @@ export function VoiceRecorder({
   };
 
   return (
-    <div className="border-t border-white/10 p-4 bg-[#0A0E1A]">
+    <div className="border-t border-white/10 p-4 aurora-bg">
       {error ? (
         <div className="text-center">
           <p className="text-red-400 text-sm mb-3">{error}</p>
@@ -148,7 +148,7 @@ export function VoiceRecorder({
         <div className="flex items-center gap-3">
           <button
             onClick={togglePlayback}
-            className="w-10 h-10 bg-[#6366F1] rounded-full flex items-center justify-center flex-shrink-0"
+            className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0"
           >
             {isPlaying ? (
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -166,7 +166,7 @@ export function VoiceRecorder({
               {Array.from({ length: 40 }).map((_, i) => (
                 <div
                   key={i}
-                  className="flex-1 bg-[#6366F1] rounded-full"
+                  className="flex-1 bg-purple-500 rounded-full"
                   style={{ height: `${Math.random() * 24 + 8}px` }}
                 />
               ))}
@@ -186,7 +186,7 @@ export function VoiceRecorder({
 
           <button
             onClick={handleSend}
-            className="bg-[#6366F1] text-white px-4 py-2 rounded-full font-medium hover:bg-[#5558E3]"
+            className="bg-purple-500 text-white px-4 py-2 rounded-full font-medium hover:bg-purple-600"
           >
             Send
           </button>
@@ -218,7 +218,7 @@ export function VoiceRecorder({
               className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
                 isRecording
                   ? 'bg-red-500 animate-pulse'
-                  : 'bg-[#6366F1] hover:bg-[#5558E3]'
+                  : 'bg-purple-500 hover:bg-purple-600'
               }`}
             >
               {isRecording ? (

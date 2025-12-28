@@ -159,7 +159,7 @@ export function CommentsDrawer({
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="relative bg-[#1A1F2E] w-full max-w-lg md:rounded-2xl rounded-t-2xl max-h-[80vh] flex flex-col">
+      <div className="relative glass-card w-full max-w-lg md:rounded-2xl rounded-t-2xl max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <h2 className="text-white font-semibold">
@@ -197,7 +197,7 @@ export function CommentsDrawer({
 
           {isLoading && (
             <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
@@ -221,7 +221,7 @@ export function CommentsDrawer({
           {replyingTo && (
             <div className="flex items-center gap-2 mb-2 text-sm">
               <span className="text-white/50">Replying to</span>
-              <span className="text-[#6366F1]">@{replyingTo.username}</span>
+              <span className="text-purple-400">@{replyingTo.username}</span>
               <button
                 onClick={() => setReplyingTo(null)}
                 className="ml-auto text-white/50 hover:text-white"
@@ -235,7 +235,7 @@ export function CommentsDrawer({
 
           {isAuthenticated ? (
             <form onSubmit={handleSubmit} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-[#0A0E1A] flex-shrink-0">
+              <div className="w-8 h-8 rounded-full overflow-hidden aurora-bg flex-shrink-0">
                 {user?.profilePicture ? (
                   <Image
                     src={user.profilePicture}
@@ -251,7 +251,7 @@ export function CommentsDrawer({
                 )}
               </div>
 
-              <div className="flex-1 flex items-center bg-[#0A0E1A] rounded-full px-4 py-2">
+              <div className="flex-1 flex items-center aurora-bg rounded-full px-4 py-2">
                 <input
                   ref={inputRef}
                   type="text"
@@ -276,14 +276,14 @@ export function CommentsDrawer({
               <button
                 type="submit"
                 disabled={!newComment.trim() || isSubmitting}
-                className="text-[#6366F1] font-semibold disabled:opacity-50"
+                className="text-purple-400 font-semibold disabled:opacity-50"
               >
                 {isSubmitting ? '...' : 'Post'}
               </button>
             </form>
           ) : (
             <div className="text-center text-white/50 text-sm">
-              <a href="/login" className="text-[#6366F1] hover:underline">Log in</a> to comment
+              <a href="/login" className="text-purple-400 hover:underline">Log in</a> to comment
             </div>
           )}
         </div>

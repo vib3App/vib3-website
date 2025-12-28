@@ -47,7 +47,7 @@ export function VideoProgressBar({
           style={{ width: `${(buffered / duration) * 100 || 0}%` }}
         />
         <div
-          className="absolute h-full bg-gradient-to-r from-[#6366F1] to-[#14B8A6] rounded-full"
+          className="absolute h-full bg-gradient-to-r from-purple-500 to-teal-400 rounded-full"
           style={{ width: `${(progress / duration) * 100 || 0}%` }}
         >
           <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg" />

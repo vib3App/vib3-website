@@ -66,7 +66,7 @@ export function CollectionTabs({ activeTab, onTabChange }: CollectionTabsProps) 
           {tab.icon}
           <span className="hidden sm:inline">{tab.label}</span>
           {activeTab === tab.id && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-teal-400" />
           )}
         </button>
       ))}

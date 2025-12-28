@@ -16,7 +16,7 @@ export function SettingsToggle({ label, description, enabled }: SettingsTogglePr
         <span className="text-white block">{label}</span>
         {description && <span className="text-white/50 text-sm">{description}</span>}
       </div>
-      <button className={`w-12 h-7 rounded-full relative ${enabled ? 'bg-[#6366F1]' : 'bg-white/20'}`}>
+      <button className={`w-12 h-7 rounded-full relative ${enabled ? 'bg-purple-500' : 'bg-white/20'}`}>
         <div className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-transform ${enabled ? 'right-1' : 'left-1'}`} />
       </button>
     </div>
@@ -58,7 +58,7 @@ interface SettingsCardProps {
 
 export function SettingsCard({ children }: SettingsCardProps) {
   return (
-    <div className="bg-[#1A1F2E] rounded-2xl overflow-hidden divide-y divide-white/5">
+    <div className="glass-card rounded-2xl overflow-hidden divide-y divide-white/5">
       {children}
     </div>
   );

@@ -103,7 +103,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60">
-      <div className="bg-[#1A1F2E] w-full sm:w-auto sm:min-w-[400px] sm:max-w-md sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[80vh] flex flex-col">
+      <div className="glass-card w-full sm:w-auto sm:min-w-[400px] sm:max-w-md sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/5">
           <h2 className="text-lg font-bold text-white">Save to playlist</h2>
@@ -130,14 +130,14 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
                     value={newPlaylistName}
                     onChange={(e) => setNewPlaylistName(e.target.value)}
                     placeholder="Playlist name"
-                    className="flex-1 bg-[#0A0E1A] text-white px-4 py-2.5 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+                    className="flex-1 aurora-bg text-white px-4 py-2.5 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50"
                     autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && handleCreatePlaylist()}
                   />
                   <button
                     onClick={handleCreatePlaylist}
                     disabled={!newPlaylistName.trim() || isCreating}
-                    className="px-4 py-2.5 bg-[#6366F1] text-white rounded-xl disabled:opacity-50 hover:opacity-90 transition-opacity"
+                    className="px-4 py-2.5 bg-purple-500 text-white rounded-xl disabled:opacity-50 hover:opacity-90 transition-opacity"
                   >
                     {isCreating ? '...' : 'Add'}
                   </button>
@@ -158,8 +158,8 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
                   onClick={() => setShowCreate(true)}
                   className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left mb-4"
                 >
-                  <div className="w-12 h-12 rounded-lg bg-[#6366F1]/20 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-[#6366F1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
@@ -177,7 +177,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
                     onClick={() => togglePlaylist(playlist.id)}
                     className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors text-left"
                   >
-                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#0A0E1A] flex-shrink-0">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden aurora-bg flex-shrink-0">
                       {playlist.coverUrl || playlist.previewVideos?.[0]?.thumbnailUrl ? (
                         <Image
                           src={playlist.coverUrl || playlist.previewVideos![0].thumbnailUrl!}
@@ -208,7 +208,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
                     <div
                       className={`w-6 h-6 rounded-md flex items-center justify-center ${
                         selectedPlaylists.has(playlist.id)
-                          ? 'bg-[#6366F1]'
+                          ? 'bg-purple-500'
                           : 'border border-white/20'
                       }`}
                     >
@@ -230,7 +230,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="w-full py-3 bg-[#6366F1] text-white font-medium rounded-xl disabled:opacity-50 hover:opacity-90 transition-opacity"
+            className="w-full py-3 bg-purple-500 text-white font-medium rounded-xl disabled:opacity-50 hover:opacity-90 transition-opacity"
           >
             {isSaving ? 'Saving...' : 'Done'}
           </button>

@@ -117,9 +117,9 @@ export function EditProfileModal({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-[#1A1F2E] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="relative glass rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-[#1A1F2E] border-b border-white/10 px-4 py-3 flex items-center justify-between">
+        <div className="sticky top-0 glass-card border-b border-white/10 px-4 py-3 flex items-center justify-between">
           <button onClick={onClose} className="text-white/70 hover:text-white">
             Cancel
           </button>
@@ -127,7 +127,7 @@ export function EditProfileModal({
           <button
             onClick={handleSave}
             disabled={isLoading}
-            className="text-[#6366F1] font-semibold hover:opacity-80 disabled:opacity-50"
+            className="text-purple-400 font-semibold hover:opacity-80 disabled:opacity-50"
           >
             {isLoading ? 'Saving...' : 'Save'}
           </button>
@@ -145,7 +145,7 @@ export function EditProfileModal({
           {/* Profile Picture */}
           <div className="flex flex-col items-center">
             <div className="relative w-24 h-24 mb-3">
-              <div className="w-full h-full rounded-full overflow-hidden bg-[#0A0E1A]">
+              <div className="w-full h-full rounded-full overflow-hidden aurora-bg">
                 {imagePreview || profilePicture ? (
                   <Image
                     src={imagePreview || profilePicture}
@@ -161,7 +161,7 @@ export function EditProfileModal({
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-[#6366F1] rounded-full flex items-center justify-center"
+                className="absolute bottom-0 right-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center"
               >
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -171,7 +171,7 @@ export function EditProfileModal({
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="text-[#6366F1] text-sm font-medium"
+              className="text-purple-400 text-sm font-medium"
             >
               Change Photo
             </button>
@@ -193,7 +193,7 @@ export function EditProfileModal({
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder={profile.username}
               maxLength={50}
-              className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+              className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50"
             />
             <p className="text-white/30 text-xs mt-1">{displayName.length}/50</p>
           </div>
@@ -207,7 +207,7 @@ export function EditProfileModal({
               placeholder="Tell us about yourself..."
               maxLength={150}
               rows={3}
-              className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1] resize-none"
+              className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50 resize-none"
             />
             <p className="text-white/30 text-xs mt-1">{bio.length}/150</p>
           </div>
@@ -215,7 +215,7 @@ export function EditProfileModal({
           {/* Username (read-only) */}
           <div>
             <label className="block text-white/70 text-sm mb-2">Username</label>
-            <div className="w-full bg-[#0A0E1A]/50 text-white/50 px-4 py-3 rounded-xl">
+            <div className="w-full aurora-bg/50 text-white/50 px-4 py-3 rounded-xl">
               @{profile.username}
             </div>
             <p className="text-white/30 text-xs mt-1">Username cannot be changed</p>

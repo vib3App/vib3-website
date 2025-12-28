@@ -11,13 +11,13 @@ interface DraftsPanelProps {
 
 export function DraftsPanel({ drafts, onLoadDraft, onDeleteDraft }: DraftsPanelProps) {
   return (
-    <div className="mb-8 p-4 bg-[#1A1F2E] rounded-2xl">
+    <div className="mb-8 p-4 glass-card rounded-2xl">
       <h2 className="text-white font-medium mb-4">Your Drafts</h2>
       <div className="space-y-3">
         {drafts.map((draft) => (
           <div
             key={draft.id}
-            className="flex items-center gap-3 p-3 bg-[#0A0E1A] rounded-xl"
+            className="flex items-center gap-3 p-3 glass rounded-xl"
           >
             <div className="w-16 h-24 rounded-lg overflow-hidden bg-black/50 flex-shrink-0">
               {draft.thumbnailUrl ? (
@@ -46,7 +46,7 @@ export function DraftsPanel({ drafts, onLoadDraft, onDeleteDraft }: DraftsPanelP
             </div>
             <button
               onClick={() => onLoadDraft(draft)}
-              className="px-3 py-1.5 bg-[#6366F1] text-white text-sm rounded-full hover:opacity-90"
+              className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-teal-400 text-white text-sm rounded-full hover:opacity-90"
             >
               Edit
             </button>

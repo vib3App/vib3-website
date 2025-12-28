@@ -42,7 +42,7 @@ export function VideoPreviewEditor({
                   key={i}
                   onClick={() => onThumbnailSelect(thumb)}
                   className={`w-20 h-28 rounded-lg overflow-hidden ${
-                    selectedThumbnail === thumb ? 'ring-2 ring-[#6366F1]' : ''
+                    selectedThumbnail === thumb ? 'ring-2 ring-purple-500' : ''
                   }`}
                 >
                   <Image
@@ -86,7 +86,7 @@ export function VideoPreviewEditor({
 
       <button
         onClick={onNext}
-        className="w-full py-4 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
+        className="w-full py-4 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
       >
         Next: Add Details
       </button>
@@ -114,7 +114,7 @@ function EditButton({ icon, label }: { icon: string; label: string }) {
   };
 
   return (
-    <button className="p-4 bg-[#1A1F2E] rounded-xl text-center hover:bg-[#252A3E] transition-colors">
+    <button className="p-4 glass rounded-xl text-center hover:bg-white/10 transition-colors">
       {icons[icon]}
       <span className="text-white/70 text-sm">{label}</span>
     </button>

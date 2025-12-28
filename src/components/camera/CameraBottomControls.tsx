@@ -27,7 +27,7 @@ export function CameraBottomControls({
             </svg>
           </button>
 
-          <button onClick={onNext} className="px-8 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full">
+          <button onClick={onNext} className="px-8 py-3 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full">
             Next
           </button>
         </div>

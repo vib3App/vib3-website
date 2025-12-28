@@ -78,7 +78,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center px-4">
+      <div className="min-h-screen aurora-bg flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +89,7 @@ function ResetPasswordForm() {
           <p className="text-white/60 mb-6">This password reset link is invalid or has expired.</p>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center px-6 py-3 bg-[#6366F1] text-white font-medium rounded-xl hover:bg-[#5558E3] transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors"
           >
             Back to Login
           </Link>
@@ -100,7 +100,7 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center px-4">
+      <div className="min-h-screen aurora-bg flex items-center justify-center px-4">
         <div className="text-center">
           <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@ function ResetPasswordForm() {
           <p className="text-white/60 mb-6">Your password has been successfully reset. Redirecting to login...</p>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center px-6 py-3 bg-[#6366F1] text-white font-medium rounded-xl hover:bg-[#5558E3] transition-colors"
+            className="inline-flex items-center justify-center px-6 py-3 bg-purple-500 text-white font-medium rounded-xl hover:bg-purple-600 transition-colors"
           >
             Go to Login
           </Link>
@@ -121,12 +121,12 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center px-4">
+    <div className="min-h-screen aurora-bg flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-[#6366F1] to-[#14B8A6] bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
               VIB3
             </h1>
           </Link>
@@ -154,7 +154,7 @@ function ResetPasswordForm() {
                 placeholder="Enter new password"
                 required
                 minLength={8}
-                className="w-full bg-[#1A1F2E] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1] pr-12"
+                className="w-full glass text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50 pr-12"
               />
               <button
                 type="button"
@@ -205,7 +205,7 @@ function ResetPasswordForm() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
               required
-              className={`w-full bg-[#1A1F2E] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1] ${
+              className={`w-full glass text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50 ${
                 confirmPassword && password !== confirmPassword ? 'ring-2 ring-red-500' : ''
               }`}
             />
@@ -218,7 +218,7 @@ function ResetPasswordForm() {
           <button
             type="submit"
             disabled={isLoading || password.length < 8 || password !== confirmPassword}
-            className="w-full bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-medium py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-purple-500 to-teal-400 text-white font-medium py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
@@ -234,7 +234,7 @@ function ResetPasswordForm() {
         {/* Back to login */}
         <p className="text-center mt-6 text-white/50">
           Remember your password?{' '}
-          <Link href="/login" className="text-[#6366F1] hover:underline">
+          <Link href="/login" className="text-purple-400 hover:underline">
             Sign in
           </Link>
         </p>
@@ -245,7 +245,7 @@ function ResetPasswordForm() {
 
 function LoadingState() {
   return (
-    <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+    <div className="min-h-screen aurora-bg flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
     </div>
   );

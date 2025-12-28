@@ -39,7 +39,7 @@ export function EditorTabs({ activeMode, onModeChange }: EditorTabsProps) {
           key={mode.id}
           onClick={() => onModeChange(mode.id)}
           className={`flex-1 min-w-[80px] flex flex-col items-center gap-1 py-3 ${
-            activeMode === mode.id ? 'text-[#6366F1]' : 'text-white/50'
+            activeMode === mode.id ? 'text-purple-400' : 'text-white/50'
           }`}
         >
           {mode.icon}

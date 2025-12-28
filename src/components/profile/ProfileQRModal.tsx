@@ -90,8 +90,8 @@ export function ProfileQRModal({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-gradient-to-b from-[#6366F1] to-[#14B8A6] rounded-3xl w-full max-w-sm p-1">
-        <div className="bg-[#1A1F2E] rounded-3xl p-6">
+      <div className="relative bg-gradient-to-b from-purple-500 to-teal-400 rounded-3xl w-full max-w-sm p-1">
+        <div className="glass rounded-3xl p-6">
           {/* Close Button */}
           <button
             onClick={onClose}
@@ -104,7 +104,7 @@ export function ProfileQRModal({
 
           {/* Profile Info */}
           <div className="flex flex-col items-center mb-6">
-            <div className="relative w-20 h-20 rounded-full overflow-hidden bg-[#0A0E1A] mb-3">
+            <div className="relative w-20 h-20 rounded-full overflow-hidden aurora-bg mb-3">
               {profile.profilePicture ? (
                 <Image
                   src={profile.profilePicture}
@@ -123,7 +123,7 @@ export function ProfileQRModal({
                 {profile.displayName || profile.username}
               </h3>
               {profile.isVerified && (
-                <svg className="w-5 h-5 text-[#6366F1]" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               )}
@@ -144,14 +144,14 @@ export function ProfileQRModal({
                 />
                 {/* Center logo overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#6366F1] to-[#14B8A6] rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-teal-400 rounded-xl flex items-center justify-center">
                     <span className="text-white font-bold text-xl">V</span>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="w-full aspect-square flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
               </div>
             )}
           </div>
@@ -165,7 +165,7 @@ export function ProfileQRModal({
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleCopyLink}
-              className="flex items-center justify-center gap-2 bg-[#0A0E1A] text-white py-3 rounded-xl hover:bg-[#0A0E1A]/80 transition-colors"
+              className="flex items-center justify-center gap-2 aurora-bg text-white py-3 rounded-xl hover:aurora-bg/80 transition-colors"
             >
               {copied ? (
                 <>
@@ -185,7 +185,7 @@ export function ProfileQRModal({
             </button>
             <button
               onClick={handleShare}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white py-3 rounded-xl hover:opacity-90 transition-opacity"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-teal-400 text-white py-3 rounded-xl hover:opacity-90 transition-opacity"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -197,7 +197,7 @@ export function ProfileQRModal({
           {/* Download QR */}
           <button
             onClick={handleDownloadQR}
-            className="w-full mt-3 text-[#6366F1] text-sm font-medium hover:underline"
+            className="w-full mt-3 text-purple-400 text-sm font-medium hover:underline"
           >
             Download QR Code
           </button>

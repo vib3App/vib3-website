@@ -90,7 +90,7 @@ export function VideoActions({
         href={`/profile/${video.userId}`}
         className="relative"
       >
-        <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/20 hover:ring-[#6366F1] transition-all">
+        <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/20 hover:ring-purple-400 transition-all">
           {video.userAvatar ? (
             <Image
               src={video.userAvatar}
@@ -100,12 +100,12 @@ export function VideoActions({
               className="object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-[#6366F1] to-[#14B8A6] flex items-center justify-center text-white font-bold">
+            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center text-white font-bold">
               {video.username.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
-        <button className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 bg-[#6366F1] rounded-full flex items-center justify-center text-white">
+        <button className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center text-white">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>

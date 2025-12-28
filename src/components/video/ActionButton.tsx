@@ -18,8 +18,8 @@ export function ActionButton({
   isActive = false,
   label,
   onClick,
-  gradientFrom = '#6366F1',
-  gradientTo = '#14B8A6',
+  gradientFrom = '#a855f7',
+  gradientTo = '#2dd4bf',
 }: ActionButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
 

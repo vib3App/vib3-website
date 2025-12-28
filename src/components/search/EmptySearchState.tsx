@@ -17,7 +17,7 @@ export function EmptySearchState({ recentSearches, trendingSearches, onClearRece
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-white font-medium">Recent Searches</h2>
-            <button onClick={onClearRecent} className="text-[#6366F1] text-sm">
+            <button onClick={onClearRecent} className="text-purple-400 text-sm">
               Clear all
             </button>
           </div>
@@ -45,7 +45,7 @@ export function EmptySearchState({ recentSearches, trendingSearches, onClearRece
             <button
               key={term}
               onClick={() => router.push(`/search?q=${encodeURIComponent(term)}`)}
-              className="px-4 py-2 bg-[#1A1F2E] text-white/70 rounded-full hover:bg-[#252A3E] transition-colors"
+              className="px-4 py-2 glass text-white/70 rounded-full hover:bg-white/10 transition-colors"
             >
               {term}
             </button>

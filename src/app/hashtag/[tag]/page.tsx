@@ -44,12 +44,12 @@ export default function HashtagPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0A0E1A]">
+    <div className="flex min-h-screen aurora-bg">
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">
         {/* Header */}
-        <header className="sticky top-0 z-40 bg-[#0A0E1A]/95 backdrop-blur-sm border-b border-white/5">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl border-b border-white/5">
           <div className="flex items-center gap-4 px-4 h-14">
             <button onClick={() => router.back()} className="text-white/50 hover:text-white">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@ export default function HashtagPage() {
         <div className="max-w-4xl mx-auto px-4 py-6">
           {/* Hashtag Info */}
           <div className="text-center mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#6366F1] to-[#14B8A6] flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center">
               <span className="text-4xl">#</span>
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">#{tag}</h2>
@@ -81,7 +81,7 @@ export default function HashtagPage() {
           {isLoading ? (
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
               {[...Array(12)].map((_, i) => (
-                <div key={i} className="aspect-[9/16] bg-[#1A1F2E] rounded-lg animate-pulse" />
+                <div key={i} className="aspect-[9/16] glass rounded-lg animate-pulse" />
               ))}
             </div>
           ) : videos.length === 0 ? (
@@ -92,7 +92,7 @@ export default function HashtagPage() {
               <p className="text-white/50">No videos with #{tag} yet</p>
               <Link
                 href="/upload"
-                className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full"
+                className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full"
               >
                 Be the first to post
               </Link>
@@ -103,7 +103,7 @@ export default function HashtagPage() {
                 <Link
                   key={video.id}
                   href={`/feed?video=${video.id}`}
-                  className="relative aspect-[9/16] bg-[#1A1F2E] rounded-lg overflow-hidden group"
+                  className="relative aspect-[9/16] glass rounded-lg overflow-hidden group"
                 >
                   {video.thumbnailUrl ? (
                     <Image

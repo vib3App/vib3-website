@@ -48,7 +48,7 @@ function CommentItem({ comment }: { comment: Comment }) {
   return (
     <div className="flex gap-3 py-3">
       <Link href={`/profile/${comment.userId}`}>
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1A1F2E] flex-shrink-0">
+        <div className="w-10 h-10 rounded-full overflow-hidden glass flex-shrink-0">
           {comment.userAvatar ? (
             <Image
               src={comment.userAvatar}
@@ -161,7 +161,7 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A0E1A] rounded-t-3xl max-h-[70vh] flex flex-col animate-slide-up">
+      <div className="fixed bottom-0 left-0 right-0 z-50 aurora-bg rounded-t-3xl max-h-[70vh] flex flex-col animate-slide-up">
         {/* Handle */}
         <div className="flex justify-center py-3">
           <div className="w-10 h-1 bg-white/20 rounded-full" />
@@ -201,10 +201,10 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
         </div>
 
         {/* Comment Input */}
-        <div className="p-4 border-t border-white/5 bg-[#0A0E1A]">
+        <div className="p-4 border-t border-white/5 aurora-bg">
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1A1F2E] flex-shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden glass flex-shrink-0">
                 {user?.profilePicture ? (
                   <Image
                     src={user.profilePicture}
@@ -226,12 +226,12 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
                 placeholder="Add a comment..."
-                className="flex-1 bg-[#1A1F2E] text-white px-4 py-3 rounded-full outline-none placeholder:text-white/30"
+                className="flex-1 glass-card text-white px-4 py-3 rounded-full outline-none placeholder:text-white/30"
               />
               <button
                 onClick={handlePostComment}
                 disabled={!newComment.trim() || isPosting}
-                className="text-[#6366F1] font-semibold disabled:opacity-50"
+                className="text-purple-400 font-semibold disabled:opacity-50"
               >
                 {isPosting ? '...' : 'Post'}
               </button>
@@ -239,7 +239,7 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
           ) : (
             <Link
               href="/login"
-              className="block text-center py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full"
+              className="block text-center py-3 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full"
             >
               Log in to comment
             </Link>

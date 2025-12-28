@@ -31,7 +31,7 @@ export function TrimPanel({
     <div className="space-y-4">
       <div
         ref={timelineRef}
-        className="relative h-16 bg-[#0A0E1A] rounded-lg overflow-hidden cursor-pointer"
+        className="relative h-16 aurora-bg rounded-lg overflow-hidden cursor-pointer"
       >
         <div className="absolute inset-0 flex">
           {thumbnails.map((thumb, i) => (
@@ -43,14 +43,14 @@ export function TrimPanel({
         <div className="absolute top-0 bottom-0 right-0 bg-black/70" style={{ width: `${((duration - trimEnd) / duration) * 100}%` }} />
 
         <div
-          className="absolute top-0 bottom-0 w-3 bg-[#6366F1] cursor-ew-resize rounded-l"
+          className="absolute top-0 bottom-0 w-3 bg-purple-500 cursor-ew-resize rounded-l"
           style={{ left: `calc(${(trimStart / duration) * 100}% - 6px)` }}
           onMouseDown={(e) => onMouseDown(e, 'start')}
         >
           <div className="absolute inset-y-0 left-1/2 w-0.5 bg-white/50" />
         </div>
         <div
-          className="absolute top-0 bottom-0 w-3 bg-[#6366F1] cursor-ew-resize rounded-r"
+          className="absolute top-0 bottom-0 w-3 bg-purple-500 cursor-ew-resize rounded-r"
           style={{ left: `${(trimEnd / duration) * 100}%` }}
           onMouseDown={(e) => onMouseDown(e, 'end')}
         >
@@ -68,7 +68,7 @@ export function TrimPanel({
 
       <div className="flex justify-between text-sm">
         <div className="text-white/50">Start: <span className="text-white">{formatTime(trimStart)}</span></div>
-        <div className="text-white/50">Duration: <span className="text-[#6366F1]">{formatTime(trimEnd - trimStart)}</span></div>
+        <div className="text-white/50">Duration: <span className="text-purple-400">{formatTime(trimEnd - trimStart)}</span></div>
         <div className="text-white/50">End: <span className="text-white">{formatTime(trimEnd)}</span></div>
       </div>
     </div>

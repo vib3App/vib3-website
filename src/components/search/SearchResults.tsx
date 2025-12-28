@@ -77,13 +77,13 @@ function UsersSection({ users, showHeader, onSeeAll }: { users: SearchUser[]; sh
       {showHeader && (
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-medium">Users</h2>
-          <button onClick={onSeeAll} className="text-[#6366F1] text-sm">See all</button>
+          <button onClick={onSeeAll} className="text-purple-400 text-sm">See all</button>
         </div>
       )}
       <div className="space-y-3">
         {users.map((user) => (
           <Link key={user.id} href={`/profile/${user.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1A1F2E]">
+            <div className="w-12 h-12 rounded-full overflow-hidden glass">
               {user.avatar ? (
                 <Image src={user.avatar} alt={user.username} width={48} height={48} className="object-cover" />
               ) : (
@@ -96,14 +96,14 @@ function UsersSection({ users, showHeader, onSeeAll }: { users: SearchUser[]; sh
               <div className="flex items-center gap-1">
                 <span className="text-white font-medium">{user.username}</span>
                 {user.isVerified && (
-                  <svg className="w-4 h-4 text-[#6366F1]" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 )}
               </div>
               <p className="text-white/50 text-sm">{formatCount(user.followerCount)} followers</p>
             </div>
-            <button className="px-4 py-1.5 bg-[#6366F1] text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity">
+            <button className="px-4 py-1.5 bg-purple-500 text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity">
               {user.isFollowing ? 'Following' : 'Follow'}
             </button>
           </Link>
@@ -119,21 +119,21 @@ function HashtagsSection({ hashtags, showHeader, onSeeAll }: { hashtags: SearchH
       {showHeader && (
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-medium">Hashtags</h2>
-          <button onClick={onSeeAll} className="text-[#6366F1] text-sm">See all</button>
+          <button onClick={onSeeAll} className="text-purple-400 text-sm">See all</button>
         </div>
       )}
       <div className="space-y-3">
         {hashtags.map((hashtag) => (
           <Link key={hashtag.name} href={`/hashtag/${hashtag.name}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-[#6366F1]/20 flex items-center justify-center">
-              <span className="text-[#6366F1] text-xl font-bold">#</span>
+            <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <span className="text-purple-400 text-xl font-bold">#</span>
             </div>
             <div className="flex-1">
               <p className="text-white font-medium">#{hashtag.name}</p>
               <p className="text-white/50 text-sm">{formatCount(hashtag.videoCount)} videos</p>
             </div>
             {hashtag.trending && (
-              <span className="text-[#14B8A6] text-xs font-medium">Trending</span>
+              <span className="text-teal-400 text-xs font-medium">Trending</span>
             )}
           </Link>
         ))}
@@ -148,13 +148,13 @@ function SoundsSection({ sounds, showHeader, onSeeAll }: { sounds: SearchSound[]
       {showHeader && (
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-medium">Sounds</h2>
-          <button onClick={onSeeAll} className="text-[#6366F1] text-sm">See all</button>
+          <button onClick={onSeeAll} className="text-purple-400 text-sm">See all</button>
         </div>
       )}
       <div className="space-y-3">
         {sounds.map((sound) => (
           <div key={sound.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
-            <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#1A1F2E]">
+            <div className="w-12 h-12 rounded-lg overflow-hidden glass">
               {sound.coverUrl ? (
                 <Image src={sound.coverUrl} alt={sound.title} width={48} height={48} className="object-cover" />
               ) : (
@@ -185,12 +185,12 @@ function VideosSection({ videos, showHeader, onSeeAll }: { videos: Video[]; show
       {showHeader && (
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-medium">Videos</h2>
-          <button onClick={onSeeAll} className="text-[#6366F1] text-sm">See all</button>
+          <button onClick={onSeeAll} className="text-purple-400 text-sm">See all</button>
         </div>
       )}
       <div className="grid grid-cols-3 gap-2">
         {videos.map((video) => (
-          <Link key={video.id} href={`/feed?video=${video.id}`} className="relative aspect-[9/16] bg-[#1A1F2E] rounded-lg overflow-hidden group">
+          <Link key={video.id} href={`/feed?video=${video.id}`} className="relative aspect-[9/16] glass rounded-lg overflow-hidden group">
             {video.thumbnailUrl ? (
               <Image src={video.thumbnailUrl} alt={video.caption || 'Video'} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
             ) : (
@@ -219,15 +219,15 @@ function TranscriptsSection({ matches, showHeader, onSeeAll }: { matches: Transc
       {showHeader && (
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-white font-medium">Found in Videos</h2>
-          <button onClick={onSeeAll} className="text-[#6366F1] text-sm">See all</button>
+          <button onClick={onSeeAll} className="text-purple-400 text-sm">See all</button>
         </div>
       )}
       <div className="space-y-3">
         {matches.map((match, index) => (
-          <Link key={index} href={`/feed?video=${match.videoId}&t=${match.timestamp}`} className="block p-3 rounded-xl bg-[#1A1F2E] hover:bg-[#252A3E] transition-colors">
+          <Link key={index} href={`/feed?video=${match.videoId}&t=${match.timestamp}`} className="block p-3 rounded-xl glass hover:bg-white/10 transition-colors">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#6366F1]/20 flex items-center justify-center flex-shrink-0">
-                <svg className="w-4 h-4 text-[#6366F1]" fill="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>

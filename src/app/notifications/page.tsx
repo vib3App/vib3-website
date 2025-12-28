@@ -11,7 +11,7 @@ export default function NotificationsPage() {
   if (!n.isAuthenticated) {
     return (
       <div className="min-h-screen aurora-bg flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6366F1]" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
@@ -28,7 +28,7 @@ export default function NotificationsPage() {
             {n.unreadCount > 0 && (
               <button
                 onClick={n.handleMarkAllRead}
-                className="text-[#6366F1] hover:text-[#5558E3] text-sm font-medium"
+                className="text-purple-400 hover:text-purple-300 text-sm font-medium"
               >
                 Mark all as read
               </button>
@@ -104,7 +104,7 @@ export default function NotificationsPage() {
               {n.hasMore && (
                 <button
                   onClick={n.loadMore}
-                  className="w-full py-4 text-[#6366F1] hover:text-[#5558E3] text-sm font-medium"
+                  className="w-full py-4 text-purple-400 hover:text-purple-300 text-sm font-medium"
                 >
                   Load more
                 </button>

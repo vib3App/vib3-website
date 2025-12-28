@@ -130,7 +130,7 @@ export function PiPButton({ isActive, enabled, onToggle }: PiPButtonProps) {
   return (
     <button
       onClick={onToggle}
-      className={`text-white hover:text-white/80 hidden sm:block ${isActive ? 'text-[#6366F1]' : ''}`}
+      className={`text-white hover:text-white/80 hidden sm:block ${isActive ? 'text-purple-400' : ''}`}
       title="Picture in Picture"
     >
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

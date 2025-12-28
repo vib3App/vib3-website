@@ -54,7 +54,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
       href={getLink()}
       onClick={handleClick}
       className={`flex items-center gap-3 p-4 hover:bg-white/5 transition-colors ${
-        !notification.isRead ? 'bg-[#6366F1]/5' : ''
+        !notification.isRead ? 'bg-purple-500/5' : ''
       }`}
     >
       {notification.fromUser?.avatar ? (
@@ -99,7 +99,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
       )}
 
       {!notification.isRead && (
-        <div className="w-2 h-2 rounded-full bg-[#6366F1] flex-shrink-0" />
+        <div className="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0" />
       )}
     </Link>
   );

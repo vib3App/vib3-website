@@ -188,12 +188,12 @@ export default function LivePage() {
             <div className="grid md:grid-cols-2 gap-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="aspect-video bg-[#1A1F2E] rounded-xl mb-3" />
+                  <div className="aspect-video glass rounded-xl mb-3" />
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#1A1F2E]" />
+                    <div className="w-10 h-10 rounded-full glass" />
                     <div className="flex-1">
-                      <div className="h-4 bg-[#1A1F2E] rounded w-3/4 mb-2" />
-                      <div className="h-3 bg-[#1A1F2E] rounded w-1/2" />
+                      <div className="h-4 glass rounded w-3/4 mb-2" />
+                      <div className="h-3 glass rounded w-1/2" />
                     </div>
                   </div>
                 </div>
@@ -201,7 +201,7 @@ export default function LivePage() {
             </div>
           ) : displayedStreams.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#6366F1]/20 to-[#14B8A6]/20 flex items-center justify-center">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500/20 to-teal-400/20 flex items-center justify-center">
                 <svg className="w-12 h-12 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
@@ -217,14 +217,14 @@ export default function LivePage() {
               {activeTab === 'following' ? (
                 <button
                   onClick={() => setActiveTab('discover')}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#1A1F2E] text-white font-semibold rounded-full hover:bg-[#252A3E]"
+                  className="inline-flex items-center gap-2 px-8 py-4 glass text-white font-semibold rounded-full hover:bg-white/10"
                 >
                   Discover Streams
                 </button>
               ) : (
                 <button
                   onClick={handleGoLive}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full hover:opacity-90 transition-opacity"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -245,7 +245,7 @@ export default function LivePage() {
                 <div className="text-center mt-8">
                   <button
                     onClick={() => loadStreams(page + 1, true)}
-                    className="px-6 py-3 bg-[#1A1F2E] text-white rounded-full hover:bg-[#252A3E]"
+                    className="px-6 py-3 glass text-white rounded-full hover:bg-white/10"
                   >
                     Load more
                   </button>
@@ -258,9 +258,9 @@ export default function LivePage() {
             <section className="mt-12 pt-12 border-t border-white/5">
               <h2 className="text-white font-semibold text-lg mb-6 text-center">Why Go Live on VIB3?</h2>
               <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-[#1A1F2E] rounded-2xl">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#6366F1]/20 flex items-center justify-center">
-                    <svg className="w-7 h-7 text-[#6366F1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center p-6 glass-card rounded-2xl">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-purple-500/20 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
@@ -268,9 +268,9 @@ export default function LivePage() {
                   <p className="text-white/50 text-sm">Invite up to 4 guests to join your live stream</p>
                 </div>
 
-                <div className="text-center p-6 bg-[#1A1F2E] rounded-2xl">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#14B8A6]/20 flex items-center justify-center">
-                    <svg className="w-7 h-7 text-[#14B8A6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center p-6 glass-card rounded-2xl">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-teal-500/20 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -278,9 +278,9 @@ export default function LivePage() {
                   <p className="text-white/50 text-sm">Receive virtual gifts from viewers</p>
                 </div>
 
-                <div className="text-center p-6 bg-[#1A1F2E] rounded-2xl">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#EC4899]/20 flex items-center justify-center">
-                    <svg className="w-7 h-7 text-[#EC4899]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center p-6 glass-card rounded-2xl">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-pink-500/20 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>

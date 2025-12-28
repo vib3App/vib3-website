@@ -37,10 +37,10 @@ export function ProfileButton({
         <div
           className="w-[54px] h-[78px] rounded-[27px] flex items-center justify-center overflow-hidden"
           style={{
-            background: userAvatar ? undefined : 'linear-gradient(135deg, #6366F1, #14B8A6)',
+            background: userAvatar ? undefined : 'linear-gradient(135deg, #a855f7, #2dd4bf)',
             boxShadow: `
-              0 0 12px rgba(99, 102, 241, 0.4),
-              2px 2px 16px rgba(20, 184, 166, 0.3)
+              0 0 12px rgba(168, 85, 247, 0.4),
+              2px 2px 16px rgba(45, 212, 191, 0.3)
             `,
           }}
         >
@@ -66,8 +66,8 @@ export function ProfileButton({
         }}
         className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white transition-colors"
         style={{
-          backgroundColor: isFollowing ? '#EF4444' : '#6366F1',
-          boxShadow: `0 0 6px ${isFollowing ? 'rgba(239, 68, 68, 0.4)' : 'rgba(99, 102, 241, 0.4)'}`,
+          backgroundColor: isFollowing ? '#EF4444' : '#a855f7',
+          boxShadow: `0 0 6px ${isFollowing ? 'rgba(239, 68, 68, 0.4)' : 'rgba(168, 85, 247, 0.4)'}`,
         }}
       >
         {isFollowing ? (

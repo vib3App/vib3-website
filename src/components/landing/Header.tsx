@@ -8,14 +8,14 @@ import Link from 'next/link';
 
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A0E1A]/80 backdrop-blur-lg border-b border-white/5">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-heavy border-b border-white/5">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#14B8A6] flex items-center justify-center font-bold text-xl shadow-lg shadow-[#6366F1]/30 group-hover:shadow-[#6366F1]/50 transition-shadow">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center font-bold text-xl shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
             V
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-[#6366F1] to-[#14B8A6] bg-clip-text text-transparent">
+          <span className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
             VIB3
           </span>
         </Link>
@@ -36,7 +36,7 @@ export function Header() {
           </a>
           <Link
             href="/login"
-            className="px-5 py-2.5 bg-gradient-to-r from-[#6366F1] to-[#6366F1] hover:from-[#6366F1] hover:to-[#14B8A6] rounded-xl font-medium text-sm transition-all shadow-lg shadow-[#6366F1]/20 hover:shadow-[#6366F1]/40"
+            className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"
           >
             Sign In
           </Link>

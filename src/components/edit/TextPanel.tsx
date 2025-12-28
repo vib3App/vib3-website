@@ -30,10 +30,10 @@ export function TextPanel({
             value={newText}
             onChange={(e) => onNewTextChange(e.target.value)}
             placeholder="Enter text..."
-            className="flex-1 bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30"
+            className="flex-1 aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30"
             autoFocus
           />
-          <button onClick={onAddText} className="px-4 py-3 bg-[#6366F1] text-white rounded-xl">Add</button>
+          <button onClick={onAddText} className="px-4 py-3 bg-purple-500 text-white rounded-xl">Add</button>
         </div>
       ) : (
         <button
@@ -47,7 +47,7 @@ export function TextPanel({
       {texts.length > 0 && (
         <div className="space-y-2">
           {texts.map((text) => (
-            <div key={text.id} className="flex items-center justify-between p-3 bg-[#0A0E1A] rounded-lg">
+            <div key={text.id} className="flex items-center justify-between p-3 aurora-bg rounded-lg">
               <span className="text-white">{text.text}</span>
               <button onClick={() => onRemoveText(text.id)} className="text-white/30 hover:text-red-500">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

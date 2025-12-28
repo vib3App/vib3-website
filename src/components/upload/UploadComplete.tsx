@@ -11,7 +11,7 @@ interface UploadCompleteProps {
 export function UploadComplete({ isScheduled, scheduledDate, onUploadAnother }: UploadCompleteProps) {
   return (
     <div className="text-center py-12">
-      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#6366F1] to-[#14B8A6] flex items-center justify-center">
+      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center">
         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
@@ -27,13 +27,13 @@ export function UploadComplete({ isScheduled, scheduledDate, onUploadAnother }: 
       <div className="flex justify-center gap-4">
         <Link
           href="/feed"
-          className="px-8 py-3 bg-[#1A1F2E] text-white font-semibold rounded-full hover:bg-[#252A3E]"
+          className="px-8 py-3 glass text-white font-semibold rounded-full hover:bg-white/10"
         >
           View Feed
         </Link>
         <button
           onClick={onUploadAnother}
-          className="px-8 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full"
+          className="px-8 py-3 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-semibold rounded-full"
         >
           Upload Another
         </button>

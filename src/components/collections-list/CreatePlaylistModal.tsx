@@ -43,7 +43,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onCreated }: CreatePlayli
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-[#1A1F2E] rounded-2xl w-full max-w-md mx-4 p-6">
+      <div className="glass-card rounded-2xl w-full max-w-md mx-4 p-6">
         <h2 className="text-xl font-bold text-white mb-6">Create Playlist</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,7 +54,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onCreated }: CreatePlayli
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="My Playlist"
-              className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1]"
+              className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50"
               autoFocus
             />
           </div>
@@ -66,14 +66,14 @@ export function CreatePlaylistModal({ isOpen, onClose, onCreated }: CreatePlayli
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add a description..."
               rows={3}
-              className="w-full bg-[#0A0E1A] text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-[#6366F1] resize-none"
+              className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50 resize-none"
             />
           </div>
 
           <label className="flex items-center gap-3 cursor-pointer">
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center ${
-                isPrivate ? 'bg-[#6366F1]' : 'bg-[#0A0E1A] border border-white/20'
+                isPrivate ? 'bg-purple-500' : 'aurora-bg border border-white/20'
               }`}
             >
               {isPrivate && (
@@ -96,7 +96,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onCreated }: CreatePlayli
             <button
               type="submit"
               disabled={!name.trim() || isSubmitting}
-              className="flex-1 py-3 rounded-xl bg-[#6366F1] text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+              className="flex-1 py-3 rounded-xl bg-purple-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
             >
               {isSubmitting ? 'Creating...' : 'Create'}
             </button>

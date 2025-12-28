@@ -62,7 +62,7 @@ export function CommentItem({
   return (
     <div className={`flex gap-3 ${isReply ? 'ml-10' : ''}`}>
       {/* Avatar */}
-      <div className="w-8 h-8 rounded-full overflow-hidden bg-[#0A0E1A] flex-shrink-0">
+      <div className="w-8 h-8 rounded-full overflow-hidden aurora-bg flex-shrink-0">
         {comment.userAvatar ? (
           <Image
             src={comment.userAvatar}
@@ -87,10 +87,10 @@ export function CommentItem({
 
         {/* Voice Comment */}
         {comment.voiceUrl ? (
-          <div className="mt-2 flex items-center gap-2 bg-[#0A0E1A] rounded-full px-3 py-2 w-fit">
+          <div className="mt-2 flex items-center gap-2 aurora-bg rounded-full px-3 py-2 w-fit">
             <button
               onClick={toggleAudio}
-              className="w-8 h-8 bg-[#6366F1] rounded-full flex items-center justify-center"
+              className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center"
             >
               {isPlaying ? (
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ export function CommentItem({
               {Array.from({ length: 20 }).map((_, i) => (
                 <div
                   key={i}
-                  className="w-1 bg-[#6366F1] rounded-full"
+                  className="w-1 bg-purple-500 rounded-full"
                   style={{ height: `${Math.random() * 16 + 8}px` }}
                 />
               ))}
@@ -169,7 +169,7 @@ export function CommentItem({
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-6 bg-[#0A0E1A] rounded-lg shadow-xl z-20 py-1 min-w-[100px]">
+                  <div className="absolute right-0 top-6 aurora-bg rounded-lg shadow-xl z-20 py-1 min-w-[100px]">
                     <button
                       onClick={() => {
                         setShowMenu(false);
@@ -190,10 +190,10 @@ export function CommentItem({
         {!isReply && comment.replyCount > 0 && (
           <button
             onClick={handleToggleReplies}
-            className="text-[#6366F1] text-xs mt-2 flex items-center gap-1"
+            className="text-purple-400 text-xs mt-2 flex items-center gap-1"
           >
             {loadingReplies ? (
-              <div className="w-3 h-3 border-2 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
+              <div className="w-3 h-3 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
                 <svg

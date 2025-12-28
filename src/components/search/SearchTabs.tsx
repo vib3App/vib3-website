@@ -32,14 +32,14 @@ export function SearchTabs({ activeTab, onTabChange, showFilters, onShowFiltersC
           >
             {tab.label}
             {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[#6366F1] to-[#14B8A6]" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-teal-400" />
             )}
           </button>
         ))}
       </div>
       <button
         onClick={() => onShowFiltersChange(!showFilters)}
-        className={`p-3 ${showFilters ? 'text-[#6366F1]' : 'text-white/50'}`}
+        className={`p-3 ${showFilters ? 'text-purple-400' : 'text-white/50'}`}
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />

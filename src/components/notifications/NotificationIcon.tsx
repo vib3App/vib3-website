@@ -27,16 +27,16 @@ export function NotificationIcon({ type }: NotificationIconProps) {
       );
     case 'follow':
       return (
-        <div className="w-8 h-8 rounded-full bg-[#6366F1]/20 flex items-center justify-center">
-          <svg className="w-4 h-4 text-[#6366F1]" fill="currentColor" viewBox="0 0 24 24">
+        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+          <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
           </svg>
         </div>
       );
     case 'mention':
       return (
-        <div className="w-8 h-8 rounded-full bg-[#14B8A6]/20 flex items-center justify-center">
-          <svg className="w-4 h-4 text-[#14B8A6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-8 h-8 rounded-full bg-teal-400/20 flex items-center justify-center">
+          <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
           </svg>
         </div>

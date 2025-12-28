@@ -9,14 +9,14 @@ interface SearchFiltersPanelProps {
 
 export function SearchFiltersPanel({ filters, onFilterChange }: SearchFiltersPanelProps) {
   return (
-    <div className="p-4 border-b border-white/5 bg-[#0A0E1A]">
+    <div className="p-4 glass-heavy mx-4 rounded-xl">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-white/50 text-xs mb-2">Date Range</label>
           <select
             value={filters.dateRange}
             onChange={(e) => onFilterChange({ dateRange: e.target.value as SearchFilters['dateRange'] })}
-            className="w-full bg-[#1A1F2E] text-white px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#6366F1]"
+            className="w-full glass text-white px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             <option value="all">All time</option>
             <option value="today">Today</option>
@@ -30,7 +30,7 @@ export function SearchFiltersPanel({ filters, onFilterChange }: SearchFiltersPan
           <select
             value={filters.duration}
             onChange={(e) => onFilterChange({ duration: e.target.value as SearchFilters['duration'] })}
-            className="w-full bg-[#1A1F2E] text-white px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#6366F1]"
+            className="w-full glass text-white px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             <option value="all">Any duration</option>
             <option value="short">Under 30s</option>
@@ -43,7 +43,7 @@ export function SearchFiltersPanel({ filters, onFilterChange }: SearchFiltersPan
           <select
             value={filters.sortBy}
             onChange={(e) => onFilterChange({ sortBy: e.target.value as SearchFilters['sortBy'] })}
-            className="w-full bg-[#1A1F2E] text-white px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-[#6366F1]"
+            className="w-full glass text-white px-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/50"
           >
             <option value="relevance">Relevance</option>
             <option value="date">Most recent</option>

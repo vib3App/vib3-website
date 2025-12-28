@@ -44,7 +44,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen aurora-bg flex flex-col items-center justify-center px-4">
         <div className="text-white/50 text-lg mb-4">{p.error || 'User not found'}</div>
-        <Link href="/feed" className="text-[#6366F1] hover:underline">Go back to feed</Link>
+        <Link href="/feed" className="text-purple-400 hover:underline">Go back to feed</Link>
       </div>
     );
   }
@@ -116,7 +116,7 @@ function ProfileHeader({ profile, onBack, onQRClick, showMoreMenu, onToggleMenu,
 function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFollow, onEditClick }: { profile: UserProfile; isOwnProfile: boolean; isFollowing: boolean; isFollowLoading: boolean; onFollow: () => void; onEditClick: () => void }) {
   return (
     <div className="flex flex-col items-center text-center mb-6">
-      <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-[#6366F1] to-[#14B8A6] p-0.5 mb-4">
+      <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-teal-400 p-0.5 mb-4">
         <div className="w-full h-full rounded-full overflow-hidden glass-card">
           {profile.profilePicture ? (
             <Image src={profile.profilePicture} alt={profile.username} fill className="object-cover" />
@@ -125,7 +125,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
           )}
         </div>
         {profile.isVerified && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#6366F1] rounded-full flex items-center justify-center">
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
         )}

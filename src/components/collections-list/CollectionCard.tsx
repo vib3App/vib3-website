@@ -18,7 +18,7 @@ export function CollectionCard({ collection, onDelete }: CollectionCardProps) {
     <div className="relative group">
       <Link
         href={`/collections/${collection.id}`}
-        className="block aspect-square bg-[#1A1F2E] rounded-xl overflow-hidden relative"
+        className="block aspect-square glass-card rounded-xl overflow-hidden relative"
       >
         {collection.coverUrl || collection.previewVideos?.[0]?.thumbnailUrl ? (
           <Image
@@ -63,7 +63,7 @@ export function CollectionCard({ collection, onDelete }: CollectionCardProps) {
           </button>
 
           {showMenu && (
-            <div className="absolute top-full right-0 mt-1 bg-[#1A1F2E] rounded-lg shadow-xl overflow-hidden z-10">
+            <div className="absolute top-full right-0 mt-1 glass-card rounded-lg shadow-xl overflow-hidden z-10">
               <button
                 onClick={(e) => {
                   e.preventDefault();

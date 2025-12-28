@@ -46,7 +46,7 @@ export function CameraTopControls({
 
           <button
             onClick={onTimerCycle}
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${timerMode > 0 ? 'bg-[#6366F1]' : 'bg-black/30'}`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${timerMode > 0 ? 'bg-purple-500' : 'bg-black/30'}`}
           >
             <span className="text-white text-xs font-medium">{timerMode > 0 ? `${timerMode}s` : 'Off'}</span>
           </button>

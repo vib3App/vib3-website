@@ -132,7 +132,7 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose }: ShareSheetPro
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A0E1A] rounded-t-3xl animate-slide-up">
+      <div className="fixed bottom-0 left-0 right-0 z-50 aurora-bg rounded-t-3xl animate-slide-up">
         {/* Handle */}
         <div className="flex justify-center py-3">
           <div className="w-10 h-1 bg-white/20 rounded-full" />
@@ -156,7 +156,7 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose }: ShareSheetPro
               onClick={() => handleAction(option.action)}
               className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-white/5 transition-colors"
             >
-              <div className="w-12 h-12 rounded-full bg-[#1A1F2E] flex items-center justify-center text-white">
+              <div className="w-12 h-12 rounded-full glass flex items-center justify-center text-white">
                 {option.icon}
               </div>
               <span className="text-white/70 text-xs">
@@ -168,7 +168,7 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose }: ShareSheetPro
 
         {/* Link Preview */}
         <div className="px-4 pb-6">
-          <div className="flex items-center gap-3 p-3 bg-[#1A1F2E] rounded-xl">
+          <div className="flex items-center gap-3 p-3 glass-card rounded-xl">
             <input
               type="text"
               value={shareUrl}
@@ -177,7 +177,7 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose }: ShareSheetPro
             />
             <button
               onClick={() => handleAction('copy')}
-              className="text-[#6366F1] text-sm font-semibold"
+              className="text-purple-400 text-sm font-semibold"
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>

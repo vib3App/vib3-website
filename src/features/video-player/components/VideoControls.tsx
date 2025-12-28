@@ -74,7 +74,7 @@ export function VideoControls({
         />
         {/* Progress */}
         <div
-          className="absolute h-1 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] rounded"
+          className="absolute h-1 bg-gradient-to-r from-purple-500 to-teal-400 rounded"
           style={{ width: `${progressPercent}%` }}
         />
         {/* Scrubber handle */}
@@ -90,7 +90,7 @@ export function VideoControls({
           {/* Play/Pause */}
           <button
             onClick={onPlayPause}
-            className="text-white hover:text-[#6366F1] transition-colors"
+            className="text-white hover:text-purple-400 transition-colors"
             aria-label={isPlaying ? 'Pause' : 'Play'}
           >
             {isPlaying ? (
@@ -108,7 +108,7 @@ export function VideoControls({
           <div className="flex items-center gap-2">
             <button
               onClick={onMuteToggle}
-              className="text-white hover:text-[#6366F1] transition-colors"
+              className="text-white hover:text-purple-400 transition-colors"
               aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted || volume === 0 ? (
@@ -128,7 +128,7 @@ export function VideoControls({
               step="0.1"
               value={isMuted ? 0 : volume}
               onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-              className="w-20 accent-[#6366F1]"
+              className="w-20 accent-purple-500"
             />
           </div>
 
@@ -144,7 +144,7 @@ export function VideoControls({
             <div className="relative">
               <button
                 onClick={() => setShowQualityMenu(!showQualityMenu)}
-                className="flex items-center gap-1 text-white hover:text-[#6366F1] text-sm bg-white/10 px-2 py-1 rounded transition-colors"
+                className="flex items-center gap-1 text-white hover:text-purple-400 text-sm bg-white/10 px-2 py-1 rounded transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
@@ -153,7 +153,7 @@ export function VideoControls({
                 {currentQuality === 'auto' ? 'Auto' : currentQuality}
               </button>
               {showQualityMenu && (
-                <div className="absolute bottom-full right-0 mb-2 bg-[#1A1F2E] border border-white/10 rounded-lg overflow-hidden shadow-xl min-w-[100px]">
+                <div className="absolute bottom-full right-0 mb-2 glass-card border border-white/10 rounded-lg overflow-hidden shadow-xl min-w-[100px]">
                   <div className="px-3 py-1.5 text-xs text-white/50 border-b border-white/10">Quality</div>
                   {qualities.map((q) => (
                     <button
@@ -164,7 +164,7 @@ export function VideoControls({
                       }}
                       className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm transition-colors ${
                         q === currentQuality
-                          ? 'text-[#6366F1] bg-[#6366F1]/10'
+                          ? 'text-purple-400 bg-purple-500/10'
                           : 'text-white hover:bg-white/5'
                       }`}
                     >
@@ -187,7 +187,7 @@ export function VideoControls({
           {onFullscreen && (
             <button
               onClick={onFullscreen}
-              className="text-white hover:text-[#6366F1] transition-colors"
+              className="text-white hover:text-purple-400 transition-colors"
               aria-label="Fullscreen"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
