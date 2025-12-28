@@ -64,11 +64,27 @@ export function FeedVideoItem({
         />
       </div>
 
-      {/* Double tap heart animation */}
+      {/* Double tap heart animation - Enhanced */}
       {showHeart && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-          <svg className="w-32 h-32 text-red-500 animate-ping" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+          {/* Glow effect */}
+          <div className="absolute w-40 h-40 bg-gradient-to-r from-pink-500 to-red-500 rounded-full blur-3xl opacity-50 animate-ping" />
+          {/* Heart with gradient */}
+          <svg
+            className="relative w-28 h-28"
+            viewBox="0 0 24 24"
+            style={{ animation: 'like-explode 0.6s ease-out forwards' }}
+          >
+            <defs>
+              <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ec4899" />
+                <stop offset="100%" stopColor="#ef4444" />
+              </linearGradient>
+            </defs>
+            <path
+              fill="url(#heartGradient)"
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
           </svg>
         </div>
       )}
@@ -108,14 +124,14 @@ function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => v
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      className="absolute top-20 md:top-14 right-4 z-50 p-2.5 bg-black/50 backdrop-blur-sm rounded-full"
+      className="absolute top-20 md:top-14 right-4 z-50 p-3 glass rounded-xl group transition-all hover:bg-white/10"
     >
       {isMuted ? (
-        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
           <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
         </svg>
       ) : (
-        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
           <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
         </svg>
       )}
@@ -138,13 +154,15 @@ function CreatorInfo({
 
   return (
     <div className="absolute top-16 md:top-4 left-4 z-20">
-      <Link href={`/profile/${video.userId}`} className="flex items-center gap-3">
+      <Link href={`/profile/${video.userId}`} className="group flex items-center gap-3 glass px-3 py-2 rounded-2xl transition-all hover:bg-white/10">
         <div className="relative">
-          <div className="w-11 h-11 rounded-xl overflow-hidden ring-2 ring-white/20">
+          {/* Avatar glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl blur-sm opacity-50" />
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-1 ring-white/20">
             {video.userAvatar ? (
-              <Image src={video.userAvatar} alt={video.username} width={44} height={44} className="object-cover w-full h-full" />
+              <Image src={video.userAvatar} alt={video.username} width={40} height={40} className="object-cover w-full h-full" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg">
+              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center text-white font-bold text-sm">
                 {(video.username || 'U')[0].toUpperCase()}
               </div>
             )}
@@ -152,8 +170,10 @@ function CreatorInfo({
           {!isOwnVideo && (
             <button
               onClick={(e) => { e.stopPropagation(); e.preventDefault(); onFollow(); }}
-              className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md flex items-center justify-center ${
-                isFollowingCreator ? 'bg-green-500' : 'bg-amber-500'
+              className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-md flex items-center justify-center transition-all ${
+                isFollowingCreator
+                  ? 'bg-gradient-to-r from-green-400 to-teal-400'
+                  : 'bg-gradient-to-r from-purple-500 to-teal-500 hover:scale-110'
               }`}
             >
               {isFollowingCreator ? (
@@ -168,7 +188,7 @@ function CreatorInfo({
             </button>
           )}
         </div>
-        <span className="text-white font-semibold text-sm drop-shadow-lg">@{video.username}</span>
+        <span className="text-white font-semibold text-sm group-hover:text-white/90 transition-colors">@{video.username}</span>
       </Link>
     </div>
   );
@@ -176,22 +196,31 @@ function CreatorInfo({
 
 function VideoInfo({ video }: { video: Video }) {
   return (
-    <div className="absolute bottom-32 md:bottom-20 left-4 right-20 z-10">
-      <p className="text-white/95 text-sm line-clamp-2 mb-2 drop-shadow-lg">{video.caption}</p>
+    <div className="absolute bottom-32 md:bottom-20 left-4 right-20 z-10 space-y-2">
+      {/* Caption */}
+      <p className="text-white text-sm line-clamp-2 drop-shadow-lg">{video.caption}</p>
+
+      {/* Hashtags as glass pills */}
       {Array.isArray(video.hashtags) && video.hashtags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-2">
+        <div className="flex flex-wrap gap-1.5">
           {video.hashtags.slice(0, 4).map(tag => (
-            <Link key={tag} href={`/hashtag/${tag}`} className="text-amber-300/90 text-sm hover:text-amber-200 font-medium">
+            <Link
+              key={tag}
+              href={`/hashtag/${tag}`}
+              className="px-2 py-0.5 text-xs font-medium text-white/80 bg-white/10 backdrop-blur-sm rounded-full border border-white/10 hover:bg-white/20 hover:text-white transition-all"
+            >
               #{tag}
             </Link>
           ))}
         </div>
       )}
-      <div className="flex items-center gap-2">
-        <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+
+      {/* Music info with glass styling */}
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full">
+        <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
         </svg>
-        <span className="text-white/80 text-sm">{video.musicInfo?.title || 'Original Sound'}</span>
+        <span className="text-white/80 text-sm truncate max-w-[200px]">{video.musicInfo?.title || 'Original Sound'}</span>
       </div>
     </div>
   );
