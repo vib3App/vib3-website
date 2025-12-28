@@ -123,7 +123,7 @@ function VideoInfo({ video }: { video: Video }) {
   return (
     <div className="absolute bottom-32 md:bottom-20 left-4 right-4 z-20">
       <p className="text-white/95 text-sm line-clamp-2 mb-2 drop-shadow-lg">{video.caption}</p>
-      {video.hashtags && video.hashtags.length > 0 && (
+      {Array.isArray(video.hashtags) && video.hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-2">
           {video.hashtags.slice(0, 4).map(tag => (
             <Link key={tag} href={`/hashtag/${tag}`} className="text-amber-300/90 text-sm hover:text-amber-200 font-medium">
