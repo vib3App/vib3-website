@@ -105,7 +105,7 @@ function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => v
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      className="absolute top-16 md:top-4 right-4 z-30 p-2 bg-black/40 backdrop-blur-sm rounded-full"
+      className="absolute top-20 md:top-14 right-4 z-50 p-2.5 bg-black/50 backdrop-blur-sm rounded-full"
     >
       {isMuted ? (
         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
