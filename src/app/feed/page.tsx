@@ -271,19 +271,25 @@ function FeedContent() {
     loadVideos(true);
   }, [activeTab]);
 
-  // Infinite scroll - load more when near end
+  // Infinite scroll - load more when near end, or recycle if no more
   useEffect(() => {
-    if (currentIndex >= videos.length - 3 && hasMore && !loadingMore && !isLoading && videos.length > 0) {
-      setPage(prev => prev + 1);
+    if (currentIndex >= videos.length - 3 && videos.length > 0 && !loadingMore && !isLoading) {
+      if (hasMore) {
+        // Load more from API
+        setPage(prev => prev + 1);
+      } else {
+        // Recycle videos - append existing videos to create infinite loop
+        setVideos(prev => [...prev, ...prev.slice(0, Math.min(10, prev.length))]);
+      }
     }
   }, [currentIndex, videos.length, hasMore, loadingMore, isLoading]);
 
   // Trigger load when page changes
   useEffect(() => {
-    if (page > 1) {
+    if (page > 1 && hasMore) {
       loadVideos(false);
     }
-  }, [page]);
+  }, [page, hasMore]);
 
   // Handle URL video parameter
   useEffect(() => {
@@ -559,29 +565,6 @@ function FeedContent() {
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-10 h-10 border-3 border-[#6366F1] border-t-transparent rounded-full animate-spin" />
                   <p className="text-white/50 text-sm">Loading more...</p>
-                </div>
-              </div>
-            )}
-            {/* End of feed */}
-            {!hasMore && videos.length > 0 && (
-              <div className="h-full w-full flex items-center justify-center snap-start bg-[#0A0E1A]">
-                <div className="flex flex-col items-center gap-4 text-center px-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#6366F1] to-[#14B8A6] rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="text-white text-xl font-semibold">You&apos;re all caught up!</h3>
-                  <p className="text-white/50">You&apos;ve seen all the latest videos</p>
-                  <button
-                    onClick={() => {
-                      scrollToVideo(0);
-                      loadVideos(true);
-                    }}
-                    className="mt-4 px-6 py-3 bg-gradient-to-r from-[#6366F1] to-[#14B8A6] text-white font-semibold rounded-full"
-                  >
-                    Refresh Feed
-                  </button>
                 </div>
               </div>
             )}
