@@ -121,7 +121,7 @@ function FeedContent() {
 
 export default function FeedPage() {
   return (
-    <div className="flex h-screen bg-[#0A0E1A] overflow-hidden">
+    <div className="flex h-screen bg-neutral-950 overflow-hidden">
       <SideNav />
       <main className="flex-1 md:ml-64 h-full relative">
         <Suspense fallback={<FeedLoadingState message="Loading..." />}>
