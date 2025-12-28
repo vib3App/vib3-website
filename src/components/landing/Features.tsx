@@ -1,10 +1,11 @@
 /**
  * Landing page features section
- * Grid of feature cards with 3D effects
+ * Grid of feature cards with 3D effects and scroll animations
  */
 'use client';
 
 import { CardElevated } from '@/components/ui/Card3D';
+import { FadeUp, StaggerContainer, StaggerItem } from '@/components/motion';
 
 const features = [
   {
@@ -50,41 +51,44 @@ export function Features() {
     <section id="features" className="py-24 px-6">
       <div className="max-w-7xl mx-auto">
         {/* Section header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-white">Everything you need to </span>
-            <span className="bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
-              go viral
-            </span>
-          </h2>
-          <p className="text-white/50 text-lg max-w-2xl mx-auto">
-            From powerful creation tools to real monetization, VIB3 gives creators everything they need to succeed.
-          </p>
-        </div>
+        <FadeUp>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <span className="text-white">Everything you need to </span>
+              <span className="bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
+                go viral
+              </span>
+            </h2>
+            <p className="text-white/50 text-lg max-w-2xl mx-auto">
+              From powerful creation tools to real monetization, VIB3 gives creators everything they need to succeed.
+            </p>
+          </div>
+        </FadeUp>
 
         {/* Features grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <CardElevated
-              key={index}
-              glowColor={index % 3 === 0 ? 'purple' : index % 3 === 1 ? 'teal' : 'orange'}
-              className="group p-8"
-            >
-              {/* Icon with gradient background */}
-              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-2xl mb-5 shadow-lg float-bob`} style={{ animationDelay: `${index * 0.2}s` }}>
-                {feature.icon}
-              </div>
+            <StaggerItem key={index}>
+              <CardElevated
+                glowColor={index % 3 === 0 ? 'purple' : index % 3 === 1 ? 'teal' : 'orange'}
+                className="group p-8 h-full"
+              >
+                {/* Icon with gradient background */}
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center text-2xl mb-5 shadow-lg float-bob`} style={{ animationDelay: `${index * 0.2}s` }}>
+                  {feature.icon}
+                </div>
 
-              <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-purple-400 transition-colors">
-                {feature.title}
-              </h3>
+                <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-purple-400 transition-colors">
+                  {feature.title}
+                </h3>
 
-              <p className="text-white/50 leading-relaxed">
-                {feature.description}
-              </p>
-            </CardElevated>
+                <p className="text-white/50 leading-relaxed">
+                  {feature.description}
+                </p>
+              </CardElevated>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </section>
   );

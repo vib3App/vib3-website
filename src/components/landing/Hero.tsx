@@ -1,10 +1,11 @@
 /**
  * Landing page hero section
- * Main headline, description, CTA buttons
+ * Main headline, description, CTA buttons with Framer Motion
  */
 'use client';
 
 import { AppStoreButtons } from './AppStoreButtons';
+import { FadeUp, AnimatedButton, AnimatedStat } from '@/components/motion';
 
 export function Hero() {
   return (
@@ -32,38 +33,25 @@ export function Hero() {
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <button className="px-8 py-4 bg-gradient-to-r from-purple-500 to-teal-400 rounded-xl font-semibold text-lg transition-all hover:shadow-lg hover:shadow-purple-500/30 hover:scale-105 glow-pulse btn-magnetic">
-            Start Creating
-          </button>
-          <button className="px-8 py-4 glass border border-white/10 hover:border-purple-500/50 rounded-xl font-semibold text-lg transition-all hover:bg-white/10 btn-magnetic">
-            Watch Demo
-          </button>
-        </div>
+        <FadeUp delay={0.2}>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+            <AnimatedButton variant="primary" className="px-8 py-4 text-lg glow-pulse">
+              Start Creating
+            </AnimatedButton>
+            <AnimatedButton variant="secondary" className="px-8 py-4 text-lg">
+              Watch Demo
+            </AnimatedButton>
+          </div>
+        </FadeUp>
 
         {/* App Store Buttons */}
         <AppStoreButtons />
 
         {/* Stats */}
         <div className="flex flex-wrap justify-center gap-12 mt-16 pt-16 border-t border-white/5">
-          <div className="text-center float-gentle" style={{ animationDelay: '0s' }}>
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent breathe-glow">
-              10M+
-            </div>
-            <div className="text-white/50 text-sm mt-1">Active Creators</div>
-          </div>
-          <div className="text-center float-gentle" style={{ animationDelay: '0.5s' }}>
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent breathe-glow">
-              500M+
-            </div>
-            <div className="text-white/50 text-sm mt-1">Videos Shared</div>
-          </div>
-          <div className="text-center float-gentle" style={{ animationDelay: '1s' }}>
-            <div className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent breathe-glow">
-              $50M+
-            </div>
-            <div className="text-white/50 text-sm mt-1">Paid to Creators</div>
-          </div>
+          <AnimatedStat value={10000000} suffix="+" label="Active Creators" className="float-gentle" />
+          <AnimatedStat value={500000000} suffix="+" label="Videos Shared" className="float-gentle" />
+          <AnimatedStat value={50000000} prefix="$" suffix="+" label="Paid to Creators" className="float-gentle" />
         </div>
       </div>
     </section>
