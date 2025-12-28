@@ -67,33 +67,28 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
 
   // Store pointerId for capture/release
   const pointerIdRef = useRef<number | null>(null);
+  const dragEnabledRef = useRef(false);
 
   // Handle pointer down - start long press timer
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (disabled) return;
-
-    // Only track if it's directly on this element, not child buttons
-    if (e.target !== e.currentTarget) {
-      return; // Let child handle it
-    }
 
     // Store the element and pointer for later reference
     containerRef.current = e.currentTarget as HTMLElement;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     hasDraggedRef.current = false;
     pointerIdRef.current = e.pointerId;
-
-    // DON'T capture pointer yet - only capture when drag actually starts
-    // This allows clicks on child buttons to work normally
+    dragEnabledRef.current = false;
 
     // Start long press timer
     clearLongPressTimer();
     longPressTimerRef.current = setTimeout(() => {
+      dragEnabledRef.current = true;
       setIsLongPressing(true);
       setIsDragging(true);
       onDragStart?.();
 
-      // NOW capture pointer for tracking outside element during drag
+      // Capture pointer for tracking outside element during drag
       if (containerRef.current && pointerIdRef.current !== null) {
         try {
           containerRef.current.setPointerCapture(pointerIdRef.current);
@@ -120,25 +115,25 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     if (dx > 10 || dy > 10) {
       hasDraggedRef.current = true;
       // Cancel long press if moved before timer completes
-      if (!isDragging) {
+      if (!dragEnabledRef.current) {
         clearLongPressTimer();
       }
     }
 
     // Update position if dragging
-    if (isDragging) {
+    if (dragEnabledRef.current) {
       const newPos = clientToPercent(e.clientX, e.clientY);
       setPosition(newPos);
       onDrag?.(newPos);
     }
-  }, [isDragging, clientToPercent, onDrag, clearLongPressTimer]);
+  }, [clientToPercent, onDrag, clearLongPressTimer]);
 
   // Handle pointer up - end drag
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
     clearLongPressTimer();
 
     // Release pointer capture if we captured it
-    if (isDragging && containerRef.current && pointerIdRef.current !== null) {
+    if (dragEnabledRef.current && containerRef.current && pointerIdRef.current !== null) {
       try {
         containerRef.current.releasePointerCapture(pointerIdRef.current);
       } catch {
@@ -146,15 +141,16 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       }
     }
 
-    if (isDragging && position) {
+    if (dragEnabledRef.current && position) {
       onDragEnd?.(position);
     }
 
+    dragEnabledRef.current = false;
     setIsDragging(false);
     setIsLongPressing(false);
     startPosRef.current = null;
     pointerIdRef.current = null;
-  }, [isDragging, position, onDragEnd, clearLongPressTimer]);
+  }, [position, onDragEnd, clearLongPressTimer]);
 
   // Handle pointer cancel (e.g., touch interrupted)
   const handlePointerCancel = useCallback((e: React.PointerEvent) => {

@@ -50,7 +50,7 @@ export function VerticalStack({
     }
   };
 
-  // Calculate position style - right side by default
+  // Calculate position style - right side by default, but with padding from edge
   const positionStyle: React.CSSProperties = isDragging
     ? {
         position: 'fixed',
@@ -61,8 +61,8 @@ export function VerticalStack({
       }
     : {
         position: 'absolute',
-        right: '0.5rem',
-        bottom: '8rem',
+        right: '1rem',
+        bottom: '35%', // Center-ish vertically
       };
 
   return (
