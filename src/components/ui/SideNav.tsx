@@ -12,6 +12,13 @@ const mainNavItems = [
   { href: '/live', label: 'LIVE', icon: 'live', badge: true },
 ];
 
+const featureNavItems = [
+  { href: '/collab', label: 'Collab Rooms', icon: 'collab' },
+  { href: '/watch-party', label: 'Watch Party', icon: 'party' },
+  { href: '/capsule', label: 'Time Capsules', icon: 'capsule' },
+  { href: '/collections', label: 'Collections', icon: 'collections' },
+];
+
 const secondaryNavItems = [
   { href: '/messages', label: 'Messages', icon: 'message' },
   { href: '/notifications', label: 'Notifications', icon: 'bell' },
@@ -19,6 +26,7 @@ const secondaryNavItems = [
 
 const creatorNavItems = [
   { href: '/upload', label: 'Upload', icon: 'upload' },
+  { href: '/camera', label: 'Camera', icon: 'camera' },
   { href: '/creator', label: 'Creator Studio', icon: 'studio' },
 ];
 
@@ -75,6 +83,38 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       );
+    case 'collab':
+      return (
+        <svg className="w-6 h-6" fill={fill} stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      );
+    case 'party':
+      return (
+        <svg className="w-6 h-6" fill={fill} stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          <circle cx="18" cy="5" r="2" fill="currentColor" />
+        </svg>
+      );
+    case 'capsule':
+      return (
+        <svg className="w-6 h-6" fill={fill} stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    case 'collections':
+      return (
+        <svg className="w-6 h-6" fill={fill} stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      );
+    case 'camera':
+      return (
+        <svg className="w-6 h-6" fill={fill} stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={strokeWidth} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -117,6 +157,27 @@ export function SideNav() {
                   NEW
                 </span>
               )}
+            </Link>
+          );
+        })}
+
+        <div className="h-px bg-white/5 my-4" />
+
+        <div className="px-3 py-1 text-xs text-white/30 uppercase tracking-wider">Features</div>
+        {featureNavItems.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+                isActive
+                  ? 'bg-white/10 text-white font-semibold'
+                  : 'text-white/70 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <NavIcon name={item.icon} active={isActive} />
+              <span className="text-sm">{item.label}</span>
             </Link>
           );
         })}

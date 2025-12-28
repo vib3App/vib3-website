@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
@@ -45,43 +46,111 @@ const navItems = [
     ),
   },
   {
-    href: '/profile',
-    label: 'Profile',
+    href: 'menu',
+    label: 'More',
+    isMenu: true,
     icon: (active: boolean) => (
       <svg className="w-6 h-6" fill={active ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={active ? 0 : 2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     ),
   },
 ];
 
+const menuItems = [
+  { href: '/profile', label: 'Profile', icon: '👤' },
+  { href: '/collab', label: 'Collab Rooms', icon: '👥' },
+  { href: '/watch-party', label: 'Watch Party', icon: '🎉' },
+  { href: '/capsule', label: 'Time Capsules', icon: '⏰' },
+  { href: '/collections', label: 'Collections', icon: '📁' },
+  { href: '/live', label: 'Go Live', icon: '🔴' },
+  { href: '/camera', label: 'Camera', icon: '📷' },
+  { href: '/messages', label: 'Messages', icon: '💬' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
+];
+
 export function BottomNav() {
   const pathname = usePathname();
   const { isAuthenticated } = useAuthStore();
+  const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A0E1A]/95 backdrop-blur-lg border-t border-white/5 md:hidden">
-      <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          const href = item.href === '/profile' && !isAuthenticated ? '/login' : item.href;
+    <>
+      {/* Menu Overlay */}
+      {showMenu && (
+        <div className="fixed inset-0 z-40 md:hidden" onClick={() => setShowMenu(false)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute bottom-16 left-0 right-0 bg-[#1A1F2E] rounded-t-3xl p-4 animate-slide-up">
+            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+            <div className="grid grid-cols-3 gap-3">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={isAuthenticated || item.href === '/live' ? item.href : '/login'}
+                  onClick={() => setShowMenu(false)}
+                  className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-colors ${
+                    pathname === item.href ? 'bg-[#6366F1]/20 text-[#6366F1]' : 'hover:bg-white/5 text-white'
+                  }`}
+                >
+                  <span className="text-2xl">{item.icon}</span>
+                  <span className="text-xs">{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
-          return (
-            <Link
-              key={item.href}
-              href={href}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                item.special ? '' : isActive ? 'text-white' : 'text-white/50 hover:text-white/70'
-              }`}
-            >
-              {item.icon(isActive)}
-              {!item.special && (
-                <span className="text-[10px] mt-1">{item.label}</span>
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A0E1A]/95 backdrop-blur-lg border-t border-white/5 md:hidden">
+        <div className="flex items-center justify-around h-16 px-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+
+            if (item.isMenu) {
+              return (
+                <button
+                  key="menu"
+                  onClick={() => setShowMenu(!showMenu)}
+                  className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                    showMenu ? 'text-white' : 'text-white/50 hover:text-white/70'
+                  }`}
+                >
+                  {item.icon(showMenu)}
+                  <span className="text-[10px] mt-1">{item.label}</span>
+                </button>
+              );
+            }
+
+            const href = item.href === '/profile' && !isAuthenticated ? '/login' : item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={href}
+                className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                  item.special ? '' : isActive ? 'text-white' : 'text-white/50 hover:text-white/70'
+                }`}
+              >
+                {item.icon(isActive)}
+                {!item.special && (
+                  <span className="text-[10px] mt-1">{item.label}</span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      <style jsx>{`
+        @keyframes slide-up {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.2s ease-out;
+        }
+      `}</style>
+    </>
   );
 }
