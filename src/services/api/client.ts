@@ -1,9 +1,60 @@
 /**
  * Axios API client with interceptors
- * Handles auth, error formatting, and request/response processing
+ * Handles auth, error formatting, token refresh, and request/response processing
  */
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { config } from '@/config/env';
+
+// Track if we're currently refreshing to avoid multiple simultaneous refreshes
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach(cb => cb(token));
+  refreshSubscribers = [];
+}
+
+async function refreshAuthToken(): Promise<string | null> {
+  const refreshToken = typeof window !== 'undefined'
+    ? localStorage.getItem('refresh_token')
+    : null;
+
+  if (!refreshToken) {
+    return null;
+  }
+
+  try {
+    // Use a separate axios instance to avoid interceptor loops
+    const response = await axios.post<{ token: string; refreshToken: string }>(
+      `${config.api.baseUrl}/auth/refresh`,
+      { refreshToken },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    const { token, refreshToken: newRefreshToken } = response.data;
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+      if (newRefreshToken) {
+        localStorage.setItem('refresh_token', newRefreshToken);
+      }
+    }
+
+    return token;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    // Clear tokens on refresh failure
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+    }
+    return null;
+  }
+}
 
 const createApiClient = (): AxiosInstance => {
   const client = axios.create({
@@ -29,12 +80,63 @@ const createApiClient = (): AxiosInstance => {
     (error) => Promise.reject(error)
   );
 
-  // Response interceptor - handle errors
+  // Response interceptor - handle errors and auto-refresh token
   client.interceptors.response.use(
-    (response) => response,
-    (error: AxiosError) => {
-      const apiError = formatApiError(error);
-      return Promise.reject(apiError);
+    (response: AxiosResponse) => response,
+    async (error: AxiosError) => {
+      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+      // If it's a 401 and we haven't already retried
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        // Don't retry refresh endpoint to avoid loops
+        if (originalRequest.url?.includes('/auth/refresh') || originalRequest.url?.includes('/auth/login')) {
+          return Promise.reject(formatApiError(error));
+        }
+
+        if (isRefreshing) {
+          // Wait for the ongoing refresh to complete
+          return new Promise((resolve, reject) => {
+            subscribeTokenRefresh((token: string) => {
+              if (token && originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                resolve(client(originalRequest));
+              } else {
+                reject(formatApiError(error));
+              }
+            });
+          });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const newToken = await refreshAuthToken();
+          isRefreshing = false;
+
+          if (newToken) {
+            onTokenRefreshed(newToken);
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            }
+            return client(originalRequest);
+          } else {
+            // Token refresh failed - user needs to re-login
+            onTokenRefreshed('');
+            // Dispatch logout event for the app to handle
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('auth:logout', { detail: { reason: 'token_expired' } }));
+            }
+            return Promise.reject(formatApiError(error));
+          }
+        } catch (refreshError) {
+          isRefreshing = false;
+          onTokenRefreshed('');
+          return Promise.reject(formatApiError(error));
+        }
+      }
+
+      return Promise.reject(formatApiError(error));
     }
   );
 
