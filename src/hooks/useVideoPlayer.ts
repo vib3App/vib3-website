@@ -59,7 +59,7 @@ export function useVideoPlayer({
   const [showChapterMenu, setShowChapterMenu] = useState(false);
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
-  // Initialize HLS or native video
+  // Initialize HLS or native video - only depends on src, not isActive
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !src) return;
@@ -84,10 +84,7 @@ export function useVideoPlayer({
           label: level.height ? `${level.height}p` : `Level ${index}`,
         }));
         setQualityLevels(levels);
-
-        if (autoPlay && isActive) {
-          video.play().catch(() => {});
-        }
+        // Don't autoplay here - let the isActive effect handle it
       });
 
       hls.on(Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -101,9 +98,7 @@ export function useVideoPlayer({
       });
     } else {
       video.src = src;
-      if (autoPlay && isActive) {
-        video.play().catch(() => {});
-      }
+      // Don't autoplay here - let the isActive effect handle it
     }
 
     return () => {
@@ -112,21 +107,23 @@ export function useVideoPlayer({
         hlsRef.current = null;
       }
     };
-  }, [src, autoPlay, isActive, onError]);
+  }, [src, onError]);
 
-  // Handle active state - autoplay when active
+  // Handle active state - autoplay when active, pause when inactive
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isActive) {
-      // Small delay to ensure video is ready
-      const playVideo = () => {
-        video.play().catch((err) => {
-          console.log('Autoplay prevented:', err);
-        });
-      };
+    let cancelled = false;
 
+    const playVideo = () => {
+      if (cancelled) return;
+      video.play().catch((err) => {
+        console.log('Autoplay prevented:', err);
+      });
+    };
+
+    if (isActive) {
       // If video is ready, play immediately, otherwise wait for canplay
       if (video.readyState >= 3) {
         playVideo();
@@ -134,8 +131,17 @@ export function useVideoPlayer({
         video.addEventListener('canplay', playVideo, { once: true });
       }
     } else {
+      // Pause the video when not active
       video.pause();
+      // Reset to beginning when scrolling away (optional, better UX)
+      video.currentTime = 0;
     }
+
+    // Cleanup: cancel pending play and remove listener
+    return () => {
+      cancelled = true;
+      video.removeEventListener('canplay', playVideo);
+    };
   }, [isActive]);
 
   // Sync muted state with external prop
