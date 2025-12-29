@@ -129,7 +129,7 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 min-w-[220px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-50 animate-in">
+        <div className="absolute top-full left-0 mt-2 min-w-[220px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-[100] animate-in">
           <div className="py-2">
             {config.items.map((item) => {
               const isItemActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -214,7 +214,7 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-[280px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-50 animate-in">
+        <div className="absolute top-full left-0 mt-2 w-[280px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-[100] animate-in">
           <div className="p-3 border-b border-white/10">
             <div className="text-white/50 text-xs uppercase tracking-wider">People you follow</div>
           </div>
@@ -304,7 +304,7 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-[220px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-50 animate-in">
+        <div className="absolute top-full right-0 mt-2 w-[220px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-[100] animate-in">
           {isAuthenticated && user ? (
             <>
               <div className="p-4 border-b border-white/10">
@@ -353,7 +353,7 @@ export function TopNav() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const handleToggle = (id: string) => {
-    setOpenDropdown(openDropdown === id ? null : id);
+    setOpenDropdown(prev => prev === id ? null : id);
   };
 
   const handleClose = () => {
