@@ -208,15 +208,18 @@ export function SideNav() {
           onClick={handleLogoClick}
           className="relative flex items-center gap-3 px-6 py-5 mb-2 cursor-pointer group"
         >
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl blur-md opacity-50 group-hover:opacity-70 transition-opacity" />
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
-            </div>
+          <div className="relative w-12 h-12 group-hover:scale-105 transition-transform">
+            <Image
+              src="/vib3-logo.png"
+              alt="VIB3"
+              fill
+              className="object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 12px rgba(139, 92, 246, 0.4)) drop-shadow(0 0 24px rgba(34, 211, 238, 0.2))'
+              }}
+              priority
+            />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-teal-400 to-purple-400 bg-clip-text text-transparent">
-            VIB3
-          </span>
         </div>
 
         {/* Search */}

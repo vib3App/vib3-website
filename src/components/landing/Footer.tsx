@@ -5,6 +5,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -13,13 +14,18 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center font-bold text-xl">
-                V
+            <Link href="/" className="flex items-center gap-2 mb-4 group">
+              <div className="relative w-14 h-14 group-hover:scale-105 transition-transform">
+                <Image
+                  src="/vib3-logo.png"
+                  alt="VIB3"
+                  fill
+                  className="object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))'
+                  }}
+                />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
-                VIB3
-              </span>
             </Link>
             <p className="text-white/40 text-sm leading-relaxed">
               The next-generation social video platform where creators thrive.

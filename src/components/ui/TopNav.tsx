@@ -425,12 +425,18 @@ export function TopNav() {
 
         {/* Logo */}
         <Link href="/feed" className="flex items-center gap-2 group flex-shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
-            V
+          <div className="relative w-10 h-10 group-hover:scale-105 transition-transform">
+            <Image
+              src="/vib3-logo.png"
+              alt="VIB3"
+              fill
+              className="object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))'
+              }}
+              priority
+            />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent hidden sm:block">
-            VIB3
-          </span>
         </Link>
 
         {/* Dropdown Nav - Desktop */}

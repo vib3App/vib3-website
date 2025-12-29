@@ -5,6 +5,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { SoundToggle } from '@/components/audio';
 import { ThemeToggle } from '@/components/personalization';
 
@@ -13,13 +14,19 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 glass-heavy border-b border-white/5">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center font-bold text-xl shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
-            V
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="relative w-12 h-12 group-hover:scale-105 transition-transform">
+            <Image
+              src="/vib3-logo.png"
+              alt="VIB3"
+              fill
+              className="object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))'
+              }}
+              priority
+            />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
-            VIB3
-          </span>
         </Link>
 
         {/* Navigation */}
