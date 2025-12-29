@@ -16,3 +16,4 @@ export * from './feedCategory';
 export * from './challenge';
 export * from './shop';
 export * from './creatorFund';
+export * from './analytics';
