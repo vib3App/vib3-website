@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -310,7 +310,24 @@ function ProfileDropdown({ isOpen, onToggle }: {
 }
 
 export function TopNav() {
+  const router = useRouter();
+  const navRef = useRef<HTMLElement>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // Close dropdown when clicking outside the nav
+  useEffect(() => {
+    if (!openDropdown) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    // Use click event (not mousedown) so links navigate first
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openDropdown]);
 
   const handleToggle = (id: string) => {
     setOpenDropdown(prev => prev === id ? null : id);
@@ -320,9 +337,24 @@ export function TopNav() {
     setOpenDropdown(null);
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-heavy border-b border-white/10">
+    <nav ref={navRef} className="fixed top-0 left-0 right-0 z-50 glass-heavy border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        {/* Back Button */}
+        <button
+          onClick={handleBack}
+          className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          title="Go Back"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
         {/* Logo */}
         <Link href="/feed" className="flex items-center gap-2 group flex-shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
