@@ -1,92 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
-
-interface Challenge {
-  id: string;
-  title: string;
-  hashtag: string;
-  description: string;
-  thumbnail?: string;
-  participants: number;
-  videos: number;
-  prize?: string;
-  endsIn?: string;
-  category: 'trending' | 'new' | 'music' | 'dance' | 'comedy' | 'sponsored';
-  difficulty: 'easy' | 'medium' | 'hard';
-}
-
-const challenges: Challenge[] = [
-  {
-    id: '1',
-    title: 'New Year Countdown',
-    hashtag: 'NYE2025',
-    description: 'Show us your best New Year celebration moments!',
-    participants: 125000,
-    videos: 89000,
-    prize: '10,000 V3 Coins',
-    endsIn: '3 days',
-    category: 'trending',
-    difficulty: 'easy',
-  },
-  {
-    id: '2',
-    title: 'Dance Revolution',
-    hashtag: 'DanceRev',
-    description: 'Create your own dance to the trending beat',
-    participants: 89000,
-    videos: 67000,
-    category: 'dance',
-    difficulty: 'medium',
-  },
-  {
-    id: '3',
-    title: 'Comedy Gold',
-    hashtag: 'ComedyGold',
-    description: 'Make us laugh with your best comedy skit',
-    participants: 45000,
-    videos: 32000,
-    prize: '5,000 V3 Coins',
-    category: 'comedy',
-    difficulty: 'medium',
-  },
-  {
-    id: '4',
-    title: 'Lip Sync Battle',
-    hashtag: 'LipSyncBattle',
-    description: 'Show off your lip sync skills to popular songs',
-    participants: 234000,
-    videos: 178000,
-    category: 'music',
-    difficulty: 'easy',
-  },
-  {
-    id: '5',
-    title: 'VIB3 Creator Challenge',
-    hashtag: 'VIB3Creator',
-    description: 'Official VIB3 creator challenge with amazing prizes',
-    participants: 56000,
-    videos: 41000,
-    prize: '25,000 V3 Coins + Feature',
-    endsIn: '7 days',
-    category: 'sponsored',
-    difficulty: 'hard',
-  },
-  {
-    id: '6',
-    title: 'Transformation Tuesday',
-    hashtag: 'TransformationTuesday',
-    description: 'Show your amazing before/after transformations',
-    participants: 78000,
-    videos: 54000,
-    category: 'new',
-    difficulty: 'easy',
-  },
-];
+import { challengesApi } from '@/services/api';
+import type { Challenge, ChallengeCategory, CreateChallengeInput } from '@/types/challenge';
 
 const categories = [
   { id: 'all', label: 'All', icon: '🔥' },
@@ -104,14 +24,146 @@ function formatCount(count: number): string {
   return count.toString();
 }
 
-export default function ChallengesPage() {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+function getTimeRemaining(endDate: string): string | null {
+  const end = new Date(endDate);
+  const now = new Date();
+  const diff = end.getTime() - now.getTime();
+  if (diff <= 0) return null;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days > 0) return `${days} day${days !== 1 ? 's' : ''}`;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours > 0) return `${hours} hour${hours !== 1 ? 's' : ''}`;
+  const minutes = Math.floor(diff / (1000 * 60));
+  return `${minutes} min`;
+}
 
-  const filteredChallenges =
-    activeCategory === 'all'
-      ? challenges
-      : challenges.filter((c) => c.category === activeCategory);
+export default function ChallengesPage() {
+  const [activeCategory, setActiveCategory] = useState<ChallengeCategory | 'all'>('all');
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+
+  // Form state
+  const [formTitle, setFormTitle] = useState('');
+  const [formHashtag, setFormHashtag] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formCategory, setFormCategory] = useState<ChallengeCategory>('other');
+  const [formDifficulty, setFormDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [formPrize, setFormPrize] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
+
+  const fetchChallenges = useCallback(async (reset = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const currentPage = reset ? 1 : page;
+      const response = await challengesApi.getChallenges({
+        category: activeCategory,
+        page: currentPage,
+        limit: 20,
+      });
+      if (reset) {
+        setChallenges(response.challenges);
+      } else {
+        setChallenges((prev) => [...prev, ...response.challenges]);
+      }
+      setHasMore(response.hasMore);
+      if (reset) setPage(1);
+    } catch (err) {
+      console.error('Error fetching challenges:', err);
+      setError('Failed to load challenges');
+    } finally {
+      setLoading(false);
+    }
+  }, [activeCategory, page]);
+
+  useEffect(() => {
+    fetchChallenges(true);
+  }, [activeCategory]);
+
+  const handleCategoryChange = (category: ChallengeCategory | 'all') => {
+    setActiveCategory(category);
+    setPage(1);
+  };
+
+  const loadMore = () => {
+    setPage((p) => p + 1);
+    fetchChallenges(false);
+  };
+
+  const handleCreateChallenge = async () => {
+    if (!formTitle || !formHashtag || !formDescription || !formEndDate) return;
+    try {
+      setCreating(true);
+      const input: CreateChallengeInput = {
+        title: formTitle,
+        hashtag: formHashtag.replace('#', ''),
+        description: formDescription,
+        category: formCategory,
+        difficulty: formDifficulty,
+        prize: formPrize || undefined,
+        endDate: new Date(formEndDate).toISOString(),
+      };
+      await challengesApi.createChallenge(input);
+      setShowCreateModal(false);
+      setFormTitle('');
+      setFormHashtag('');
+      setFormDescription('');
+      setFormCategory('other');
+      setFormDifficulty('medium');
+      setFormPrize('');
+      setFormEndDate('');
+      fetchChallenges(true);
+    } catch (err) {
+      console.error('Error creating challenge:', err);
+      alert('Failed to create challenge. Please try again.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleJoinChallenge = async (e: React.MouseEvent, challengeId: string, hasJoined: boolean) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      setJoiningId(challengeId);
+      if (hasJoined) {
+        await challengesApi.leaveChallenge(challengeId);
+      } else {
+        await challengesApi.joinChallenge(challengeId);
+      }
+      setChallenges((prev) =>
+        prev.map((c) =>
+          c._id === challengeId
+            ? {
+                ...c,
+                hasJoined: !hasJoined,
+                stats: {
+                  ...c.stats,
+                  participantCount: c.stats.participantCount + (hasJoined ? -1 : 1),
+                },
+              }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error('Error joining/leaving challenge:', err);
+    } finally {
+      setJoiningId(null);
+    }
+  };
+
+  const getCreatorUsername = (challenge: Challenge): string => {
+    if (typeof challenge.creatorId === 'object' && challenge.creatorId.username) {
+      return challenge.creatorId.username;
+    }
+    return 'Unknown';
+  };
 
   return (
     <div className="min-h-screen aurora-bg">
@@ -131,9 +183,7 @@ export default function ChallengesPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 flex items-center justify-center gap-3">
               <span>🏆</span> VIB3 Challenges
             </h1>
-            <p className="text-xl text-white/90 mb-8">
-              Join trending challenges and go viral
-            </p>
+            <p className="text-xl text-white/90 mb-8">Join trending challenges and go viral</p>
             <div className="flex flex-wrap gap-4 justify-center">
               <button
                 onClick={() => setShowCreateModal(true)}
@@ -156,7 +206,7 @@ export default function ChallengesPage() {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
+              onClick={() => handleCategoryChange(cat.id as ChallengeCategory | 'all')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all border ${
                 activeCategory === cat.id
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-white/20 shadow-lg shadow-amber-500/20'
@@ -169,90 +219,140 @@ export default function ChallengesPage() {
           ))}
         </div>
 
-        {/* Challenges Grid */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredChallenges.map((challenge) => (
-            <Link
-              key={challenge.id}
-              href={`/hashtag/${challenge.hashtag}`}
-              className="glass-card overflow-hidden hover:border-amber-500/50 transition-all hover:scale-[1.02] group"
+        {/* Content */}
+        {loading && challenges.length === 0 ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-red-400 mb-4">{error}</p>
+            <button
+              onClick={() => fetchChallenges(true)}
+              className="px-6 py-3 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition"
             >
-              {/* Thumbnail */}
-              <div className="relative aspect-video bg-gradient-to-br from-amber-500/20 to-orange-500/20">
-                {challenge.thumbnail ? (
-                  <Image
-                    src={challenge.thumbnail}
-                    alt={challenge.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-6xl">
-                    {challenge.category === 'music' && '🎵'}
-                    {challenge.category === 'dance' && '💃'}
-                    {challenge.category === 'comedy' && '😂'}
-                    {challenge.category === 'sponsored' && '⭐'}
-                    {challenge.category === 'trending' && '🔥'}
-                    {challenge.category === 'new' && '✨'}
-                  </div>
-                )}
-                {challenge.prize && (
-                  <div className="absolute top-3 left-3 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    🏆 {challenge.prize}
-                  </div>
-                )}
-                {challenge.endsIn && (
-                  <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
-                    ⏰ Ends in {challenge.endsIn}
-                  </div>
-                )}
-                <div
-                  className={`absolute bottom-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${
-                    challenge.difficulty === 'easy'
-                      ? 'bg-green-500/80 text-white'
-                      : challenge.difficulty === 'medium'
-                      ? 'bg-amber-500/80 text-white'
-                      : 'bg-red-500/80 text-white'
-                  }`}
+              Retry
+            </button>
+          </div>
+        ) : challenges.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">🏆</div>
+            <h2 className="text-xl font-semibold text-white mb-2">No challenges yet</h2>
+            <p className="text-white/60 mb-6">Be the first to create a challenge!</p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-full font-medium hover:opacity-90 transition"
+            >
+              Create Challenge
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Challenges Grid */}
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {challenges.map((challenge) => {
+                const timeRemaining = getTimeRemaining(challenge.endDate);
+                return (
+                  <Link
+                    key={challenge._id}
+                    href={`/hashtag/${challenge.hashtag}`}
+                    className="glass-card overflow-hidden hover:border-amber-500/50 transition-all hover:scale-[1.02] group"
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative aspect-video bg-gradient-to-br from-amber-500/20 to-orange-500/20">
+                      {challenge.coverImage ? (
+                        <Image src={challenge.coverImage} alt={challenge.title} fill className="object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-6xl">
+                          {challenge.category === 'music' && '🎵'}
+                          {challenge.category === 'dance' && '💃'}
+                          {challenge.category === 'comedy' && '😂'}
+                          {challenge.category === 'sponsored' && '⭐'}
+                          {challenge.category === 'trending' && '🔥'}
+                          {challenge.category === 'new' && '✨'}
+                          {!['music', 'dance', 'comedy', 'sponsored', 'trending', 'new'].includes(challenge.category) &&
+                            '🏆'}
+                        </div>
+                      )}
+                      {challenge.prize && (
+                        <div className="absolute top-3 left-3 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          🏆 {challenge.prize}
+                        </div>
+                      )}
+                      {timeRemaining && (
+                        <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full">
+                          ⏰ Ends in {timeRemaining}
+                        </div>
+                      )}
+                      <div
+                        className={`absolute bottom-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${
+                          challenge.difficulty === 'easy'
+                            ? 'bg-green-500/80 text-white'
+                            : challenge.difficulty === 'medium'
+                            ? 'bg-amber-500/80 text-white'
+                            : 'bg-red-500/80 text-white'
+                        }`}
+                      >
+                        {challenge.difficulty}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <h3 className="text-white font-bold text-lg mb-1 group-hover:text-amber-400 transition-colors">
+                        {challenge.title}
+                      </h3>
+                      <p className="text-amber-500 font-medium mb-1">#{challenge.hashtag}</p>
+                      <p className="text-white/40 text-xs mb-2">by @{getCreatorUsername(challenge)}</p>
+                      <p className="text-white/60 text-sm mb-4 line-clamp-2">{challenge.description}</p>
+                      <div className="flex items-center gap-4 text-white/50 text-sm">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
+                          <span>{formatCount(challenge.stats.participantCount)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
+                          </svg>
+                          <span>{formatCount(challenge.stats.videoCount)} videos</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Join Button */}
+                    <div className="px-4 pb-4">
+                      <button
+                        onClick={(e) => handleJoinChallenge(e, challenge._id, !!challenge.hasJoined)}
+                        disabled={joiningId === challenge._id}
+                        className={`w-full font-semibold py-3 rounded-xl transition-opacity ${
+                          challenge.hasJoined
+                            ? 'bg-white/20 text-white hover:bg-white/30'
+                            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90'
+                        } ${joiningId === challenge._id ? 'opacity-50' : ''}`}
+                      >
+                        {joiningId === challenge._id ? 'Loading...' : challenge.hasJoined ? 'Joined ✓' : 'Join Challenge'}
+                      </button>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {hasMore && (
+              <div className="mt-4 text-center pb-8">
+                <button
+                  onClick={loadMore}
+                  disabled={loading}
+                  className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-full font-medium transition disabled:opacity-50"
                 >
-                  {challenge.difficulty}
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4">
-                <h3 className="text-white font-bold text-lg mb-1 group-hover:text-amber-400 transition-colors">
-                  {challenge.title}
-                </h3>
-                <p className="text-amber-500 font-medium mb-2">#{challenge.hashtag}</p>
-                <p className="text-white/60 text-sm mb-4 line-clamp-2">
-                  {challenge.description}
-                </p>
-                <div className="flex items-center gap-4 text-white/50 text-sm">
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                    <span>{formatCount(challenge.participants)}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z" />
-                    </svg>
-                    <span>{formatCount(challenge.videos)} videos</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Join Button */}
-              <div className="px-4 pb-4">
-                <button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity">
-                  Join Challenge
+                  {loading ? 'Loading...' : 'Load More'}
                 </button>
               </div>
-            </Link>
-          ))}
-        </div>
+            )}
+          </>
+        )}
 
         {/* Create Challenge Modal */}
         {showCreateModal && (
@@ -268,20 +368,24 @@ export default function ChallengesPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-white/70 text-sm mb-2">Challenge Title</label>
+                  <label className="block text-white/70 text-sm mb-2">Challenge Title *</label>
                   <input
                     type="text"
+                    value={formTitle}
+                    onChange={(e) => setFormTitle(e.target.value)}
                     placeholder="Give your challenge a catchy name"
                     className="w-full glass rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-white/70 text-sm mb-2">Hashtag</label>
+                  <label className="block text-white/70 text-sm mb-2">Hashtag *</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500">#</span>
                     <input
                       type="text"
+                      value={formHashtag}
+                      onChange={(e) => setFormHashtag(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
                       placeholder="YourChallengeHashtag"
                       className="w-full glass rounded-xl pl-8 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                     />
@@ -289,35 +393,74 @@ export default function ChallengesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-white/70 text-sm mb-2">Description</label>
+                  <label className="block text-white/70 text-sm mb-2">Description *</label>
                   <textarea
+                    value={formDescription}
+                    onChange={(e) => setFormDescription(e.target.value)}
                     placeholder="Describe what participants should do..."
                     rows={3}
                     className="w-full glass rounded-xl px-4 py-3 text-white resize-none placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-white/70 text-sm mb-2">Category</label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value as ChallengeCategory)}
+                      className="w-full glass rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 bg-transparent"
+                    >
+                      <option value="dance" className="bg-gray-900">Dance</option>
+                      <option value="music" className="bg-gray-900">Music</option>
+                      <option value="comedy" className="bg-gray-900">Comedy</option>
+                      <option value="fitness" className="bg-gray-900">Fitness</option>
+                      <option value="food" className="bg-gray-900">Food</option>
+                      <option value="art" className="bg-gray-900">Art</option>
+                      <option value="other" className="bg-gray-900">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-white/70 text-sm mb-2">Difficulty</label>
+                    <select
+                      value={formDifficulty}
+                      onChange={(e) => setFormDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
+                      className="w-full glass rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 bg-transparent"
+                    >
+                      <option value="easy" className="bg-gray-900">Easy</option>
+                      <option value="medium" className="bg-gray-900">Medium</option>
+                      <option value="hard" className="bg-gray-900">Hard</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-white/70 text-sm mb-2">Category</label>
-                  <select className="w-full glass rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50">
-                    <option value="dance">Dance</option>
-                    <option value="music">Music</option>
-                    <option value="comedy">Comedy</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <label className="block text-white/70 text-sm mb-2">End Date *</label>
+                  <input
+                    type="datetime-local"
+                    value={formEndDate}
+                    onChange={(e) => setFormEndDate(e.target.value)}
+                    className="w-full glass rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-white/70 text-sm mb-2">Prize (Optional)</label>
                   <input
                     type="text"
+                    value={formPrize}
+                    onChange={(e) => setFormPrize(e.target.value)}
                     placeholder="e.g., 1000 V3 Coins"
                     className="w-full glass rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-amber-500/50"
                   />
                 </div>
 
-                <button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-4 rounded-xl hover:opacity-90 transition-opacity mt-4">
-                  Create Challenge
+                <button
+                  onClick={handleCreateChallenge}
+                  disabled={creating || !formTitle || !formHashtag || !formDescription || !formEndDate}
+                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-4 rounded-xl hover:opacity-90 transition-opacity mt-4 disabled:opacity-50"
+                >
+                  {creating ? 'Creating...' : 'Create Challenge'}
                 </button>
               </div>
             </div>

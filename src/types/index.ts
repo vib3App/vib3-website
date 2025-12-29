@@ -13,3 +13,4 @@ export * from './creator';
 export * from './capsule';
 export * from './ai';
 export * from './feedCategory';
+export * from './challenge';
