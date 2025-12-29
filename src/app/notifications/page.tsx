@@ -2,8 +2,7 @@
 
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationItem } from '@/components/notifications';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 export default function NotificationsPage() {
@@ -18,13 +17,13 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="min-h-screen relative">
       <AuroraBackground intensity={20} />
-      <SideNav />
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="pt-20 md:pt-16 pb-8 relative z-10">
         {/* Header */}
-        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
             <h1 className="text-xl font-bold text-white">Notifications</h1>
             {n.unreadCount > 0 && (
@@ -115,8 +114,6 @@ export default function NotificationsPage() {
           )}
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

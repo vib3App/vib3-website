@@ -6,8 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/services/api';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import {
   AccountSection,
   PrivacySection,
@@ -82,10 +82,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
-        <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
+    <div className="min-h-screen relative">
+      <AuroraBackground intensity={20} />
+      <TopNav />
+      <main className="pt-20 md:pt-16 pb-8 relative z-10">
+        <header className="sticky top-0 z-40 glass-heavy mx-4 rounded-2xl">
           <div className="flex items-center gap-4 px-4 h-14">
             <button onClick={() => router.back()} className="text-white/50 hover:text-white md:hidden">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,7 +140,6 @@ export default function SettingsPage() {
           </button>
         </div>
       </main>
-      <BottomNav />
     </div>
   );
 }

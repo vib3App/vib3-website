@@ -5,8 +5,7 @@ import Image from 'next/image';
 import { useProfile, type UserProfile } from '@/hooks/useProfile';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { ProfileQRModal } from '@/components/profile/ProfileQRModal';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
@@ -53,11 +52,11 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="min-h-screen relative">
       <AuroraBackground intensity={20} />
-      <SideNav />
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0 relative z-10">
+      <main className="pt-20 md:pt-16 pb-8 relative z-10">
         <ProfileHeader profile={p.profile} onBack={p.goBack} onQRClick={() => p.setShowQRModal(true)} showMoreMenu={p.showMoreMenu} onToggleMenu={() => p.setShowMoreMenu(!p.showMoreMenu)} onCopyLink={p.copyProfileLink} isOwnProfile={p.isOwnProfile} isAuthenticated={p.isAuthenticated} />
 
         <div className="max-w-3xl mx-auto px-4 py-6">
@@ -74,8 +73,6 @@ export default function ProfilePage() {
           </>
         )}
       </main>
-
-      <BottomNav />
     </div>
   );
 }

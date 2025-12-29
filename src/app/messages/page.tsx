@@ -8,8 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { messagesApi } from '@/services/api';
 import { websocketService } from '@/services/websocket';
 import type { Conversation, Message } from '@/types';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 function timeAgo(dateString: string): string {
@@ -171,13 +170,13 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex min-h-screen relative">
+    <div className="min-h-screen relative">
       <AuroraBackground intensity={20} />
-      <SideNav />
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0 relative z-10">
+      <main className="pt-20 md:pt-16 pb-8 relative z-10">
         {/* Header */}
-        <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10">
+        <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10 mx-4">
           <div className="flex items-center justify-between px-4 h-14">
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-white">Messages</h1>
@@ -246,8 +245,6 @@ export default function MessagesPage() {
           )}
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

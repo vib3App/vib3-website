@@ -1,8 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { CommentSheet } from '@/components/video/CommentSheet';
 import { ShareSheet } from '@/components/video/ShareSheet';
@@ -12,7 +11,6 @@ import { useFeedActions } from '@/hooks/useFeedActions';
 import { useFeedNavigation } from '@/hooks/useFeedNavigation';
 import {
   FeedVideoItem,
-  FeedHeader,
   FeedQueuePanel,
   FeedTopActions,
   FeedEmptyState,
@@ -42,15 +40,6 @@ function FeedContent() {
 
   return (
     <>
-      <FeedHeader
-        activeTab={feed.activeTab}
-        selectedVibe={feed.selectedVibe}
-        showVibes={feed.showVibes}
-        onTabChange={feed.setActiveTab}
-        onVibeChange={feed.setSelectedVibe}
-        onToggleVibes={() => feed.setShowVibes(!feed.showVibes)}
-      />
-
       <FeedTopActions
         showQueue={actions.showQueue}
         onToggleQueue={actions.toggleQueue}
@@ -122,17 +111,19 @@ function FeedContent() {
 
 export default function FeedPage() {
   return (
-    <div className="flex h-screen overflow-hidden relative">
+    <div className="h-screen overflow-hidden relative">
       {/* Aurora background for visual distinction */}
       <AuroraBackground intensity={20} />
 
-      <SideNav />
-      <main className="flex-1 md:ml-64 h-full relative z-10">
+      {/* Top Navigation with Dropdowns */}
+      <TopNav />
+
+      {/* Full-width video feed - no sidebar */}
+      <main className="h-full pt-16 md:pt-16 relative z-10">
         <Suspense fallback={<FeedLoadingState message="Loading..." />}>
           <FeedContent />
         </Suspense>
       </main>
-      <BottomNav />
     </div>
   );
 }
