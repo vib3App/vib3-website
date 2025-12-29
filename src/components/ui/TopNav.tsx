@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -79,30 +79,17 @@ const DROPDOWNS: DropdownConfig[] = [
   },
 ];
 
-function Dropdown({ config, isOpen, onToggle, onClose }: {
+function Dropdown({ config, isOpen, onToggle }: {
   config: DropdownConfig;
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const isActive = config.items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen, onClose]);
-
   return (
-    <div ref={dropdownRef} className="relative">
+    <div className="relative">
       <button
         type="button"
         onClick={onToggle}
@@ -157,12 +144,11 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
   );
 }
 
-function FollowingDropdown({ isOpen, onToggle, onClose }: {
+function FollowingDropdown({ isOpen, onToggle }: {
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
 }) {
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuthStore();
   // TODO: Load actual following list
   const following = [
@@ -171,20 +157,8 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
     { id: '3', username: 'creator3', avatar: null },
   ];
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen, onClose]);
-
   return (
-    <div ref={dropdownRef} className="relative">
+    <div className="relative">
       <button
         type="button"
         onClick={onToggle}
@@ -252,36 +226,22 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
   );
 }
 
-function ProfileDropdown({ isOpen, onToggle, onClose }: {
+function ProfileDropdown({ isOpen, onToggle }: {
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
 }) {
   const router = useRouter();
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, isAuthenticated, logout } = useAuthStore();
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    }
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isOpen, onClose]);
 
   const handleLogout = async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
     logout();
-    onClose();
     router.push('/');
   };
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div className="relative">
       <button
         type="button"
         onClick={onToggle}
