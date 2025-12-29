@@ -20,6 +20,12 @@ const STATUS_CONFIG: Record<CollabRoomStatus, { color: string; icon: React.Compo
     iconColor: 'text-yellow-400',
     message: 'Waiting for participants to get ready',
   },
+  live: {
+    color: 'bg-red-500/20 border-red-500/50',
+    icon: VideoCameraIcon,
+    iconColor: 'text-red-400',
+    message: 'Room is live',
+  },
   recording: {
     color: 'bg-red-500/20 border-red-500/50',
     icon: VideoCameraIcon,
@@ -43,6 +49,12 @@ const STATUS_CONFIG: Record<CollabRoomStatus, { color: string; icon: React.Compo
     icon: XCircleIcon,
     iconColor: 'text-gray-400',
     message: 'Collab cancelled',
+  },
+  ended: {
+    color: 'bg-gray-500/20 border-gray-500/50',
+    icon: XCircleIcon,
+    iconColor: 'text-gray-400',
+    message: 'Collab ended',
   },
 };
 

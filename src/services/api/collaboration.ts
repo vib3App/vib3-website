@@ -16,16 +16,15 @@ import type {
 
 // Map backend room response to frontend CollabRoom type
 function mapBackendRoom(room: any): CollabRoom {
-  return {
-    id: room.id || room._id,
-    creatorId: room.host?.id || room.hostId,
-    creatorUsername: room.host?.username || room.hostUsername || 'Unknown',
-    creatorAvatar: room.host?.profilePicture || room.hostProfilePicture,
-    title: room.name || room.title || 'Untitled',
-    description: room.description,
-    status: room.status || 'waiting',
-    participants: (room.participants || []).map((p: any): CollabParticipant => ({
-      userId: p.id || p.userId,
+  if (!room) {
+    throw new Error('Room data is null or undefined');
+  }
+
+  // Backend sometimes returns participants as a count (number) vs array
+  let participantsArray: CollabParticipant[] = [];
+  if (Array.isArray(room.participants)) {
+    participantsArray = room.participants.map((p: any): CollabParticipant => ({
+      userId: p.id || p.userId || p._id,
       username: p.username || 'Unknown',
       avatar: p.profilePicture || p.avatar,
       role: p.role === 'host' ? 'creator' : 'collaborator',
@@ -33,13 +32,30 @@ function mapBackendRoom(room: any): CollabRoom {
       isReady: p.isReady ?? !p.isMuted,
       hasRecorded: p.hasRecorded ?? false,
       clipUrl: p.clipUrl,
-    })),
+    }));
+  }
+
+  // Get participant count - either from array length or from participants number
+  const participantCount = Array.isArray(room.participants)
+    ? room.participants.length
+    : (typeof room.participants === 'number' ? room.participants : 0);
+
+  return {
+    id: room.id || room._id,
+    creatorId: room.host?.id || room.host?._id || room.hostId,
+    creatorUsername: room.host?.username || room.hostUsername || 'Unknown',
+    creatorAvatar: room.host?.profilePicture || room.hostProfilePicture,
+    title: room.name || room.title || 'Untitled',
+    description: room.description,
+    status: room.status || 'waiting',
+    participants: participantsArray,
+    participantCount, // Add count for display
     maxParticipants: room.maxParticipants || 4,
     isPrivate: room.isPrivate || false,
     inviteCode: room.inviteCode || room.jitsiRoomName,
     createdAt: room.createdAt || new Date().toISOString(),
     startedAt: room.startedAt,
-    completedAt: room.completedAt,
+    completedAt: room.completedAt || room.endedAt,
   };
 }
 

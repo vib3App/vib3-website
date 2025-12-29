@@ -4,7 +4,7 @@
 
 // ========== Collab Rooms ==========
 
-export type CollabRoomStatus = 'waiting' | 'recording' | 'editing' | 'completed' | 'cancelled';
+export type CollabRoomStatus = 'waiting' | 'live' | 'recording' | 'editing' | 'completed' | 'cancelled' | 'ended';
 
 export interface CollabRoom {
   id: string;
@@ -15,6 +15,7 @@ export interface CollabRoom {
   description?: string;
   status: CollabRoomStatus;
   participants: CollabParticipant[];
+  participantCount?: number; // Backend sometimes returns count instead of array
   maxParticipants: number;
   isPrivate: boolean;
   inviteCode?: string;

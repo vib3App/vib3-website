@@ -14,10 +14,12 @@ import type { CollabRoom, CollabRoomStatus } from '@/types/collaboration';
 
 const STATUS_CONFIG: Record<CollabRoomStatus, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
   waiting: { label: 'Waiting', color: 'bg-yellow-500', icon: ClockIcon },
+  live: { label: 'Live', color: 'bg-red-500', icon: VideoCameraIcon },
   recording: { label: 'Recording', color: 'bg-red-500', icon: VideoCameraIcon },
   editing: { label: 'Editing', color: 'bg-blue-500', icon: SparklesIcon },
   completed: { label: 'Completed', color: 'bg-green-500', icon: CheckCircleIcon },
   cancelled: { label: 'Cancelled', color: 'bg-gray-500', icon: XCircleIcon },
+  ended: { label: 'Ended', color: 'bg-gray-500', icon: XCircleIcon },
 };
 
 interface CollabRoomCardProps {
@@ -25,8 +27,12 @@ interface CollabRoomCardProps {
 }
 
 export function CollabRoomCard({ room }: CollabRoomCardProps) {
-  const statusConfig = STATUS_CONFIG[room.status];
+  const statusConfig = STATUS_CONFIG[room.status] || STATUS_CONFIG.waiting;
   const StatusIcon = statusConfig.icon;
+
+  // Use participantCount if available, otherwise fallback to participants array length
+  const participantCount = room.participantCount ?? room.participants?.length ?? 0;
+  const participantsArray = room.participants || [];
 
   return (
     <Link
@@ -57,43 +63,45 @@ export function CollabRoomCard({ room }: CollabRoomCardProps) {
             <img src={room.creatorAvatar} alt="" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xs font-bold">
-              {room.creatorUsername[0].toUpperCase()}
+              {(room.creatorUsername || 'U')[0].toUpperCase()}
             </div>
           )}
         </div>
-        <span className="text-sm">{room.creatorUsername}</span>
+        <span className="text-sm">{room.creatorUsername || 'Unknown'}</span>
       </div>
 
       <div className="flex items-center justify-between text-sm text-gray-400">
         <div className="flex items-center gap-2">
           <UserGroupIcon className="w-4 h-4" />
-          {room.participants.length}/{room.maxParticipants}
+          {participantCount}/{room.maxParticipants}
         </div>
         <span>{new Date(room.createdAt).toLocaleDateString()}</span>
       </div>
 
-      <div className="flex -space-x-2 mt-3">
-        {room.participants.slice(0, 5).map((p, i) => (
-          <div
-            key={p.userId}
-            className="w-6 h-6 rounded-full border-2 border-black bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden"
-            style={{ zIndex: 5 - i }}
-          >
-            {p.avatar ? (
-              <img src={p.avatar} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
-                {p.username[0].toUpperCase()}
-              </div>
-            )}
-          </div>
-        ))}
-        {room.participants.length > 5 && (
-          <div className="w-6 h-6 rounded-full border-2 border-black bg-gray-700 flex items-center justify-center text-[10px]">
-            +{room.participants.length - 5}
-          </div>
-        )}
-      </div>
+      {participantsArray.length > 0 && (
+        <div className="flex -space-x-2 mt-3">
+          {participantsArray.slice(0, 5).map((p, i) => (
+            <div
+              key={p.userId || i}
+              className="w-6 h-6 rounded-full border-2 border-black bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden"
+              style={{ zIndex: 5 - i }}
+            >
+              {p.avatar ? (
+                <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
+                  {(p.username || 'U')[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+          ))}
+          {participantsArray.length > 5 && (
+            <div className="w-6 h-6 rounded-full border-2 border-black bg-gray-700 flex items-center justify-center text-[10px]">
+              +{participantsArray.length - 5}
+            </div>
+          )}
+        </div>
+      )}
     </Link>
   );
 }
