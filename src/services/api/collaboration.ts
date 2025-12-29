@@ -4,6 +4,7 @@
 import { apiClient } from './client';
 import type {
   CollabRoom,
+  CollabParticipant,
   CreateCollabRoomInput,
   Remix,
   RemixType,
@@ -13,6 +14,35 @@ import type {
   CollaborationStats,
 } from '@/types/collaboration';
 
+// Map backend room response to frontend CollabRoom type
+function mapBackendRoom(room: any): CollabRoom {
+  return {
+    id: room.id || room._id,
+    creatorId: room.host?.id || room.hostId,
+    creatorUsername: room.host?.username || room.hostUsername || 'Unknown',
+    creatorAvatar: room.host?.profilePicture || room.hostProfilePicture,
+    title: room.name || room.title || 'Untitled',
+    description: room.description,
+    status: room.status || 'waiting',
+    participants: (room.participants || []).map((p: any): CollabParticipant => ({
+      userId: p.id || p.userId,
+      username: p.username || 'Unknown',
+      avatar: p.profilePicture || p.avatar,
+      role: p.role === 'host' ? 'creator' : 'collaborator',
+      joinedAt: p.joinedAt || new Date().toISOString(),
+      isReady: p.isReady ?? !p.isMuted,
+      hasRecorded: p.hasRecorded ?? false,
+      clipUrl: p.clipUrl,
+    })),
+    maxParticipants: room.maxParticipants || 4,
+    isPrivate: room.isPrivate || false,
+    inviteCode: room.inviteCode || room.jitsiRoomName,
+    createdAt: room.createdAt || new Date().toISOString(),
+    startedAt: room.startedAt,
+    completedAt: room.completedAt,
+  };
+}
+
 export const collaborationApi = {
   // ========== Collab Rooms ==========
 
@@ -20,26 +50,29 @@ export const collaborationApi = {
    * Get active collab rooms
    */
   async getCollabRooms(page = 1, limit = 20): Promise<{ rooms: CollabRoom[]; hasMore: boolean }> {
-    const { data } = await apiClient.get<{ rooms: CollabRoom[]; hasMore: boolean }>('/collab/rooms', {
+    const { data } = await apiClient.get<{ rooms: any[]; hasMore: boolean }>('/collab/rooms', {
       params: { page, limit },
     });
-    return data;
+    return {
+      rooms: (data.rooms || []).map(mapBackendRoom),
+      hasMore: data.hasMore,
+    };
   },
 
   /**
    * Get my collab rooms (as creator or participant)
    */
   async getMyCollabRooms(): Promise<CollabRoom[]> {
-    const { data } = await apiClient.get<{ rooms: CollabRoom[] }>('/collab/rooms/my');
-    return data.rooms;
+    const { data } = await apiClient.get<{ rooms: any[] }>('/collab/rooms/my');
+    return (data.rooms || []).map(mapBackendRoom);
   },
 
   /**
    * Get a single collab room
    */
   async getCollabRoom(roomId: string): Promise<CollabRoom> {
-    const { data } = await apiClient.get<{ room: CollabRoom }>(`/collab/rooms/${roomId}`);
-    return data.room;
+    const { data } = await apiClient.get<{ room: any }>(`/collab/rooms/${roomId}`);
+    return mapBackendRoom(data.room);
   },
 
   /**
@@ -53,28 +86,28 @@ export const collaborationApi = {
       maxParticipants: input.maxParticipants,
       isPrivate: input.isPrivate,
     };
-    const { data } = await apiClient.post<{ room: CollabRoom }>('/collab/rooms', payload);
-    return data.room;
+    const { data } = await apiClient.post<{ room: any }>('/collab/rooms', payload);
+    return mapBackendRoom(data.room);
   },
 
   /**
    * Join a collab room
    */
   async joinCollabRoom(roomId: string, inviteCode?: string): Promise<CollabRoom> {
-    const { data } = await apiClient.post<{ room: CollabRoom }>(`/collab/rooms/${roomId}/join`, {
+    const { data } = await apiClient.post<{ room: any }>(`/collab/rooms/${roomId}/join`, {
       inviteCode,
     });
-    return data.room;
+    return mapBackendRoom(data.room);
   },
 
   /**
    * Join by invite code
    */
   async joinByInviteCode(inviteCode: string): Promise<CollabRoom> {
-    const { data } = await apiClient.post<{ room: CollabRoom }>('/collab/rooms/join-by-code', {
+    const { data } = await apiClient.post<{ room: any }>('/collab/rooms/join-by-code', {
       inviteCode,
     });
-    return data.room;
+    return mapBackendRoom(data.room);
   },
 
   /**
