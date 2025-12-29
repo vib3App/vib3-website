@@ -21,3 +21,4 @@ export { capsuleApi } from './capsule';
 export { aiApi } from './ai';
 export { challengesApi } from './challenges';
 export { shopApi } from './shop';
+export { creatorFundApi } from './creatorFund';
