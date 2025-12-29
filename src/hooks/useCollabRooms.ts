@@ -63,9 +63,16 @@ export function useCollabRooms() {
         isPrivate: createIsPrivate,
       });
       router.push(`/collab/${room.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create room:', err);
-      alert('Failed to create collab room');
+      // Show specific error message
+      if (err?.status === 401) {
+        alert('Please login to create a collab room');
+      } else if (err?.message) {
+        alert(err.message);
+      } else {
+        alert('Failed to create collab room');
+      }
     } finally {
       setCreating(false);
     }
