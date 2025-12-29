@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { TopNav } from '@/components/ui/TopNav';
@@ -9,13 +9,15 @@ import { FeedVideoItem } from '@/components/feed';
 import { CommentSheet } from '@/components/video/CommentSheet';
 import { ShareSheet } from '@/components/video/ShareSheet';
 import { useAuthStore } from '@/stores/authStore';
-import { videoApi, feedApi } from '@/services/api';
+import { videoApi, userApi } from '@/services/api';
 import type { Video } from '@/types';
 
 export default function VideoPlayerPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const videoId = params.videoId as string;
+  const userId = searchParams.get('user'); // Get userId from query param
 
   const { isAuthenticated, user } = useAuthStore();
   const [videos, setVideos] = useState<Video[]>([]);
@@ -36,21 +38,59 @@ export default function VideoPlayerPage() {
       setError(null);
 
       try {
-        // First, get the clicked video
-        const video = await videoApi.getVideo(videoId);
+        let targetVideo: Video | null = null;
+        let allVideos: Video[] = [];
 
-        // Then get more videos from the same user
-        const userVideosResponse = await feedApi.getUserVideos(video.userId);
+        // If we have a userId, load all their videos and find the target
+        if (userId) {
+          console.log('Loading videos for user:', userId);
+          const userVideosResponse = await userApi.getUserVideos(userId);
+          const userVideos = userVideosResponse.videos || [];
 
-        // Find the clicked video in user's videos and put it first
-        const otherVideos = userVideosResponse.items.filter(v => v.id !== videoId);
-        const allVideos = [video, ...otherVideos];
+          // Find the target video
+          targetVideo = userVideos.find(v => v.id === videoId) || null;
+
+          if (targetVideo) {
+            // Put target video first, then others
+            const otherVideos = userVideos.filter(v => v.id !== videoId);
+            allVideos = [targetVideo, ...otherVideos];
+          } else {
+            // Video not found in user's videos - just show all
+            allVideos = userVideos;
+          }
+        } else {
+          // No userId - try to fetch single video via API
+          console.log('Loading single video:', videoId);
+          try {
+            targetVideo = await videoApi.getVideo(videoId);
+            if (targetVideo) {
+              allVideos = [targetVideo];
+
+              // Try to load more from the same user
+              try {
+                const userVideosResponse = await userApi.getUserVideos(targetVideo.userId);
+                const otherVideos = (userVideosResponse.videos || []).filter(v => v.id !== videoId);
+                allVideos = [targetVideo, ...otherVideos];
+              } catch {
+                // Just show single video if user videos fail
+              }
+            }
+          } catch (apiErr) {
+            console.error('Failed to fetch video:', apiErr);
+            throw new Error('Could not load video. Try again.');
+          }
+        }
+
+        if (allVideos.length === 0) {
+          throw new Error('No videos found');
+        }
 
         setVideos(allVideos);
         setCurrentIndex(0);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to load video:', err);
-        setError('Failed to load video');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load video';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -59,7 +99,7 @@ export default function VideoPlayerPage() {
     if (videoId) {
       loadVideos();
     }
-  }, [videoId]);
+  }, [videoId, userId]);
 
   // Intersection observer for detecting current video
   useEffect(() => {

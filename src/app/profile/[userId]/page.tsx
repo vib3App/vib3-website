@@ -12,7 +12,7 @@ import type { Video } from '@/types';
 
 function VideoThumbnail({ video }: { video: Video }) {
   return (
-    <Link href={`/video/${video.id}`} className="relative aspect-[9/16] glass-card rounded-lg overflow-hidden group">
+    <Link href={`/video/${video.id}?user=${video.userId}`} className="relative aspect-[9/16] glass-card rounded-lg overflow-hidden group">
       {video.thumbnailUrl ? (
         <Image src={video.thumbnailUrl} alt={video.title || video.caption || 'Video thumbnail'} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
       ) : (
