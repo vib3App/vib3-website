@@ -200,26 +200,26 @@ export default function VideoPlayerPage() {
       <AuroraBackground intensity={20} />
       <TopNav />
 
-      {/* Back button overlay */}
-      <button
-        onClick={() => router.back()}
-        className="fixed top-20 left-4 z-40 glass-card p-2 rounded-full text-white hover:bg-white/10 transition-colors"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
-
-      {/* Creator info overlay */}
-      {selectedVideo && (
-        <div className="fixed top-20 left-16 z-40 glass-card px-3 py-2 rounded-full flex items-center gap-2">
-          <Link href={`/profile/${selectedVideo.userId}`} className="text-white font-medium hover:underline">
-            @{selectedVideo.username}
-          </Link>
-          <span className="text-white/50 text-sm">•</span>
-          <span className="text-white/50 text-sm">{videos.length} videos</span>
-        </div>
-      )}
+      {/* Back button and creator info - top right, below header */}
+      <div className="fixed top-[4.5rem] md:top-[3.75rem] right-4 z-50 flex items-center gap-2">
+        {selectedVideo && (
+          <div className="glass-card px-3 py-2 rounded-full flex items-center gap-2">
+            <Link href={`/profile/${selectedVideo.userId}`} className="text-white font-medium hover:underline">
+              @{selectedVideo.username}
+            </Link>
+            <span className="text-white/50 text-sm">•</span>
+            <span className="text-white/50 text-sm">{videos.length} videos</span>
+          </div>
+        )}
+        <button
+          onClick={() => router.back()}
+          className="glass-card p-2 rounded-full text-white hover:bg-white/10 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
       <main className="h-full pt-16 relative z-10">
         <div
