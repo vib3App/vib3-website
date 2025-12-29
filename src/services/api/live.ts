@@ -8,6 +8,10 @@ import type {
   LiveGift,
   CreateLiveStreamInput,
   LiveStreamStats,
+  StartStreamResponse,
+  JoinStreamResponse,
+  LiveKitTokenResponse,
+  LiveKitStatus,
 } from '@/types';
 
 export const liveApi = {
@@ -46,12 +50,41 @@ export const liveApi = {
   },
 
   /**
-   * Start broadcasting
+   * Start broadcasting (creates LiveKit room and returns host token)
    */
-  async startStream(streamId: string): Promise<{ rtmpUrl: string; streamKey: string }> {
-    const { data } = await apiClient.post<{ rtmpUrl: string; streamKey: string }>(
-      `/live/${streamId}/start`
-    );
+  async startStream(input: CreateLiveStreamInput): Promise<StartStreamResponse> {
+    const { data } = await apiClient.post<StartStreamResponse>('/live/start', input);
+    return data;
+  },
+
+  /**
+   * Join a stream as viewer (returns LiveKit viewer token)
+   */
+  async joinStream(streamId: string): Promise<JoinStreamResponse> {
+    const { data } = await apiClient.post<JoinStreamResponse>(`/live/${streamId}/join`);
+    return data;
+  },
+
+  /**
+   * Leave a stream
+   */
+  async leaveStream(streamId: string): Promise<void> {
+    await apiClient.post(`/live/${streamId}/leave`);
+  },
+
+  /**
+   * Get LiveKit token (for reconnecting)
+   */
+  async getLiveKitToken(streamId: string): Promise<LiveKitTokenResponse> {
+    const { data } = await apiClient.get<LiveKitTokenResponse>(`/live/${streamId}/token`);
+    return data;
+  },
+
+  /**
+   * Check LiveKit availability
+   */
+  async getLiveKitStatus(): Promise<LiveKitStatus> {
+    const { data } = await apiClient.get<LiveKitStatus>('/live/livekit/status');
     return data;
   },
 

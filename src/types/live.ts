@@ -84,3 +84,32 @@ export interface LiveStreamStats {
   duration: number;
   chatMessages: number;
 }
+
+export interface LiveKitCredentials {
+  token: string;
+  wsUrl: string;
+  roomName: string;
+}
+
+export interface StartStreamResponse {
+  stream: LiveStream;
+  liveKit: LiveKitCredentials | null;
+}
+
+export interface JoinStreamResponse {
+  stream: LiveStream;
+  roomId: string;
+  liveKit: LiveKitCredentials | null;
+}
+
+export interface LiveKitTokenResponse {
+  token: string;
+  wsUrl: string;
+  roomName: string;
+  isHost: boolean;
+}
+
+export interface LiveKitStatus {
+  available: boolean;
+  wsUrl: string | null;
+}

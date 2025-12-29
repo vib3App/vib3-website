@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Hls from 'hls.js';
 import { liveApi } from '@/services/api';
-import type { LiveStream, LiveChatMessage, LiveGift } from '@/types';
+import type { LiveStream, LiveChatMessage, LiveGift, LiveKitCredentials } from '@/types';
 
 interface FloatingReaction {
   id: string;
@@ -16,7 +15,6 @@ export function useLiveStream(streamId: string, isHost: boolean) {
   const router = useRouter();
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Stream data
@@ -25,6 +23,9 @@ export function useLiveStream(streamId: string, isHost: boolean) {
   const [gifts, setGifts] = useState<LiveGift[]>([]);
   const [viewerCount, setViewerCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
+
+  // LiveKit credentials
+  const [liveKitCredentials, setLiveKitCredentials] = useState<LiveKitCredentials | null>(null);
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -41,35 +42,43 @@ export function useLiveStream(streamId: string, isHost: boolean) {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
 
-  // Fetch stream data
+  // Join stream and get LiveKit credentials
   useEffect(() => {
-    const fetchStream = async () => {
+    const joinStream = async () => {
       try {
-        const data = await liveApi.getLiveStream(streamId);
-        setStream(data);
-        setViewerCount(data.viewerCount);
-        setLikeCount(data.likeCount);
+        // Join the stream (this increments viewer count and returns LiveKit token)
+        const joinResponse = await liveApi.joinStream(streamId);
+        setStream(joinResponse.stream);
+        setViewerCount(joinResponse.stream.viewerCount || 0);
+        setLikeCount(joinResponse.stream.likeCount || 0);
 
-        if (data.hlsUrl && videoRef.current) {
-          if (Hls.isSupported()) {
-            const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-            hls.loadSource(data.hlsUrl);
-            hls.attachMedia(videoRef.current);
-            hlsRef.current = hls;
-          } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-            videoRef.current.src = data.hlsUrl;
-          }
+        if (joinResponse.liveKit) {
+          setLiveKitCredentials(joinResponse.liveKit);
         }
+
         setLoading(false);
       } catch (err) {
-        console.error('Failed to fetch stream:', err);
-        setError('Stream not found or has ended');
-        setLoading(false);
+        console.error('Failed to join stream:', err);
+        // Try to just fetch the stream info
+        try {
+          const data = await liveApi.getLiveStream(streamId);
+          setStream(data);
+          setViewerCount(data.viewerCount);
+          setLikeCount(data.likeCount);
+          setLoading(false);
+        } catch {
+          setError('Stream not found or has ended');
+          setLoading(false);
+        }
       }
     };
 
-    fetchStream();
-    return () => { hlsRef.current?.destroy(); };
+    joinStream();
+
+    // Leave stream on unmount
+    return () => {
+      liveApi.leaveStream(streamId).catch(() => {});
+    };
   }, [streamId]);
 
   // Fetch chat messages
@@ -215,6 +224,8 @@ export function useLiveStream(streamId: string, isHost: boolean) {
     likeCount,
     loading,
     error,
+    // LiveKit
+    liveKitCredentials,
     // UI State
     chatMessage,
     setChatMessage,

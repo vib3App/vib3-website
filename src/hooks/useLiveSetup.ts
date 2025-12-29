@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { liveApi } from '@/services/api';
-import type { CreateLiveStreamInput } from '@/types';
+import type { CreateLiveStreamInput, LiveKitCredentials } from '@/types';
 
 export type StreamMode = 'camera' | 'screen' | 'both';
-export type SetupStep = 'setup' | 'preview' | 'starting';
+export type SetupStep = 'setup' | 'preview' | 'starting' | 'live';
 
 export function useLiveSetup() {
   const router = useRouter();
@@ -33,6 +33,8 @@ export function useLiveSetup() {
   const [step, setStep] = useState<SetupStep>('setup');
   const [error, setError] = useState<string | null>(null);
   const [isScheduling, setIsScheduling] = useState(false);
+  const [streamId, setStreamId] = useState<string | null>(null);
+  const [liveKitCredentials, setLiveKitCredentials] = useState<LiveKitCredentials | null>(null);
 
   useEffect(() => {
     const getDevices = async () => {
@@ -131,12 +133,26 @@ export function useLiveSetup() {
         maxGuests,
         scheduledFor: isScheduling && scheduledFor ? scheduledFor : undefined,
       };
-      const stream = await liveApi.createLiveStream(input);
+
       if (isScheduling) {
+        // Just create a scheduled stream
+        await liveApi.createLiveStream(input);
         router.push('/live');
       } else {
-        await liveApi.startStream(stream.id);
-        router.push(`/live/${stream.id}?host=true`);
+        // Start the stream and get LiveKit credentials
+        const response = await liveApi.startStream(input);
+        const newStreamId = (response.stream as any)._id || response.stream.id;
+        setStreamId(newStreamId);
+
+        if (response.liveKit) {
+          setLiveKitCredentials(response.liveKit);
+          setStep('live');
+          // Don't navigate - stay on page with LiveKit room
+        } else {
+          // Fallback if LiveKit is not available
+          setError('Live streaming is not configured. Please contact support.');
+          setStep('preview');
+        }
       }
     } catch (err) {
       console.error('Failed to create stream:', err);
@@ -144,6 +160,24 @@ export function useLiveSetup() {
       setStep('preview');
     }
   }, [title, description, thumbnailUrl, isPrivate, allowGuests, maxGuests, isScheduling, scheduledFor, router]);
+
+  const endStream = useCallback(async () => {
+    if (streamId) {
+      try {
+        await liveApi.endStream(streamId);
+      } catch (err) {
+        console.error('Failed to end stream:', err);
+      }
+    }
+    // Stop media tracks
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+    }
+    setStep('setup');
+    setStreamId(null);
+    setLiveKitCredentials(null);
+    router.push('/live');
+  }, [streamId, mediaStream, router]);
 
   return {
     videoRef, canvasRef, title, setTitle, description, setDescription,
@@ -153,5 +187,6 @@ export function useLiveSetup() {
     selectedCamera, setSelectedCamera, selectedMic, setSelectedMic,
     cameras, mics, step, setStep, error, isScheduling, setIsScheduling,
     startPreview, captureThumbnail, toggleAudio, toggleVideo, handleGoLive,
+    streamId, liveKitCredentials, mediaStream, endStream,
   };
 }

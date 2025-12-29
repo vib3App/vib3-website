@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeftIcon, SignalIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useLiveSetup } from '@/hooks/useLiveSetup';
 import { LiveSetupStep, LivePreviewStep } from '@/components/live';
+import { LiveStreamRoom } from '@/components/live/LiveStreamRoom';
 
 function StartingState({ isScheduling }: { isScheduling: boolean }) {
   return (
@@ -19,6 +20,22 @@ function StartingState({ isScheduling }: { isScheduling: boolean }) {
 
 export default function StartLivePage() {
   const live = useLiveSetup();
+
+  // When streaming is live, show the LiveKit room
+  if (live.step === 'live' && live.liveKitCredentials) {
+    return (
+      <div className="fixed inset-0 bg-black">
+        <LiveStreamRoom
+          token={live.liveKitCredentials.token}
+          wsUrl={live.liveKitCredentials.wsUrl}
+          roomName={live.liveKitCredentials.roomName}
+          isHost={true}
+          streamTitle={live.title}
+          onEnd={live.endStream}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">

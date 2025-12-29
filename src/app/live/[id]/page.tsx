@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ExclamationTriangleIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
 import { useLiveStream } from '@/hooks/useLiveStream';
 import {
@@ -15,15 +16,21 @@ import {
   GuestRequestsModal,
   LiveFloatingReactions,
 } from '@/components/live';
+import { LiveViewerRoom } from '@/components/live/LiveViewerRoom';
 import type { LiveGuest } from '@/types';
 
 function LiveStreamContent() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const streamId = params.id as string;
   const isHost = searchParams.get('host') === 'true';
 
   const ls = useLiveStream(streamId, isHost);
+
+  const handleLeaveStream = () => {
+    router.push('/live');
+  };
 
   if (ls.loading) {
     return (
@@ -41,6 +48,23 @@ function LiveStreamContent() {
         <Link href="/live" className="text-pink-400 hover:underline">
           Back to Live
         </Link>
+      </div>
+    );
+  }
+
+  // Use LiveKit for video streaming if credentials are available
+  if (ls.liveKitCredentials && !isHost) {
+    return (
+      <div className="fixed inset-0 bg-black">
+        <LiveViewerRoom
+          token={ls.liveKitCredentials.token}
+          wsUrl={ls.liveKitCredentials.wsUrl}
+          roomName={ls.liveKitCredentials.roomName}
+          streamTitle={ls.stream.title}
+          hostName={ls.stream.hostUsername || 'Host'}
+          hostAvatar={ls.stream.hostAvatar}
+          onLeave={handleLeaveStream}
+        />
       </div>
     );
   }
