@@ -110,8 +110,9 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
   return (
     <div ref={dropdownRef} className="relative">
       <button
+        type="button"
         onClick={onToggle}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
           isActive || isOpen
             ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20 text-white border border-white/20'
             : 'glass text-white/70 hover:text-white hover:bg-white/10'
@@ -195,8 +196,9 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
   return (
     <div ref={dropdownRef} className="relative">
       <button
+        type="button"
         onClick={onToggle}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
           isOpen
             ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20 text-white border border-white/20'
             : 'glass text-white/70 hover:text-white hover:bg-white/10'
@@ -289,8 +291,9 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
   return (
     <div ref={dropdownRef} className="relative">
       <button
+        type="button"
         onClick={onToggle}
-        className={`w-10 h-10 rounded-full overflow-hidden transition-all duration-200 ${
+        className={`w-10 h-10 rounded-full overflow-hidden transition-all duration-200 cursor-pointer ${
           isOpen ? 'ring-2 ring-purple-500' : 'hover:ring-2 hover:ring-white/30'
         }`}
       >
