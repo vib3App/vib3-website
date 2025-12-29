@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 
 const requirements = [
@@ -68,6 +69,16 @@ export default function CreatorFundPage() {
     <div className="min-h-screen aurora-bg">
       <TopNav />
       <main className="pt-20 md:pt-16 pb-8">
+        {/* Header with Back Button */}
+        <header className="sticky top-16 z-40 glass-heavy mx-4 mt-3 rounded-2xl mb-4">
+          <div className="flex items-center gap-3 px-4 h-14">
+            <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+              <ArrowLeftIcon className="w-5 h-5 text-white" />
+            </Link>
+            <h1 className="text-xl font-bold text-white">Creator Fund</h1>
+          </div>
+        </header>
+
         {/* Hero Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/60 via-emerald-500/60 to-teal-500/60 backdrop-blur-3xl" />

@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 
 interface Product {
@@ -115,6 +117,13 @@ export default function ShopPage() {
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-600/50 via-pink-500/50 to-teal-400/50" />
           <div className="absolute inset-0 backdrop-blur-3xl" />
+          {/* Back Button */}
+          <Link
+            href="/feed"
+            className="absolute top-4 left-4 z-10 p-2 hover:bg-white/10 rounded-full transition"
+          >
+            <ArrowLeftIcon className="w-5 h-5 text-white" />
+          </Link>
           <div className="relative px-6 py-16 text-center text-white">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">
               VIB3 Shop

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { feedApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
 import type { Video } from '@/types';
@@ -72,10 +73,15 @@ export default function TrendingPage() {
         {/* Header */}
         <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="text-2xl">🔥</span>
-              Trending
-            </h1>
+            <div className="flex items-center gap-2">
+              <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+                <ArrowLeftIcon className="w-5 h-5" />
+              </Link>
+              <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                <span className="text-2xl">🔥</span>
+                Trending
+              </h1>
+            </div>
           </div>
 
           {/* Tabs */}

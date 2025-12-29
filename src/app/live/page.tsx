@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/authStore';
 import { liveApi } from '@/services/api';
 import type { LiveStream } from '@/types';
@@ -140,6 +141,9 @@ export default function LivePage() {
           <div className="glass-heavy mx-4 mt-3 rounded-2xl">
             <div className="flex items-center justify-between px-4 h-14">
               <div className="flex items-center gap-3">
+                <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+                  <ArrowLeftIcon className="w-5 h-5" />
+                </Link>
                 <div className="relative">
                   <div className="absolute inset-0 bg-red-500 rounded-full blur-md opacity-50 animate-pulse" />
                   <span className="relative w-3 h-3 bg-red-500 rounded-full block" />

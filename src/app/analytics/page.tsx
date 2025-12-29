@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 
 interface StatCard {
@@ -61,10 +63,15 @@ export default function AnalyticsPage() {
         <div className="px-6 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                <span>📊</span> Analytics
-              </h1>
-              <p className="text-white/50 mt-1">Track your content performance</p>
+              <div className="flex items-center gap-3">
+                <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+                  <ArrowLeftIcon className="w-5 h-5" />
+                </Link>
+                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <span>📊</span> Analytics
+                </h1>
+              </div>
+              <p className="text-white/50 mt-1 ml-12">Track your content performance</p>
             </div>
             <div className="flex gap-2">
               {(['7d', '30d', '90d', 'all'] as const).map((range) => (

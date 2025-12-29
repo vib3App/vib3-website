@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useCollections } from '@/hooks/useCollections';
 import { CollectionCard, CreatePlaylistModal, CollectionTabs } from '@/components/collections-list';
 import { TopNav } from '@/components/ui/TopNav';
@@ -24,7 +25,12 @@ export default function CollectionsPage() {
         {/* Header */}
         <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
-            <h1 className="text-xl font-bold text-white">Collections</h1>
+            <div className="flex items-center gap-3">
+              <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+                <ArrowLeftIcon className="w-5 h-5 text-white" />
+              </Link>
+              <h1 className="text-xl font-bold text-white">Collections</h1>
+            </div>
             {c.activeTab === 'playlists' && (
               <button
                 onClick={() => c.setShowCreateModal(true)}

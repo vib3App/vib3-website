@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { feedApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraContainer, GlassButton, GlassCard, GlassPill, GradientText, SoundVisualizer } from '@/components/ui/Glass';
@@ -92,9 +93,14 @@ export default function DiscoverPage() {
       <main className="pt-20 md:pt-16 pb-8 overflow-x-hidden">
         {/* Hero Header */}
         <header className="px-4 md:px-8 pt-6 pb-4">
-          <h1 className="text-4xl md:text-5xl font-black mb-2">
-            <GradientText animate>Discover</GradientText>
-          </h1>
+          <div className="flex items-center gap-3 mb-2">
+            <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+              <ArrowLeftIcon className="w-5 h-5" />
+            </Link>
+            <h1 className="text-4xl md:text-5xl font-black">
+              <GradientText animate>Discover</GradientText>
+            </h1>
+          </div>
           <p className="text-white/60 text-lg">Find your next obsession</p>
 
           {/* Search */}

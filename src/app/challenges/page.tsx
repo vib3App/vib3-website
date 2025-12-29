@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 
 interface Challenge {
@@ -116,6 +117,13 @@ export default function ChallengesPage() {
     <div className="min-h-screen aurora-bg">
       <TopNav />
       <main className="pt-20 md:pt-16 pb-8">
+        {/* Back Button Header */}
+        <div className="px-6 py-4">
+          <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition inline-flex">
+            <ArrowLeftIcon className="w-5 h-5" />
+          </Link>
+        </div>
+
         {/* Hero Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/60 via-orange-500/60 to-amber-500/60 backdrop-blur-3xl" />

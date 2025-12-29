@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
+  ArrowLeftIcon,
   PlusIcon,
   TvIcon,
   UserGroupIcon,
@@ -77,7 +78,12 @@ export default function WatchPartiesPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Watch Parties</h1>
+          <div className="flex items-center gap-2">
+            <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+              <ArrowLeftIcon className="w-5 h-5" />
+            </Link>
+            <h1 className="text-xl font-bold">Watch Parties</h1>
+          </div>
           <button
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full font-medium text-sm hover:opacity-90 transition"

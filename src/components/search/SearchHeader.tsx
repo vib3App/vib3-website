@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import type { SearchSuggestion } from '@/services/api';
 import { formatCount } from '@/utils/format';
 
@@ -28,21 +29,13 @@ export function SearchHeader({
   inputRef,
   suggestionsRef,
 }: SearchHeaderProps) {
-  const router = useRouter();
-
   return (
     <div className="px-4 py-4">
-      <div ref={suggestionsRef} className="relative">
-        <form onSubmit={onSearch}>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="absolute left-0 top-1/2 -translate-y-1/2 p-2 text-white/50 hover:text-white md:hidden"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+      <div ref={suggestionsRef} className="relative flex items-center gap-3">
+        <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+          <ArrowLeftIcon className="w-5 h-5" />
+        </Link>
+        <form onSubmit={onSearch} className="flex-1 relative">
           <input
             ref={inputRef}
             type="text"
@@ -54,10 +47,10 @@ export function SearchHeader({
             onFocus={() => onShowSuggestionsChange(true)}
             placeholder="Search videos, users, sounds..."
             autoFocus
-            className="w-full glass text-white px-12 py-3 rounded-full outline-none placeholder:text-white/40 focus:ring-2 focus:ring-purple-500/50"
+            className="w-full glass text-white pl-10 pr-10 py-3 rounded-full outline-none placeholder:text-white/40 focus:ring-2 focus:ring-purple-500/50"
           />
           <svg
-            className="absolute left-4 md:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 hidden md:block"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
