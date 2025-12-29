@@ -50,8 +50,7 @@ export default function StartLivePage() {
           {live.step === 'preview' && (
             <button
               onClick={live.handleGoLive}
-              disabled={!live.title.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-full font-medium transition"
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-full font-medium transition"
             >
               <SignalIcon className="w-5 h-5" />
               {live.isScheduling ? 'Schedule' : 'Go Live'}

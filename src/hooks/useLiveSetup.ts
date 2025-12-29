@@ -117,15 +117,13 @@ export function useLiveSetup() {
   }, [mediaStream, videoEnabled]);
 
   const handleGoLive = useCallback(async () => {
-    if (!title.trim()) {
-      setError('Please enter a title for your stream');
-      return;
-    }
     setStep('starting');
     setError(null);
     try {
+      // Use default title if none provided
+      const streamTitle = title.trim() || `Live Stream`;
       const input: CreateLiveStreamInput = {
-        title: title.trim(),
+        title: streamTitle,
         description: description.trim() || undefined,
         thumbnailUrl: thumbnailUrl || undefined,
         isPrivate,
@@ -154,9 +152,16 @@ export function useLiveSetup() {
           setStep('preview');
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create stream:', err);
-      setError('Failed to create stream. Please try again.');
+      // Show specific error messages
+      if (err?.response?.status === 401) {
+        setError('Please login to start a live stream.');
+      } else if (err?.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Failed to create stream. Please try again.');
+      }
       setStep('preview');
     }
   }, [title, description, thumbnailUrl, isPrivate, allowGuests, maxGuests, isScheduling, scheduledFor, router]);
