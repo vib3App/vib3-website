@@ -14,3 +14,4 @@ export * from './capsule';
 export * from './ai';
 export * from './feedCategory';
 export * from './challenge';
+export * from './shop';

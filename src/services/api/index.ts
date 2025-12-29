@@ -20,3 +20,4 @@ export { creatorApi } from './creator';
 export { capsuleApi } from './capsule';
 export { aiApi } from './ai';
 export { challengesApi } from './challenges';
+export { shopApi } from './shop';
