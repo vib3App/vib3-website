@@ -24,3 +24,4 @@ export { shopApi } from './shop';
 export { creatorFundApi } from './creatorFund';
 export { analyticsApi } from './analytics';
 export { walletApi } from './wallet';
+export { paymentApi } from './payment';

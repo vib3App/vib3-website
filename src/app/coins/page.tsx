@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 import { useAuthStore } from '@/stores/authStore';
-import { walletApi, searchApi } from '@/services/api';
+import { walletApi, searchApi, paymentApi } from '@/services/api';
 import type { Wallet, WalletCoinPackage, Transaction } from '@/types/wallet';
 
 function formatDate(dateString: string): string {
@@ -129,10 +129,45 @@ export default function CoinsPage() {
     }
   };
 
-  const handleBuyPackage = (pkg: WalletCoinPackage) => {
-    // For web, redirect to payment or show payment modal
-    // This would integrate with Stripe for web purchases
-    alert(`Web purchases coming soon! Package: ${pkg.coins} coins for $${pkg.price}`);
+  const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
+
+  // Check for success/cancel from Stripe redirect
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      setPurchaseSuccess(true);
+      // Refresh wallet data after successful purchase
+      fetchData();
+      // Clear URL params
+      window.history.replaceState({}, '', '/coins');
+    } else if (urlParams.get('canceled') === 'true') {
+      setPurchaseError('Purchase was canceled');
+      window.history.replaceState({}, '', '/coins');
+    }
+  }, [fetchData]);
+
+  const handleBuyPackage = async (pkg: WalletCoinPackage) => {
+    setPurchaseLoading(pkg.id);
+    setPurchaseError(null);
+
+    try {
+      // Create Stripe Checkout session and redirect
+      const { url } = await paymentApi.createCheckoutSession(pkg.id);
+
+      if (url) {
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+      } else {
+        setPurchaseError('Failed to create checkout session');
+      }
+    } catch (err: any) {
+      console.error('Purchase error:', err);
+      setPurchaseError(err.response?.data?.error || 'Failed to start purchase. Please try again.');
+    } finally {
+      setPurchaseLoading(null);
+    }
   };
 
   if (!isAuthenticated) {
@@ -253,42 +288,97 @@ export default function CoinsPage() {
             {/* Content */}
             <div className="p-6">
               {activeTab === 'buy' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {packages.map((pkg) => {
-                    const isPopular = pkg.id === 'coins_1000';
-                    return (
-                      <div
-                        key={pkg.id}
-                        className={`relative glass-card p-6 transition-all hover:scale-105 cursor-pointer ${
-                          isPopular
-                            ? 'border-amber-500 ring-2 ring-amber-500/20'
-                            : 'hover:border-amber-500/30'
-                        }`}
-                        onClick={() => handleBuyPackage(pkg)}
-                      >
-                        {isPopular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                            MOST POPULAR
-                          </div>
-                        )}
-                        <div className="text-center">
-                          <div className="text-4xl mb-2">V3</div>
-                          <div className="text-3xl font-bold text-white mb-1">
-                            {pkg.coins.toLocaleString()}
-                          </div>
-                          {pkg.bonus > 0 && (
-                            <div className="text-green-400 text-sm mb-2">
-                              +{pkg.bonus.toLocaleString()} bonus coins!
+                <div className="space-y-4">
+                  {/* Success Message */}
+                  {purchaseSuccess && (
+                    <div className="glass-card p-4 border-green-500/50 bg-green-500/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-500 text-xl">
+                          ✓
+                        </div>
+                        <div>
+                          <p className="text-green-400 font-semibold">Purchase Successful!</p>
+                          <p className="text-white/70 text-sm">Your coins have been added to your balance.</p>
+                        </div>
+                        <button
+                          onClick={() => setPurchaseSuccess(false)}
+                          className="ml-auto text-white/50 hover:text-white"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error Message */}
+                  {purchaseError && (
+                    <div className="glass-card p-4 border-red-500/50 bg-red-500/10">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 text-xl">
+                          !
+                        </div>
+                        <div>
+                          <p className="text-red-400 font-semibold">Purchase Failed</p>
+                          <p className="text-white/70 text-sm">{purchaseError}</p>
+                        </div>
+                        <button
+                          onClick={() => setPurchaseError(null)}
+                          className="ml-auto text-white/50 hover:text-white"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {packages.map((pkg) => {
+                      const isPopular = pkg.id === 'coins_1000';
+                      const isLoading = purchaseLoading === pkg.id;
+                      return (
+                        <div
+                          key={pkg.id}
+                          className={`relative glass-card p-6 transition-all hover:scale-105 cursor-pointer ${
+                            isPopular
+                              ? 'border-amber-500 ring-2 ring-amber-500/20'
+                              : 'hover:border-amber-500/30'
+                          } ${isLoading ? 'opacity-75' : ''}`}
+                          onClick={() => !isLoading && handleBuyPackage(pkg)}
+                        >
+                          {isPopular && (
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                              MOST POPULAR
                             </div>
                           )}
-                          <div className="text-white/50 mb-4">VIB3 Coins</div>
-                          <button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity">
-                            ${pkg.price.toFixed(2)}
-                          </button>
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">V3</div>
+                            <div className="text-3xl font-bold text-white mb-1">
+                              {pkg.coins.toLocaleString()}
+                            </div>
+                            {pkg.bonus > 0 && (
+                              <div className="text-green-400 text-sm mb-2">
+                                +{pkg.bonus.toLocaleString()} bonus coins!
+                              </div>
+                            )}
+                            <div className="text-white/50 mb-4">VIB3 Coins</div>
+                            <button
+                              disabled={isLoading}
+                              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-3 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                              {isLoading ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  Processing...
+                                </>
+                              ) : (
+                                `$${pkg.price.toFixed(2)}`
+                              )}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
