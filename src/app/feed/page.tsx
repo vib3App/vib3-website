@@ -16,7 +16,6 @@ import {
   FeedEmptyState,
   FeedLoadingState,
   FeedLoadingMore,
-  CategoryDropdown,
   FollowCategoryPicker,
 } from '@/components/feed';
 
@@ -52,11 +51,6 @@ function FeedContent() {
 
   return (
     <>
-      {/* Category dropdown - top left */}
-      <div className="fixed top-20 md:top-[4.5rem] left-4 z-40">
-        <CategoryDropdown />
-      </div>
-
       <FeedTopActions
         showQueue={actions.showQueue}
         onToggleQueue={actions.toggleQueue}
