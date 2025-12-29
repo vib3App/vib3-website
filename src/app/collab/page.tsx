@@ -1,6 +1,7 @@
 'use client';
 
-import { PlusIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
+import { PlusIcon, UserGroupIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useCollabRooms } from '@/hooks/useCollabRooms';
 import { CollabRoomCard, CreateRoomModal, JoinByCodeModal } from '@/components/collab-rooms';
 
@@ -12,7 +13,12 @@ export default function CollabRoomsPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 glass-heavy mx-4 mt-3 rounded-2xl">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Collab Rooms</h1>
+          <div className="flex items-center gap-3">
+            <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
+              <ArrowLeftIcon className="w-5 h-5" />
+            </Link>
+            <h1 className="text-xl font-bold">Collab Rooms</h1>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => c.setShowJoinModal(true)}
