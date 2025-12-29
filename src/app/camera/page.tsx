@@ -9,7 +9,7 @@ import {
   SpeedPanel,
   CameraBottomControls,
 } from '@/components/camera';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 export default function CameraPage() {
   const camera = useCamera();
@@ -23,7 +23,8 @@ export default function CameraPage() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black">
+    <div className="min-h-screen bg-black">
+      <TopNav />
       {/* Camera/Preview View */}
       <div className="absolute inset-0">
         {camera.recordingState === 'preview' && camera.previewUrl ? (
@@ -123,8 +124,6 @@ export default function CameraPage() {
         onNext={camera.handleNext}
         onGoToUpload={camera.goToUpload}
       />
-
-      <BottomNav />
     </div>
   );
 }

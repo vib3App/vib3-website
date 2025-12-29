@@ -5,8 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { feedApi } from '@/services/api';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import type { Video } from '@/types';
 
 function formatCount(count: number): string {
@@ -44,10 +43,10 @@ export default function HashtagPage() {
   };
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="pt-20 md:pt-16 pb-8">
         {/* Header */}
         <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl border-b border-white/5">
           <div className="flex items-center gap-4 px-4 h-14">
@@ -131,8 +130,6 @@ export default function HashtagPage() {
           )}
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCollectionDetail } from '@/hooks/useCollectionDetail';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import { formatCount } from '@/utils/format';
 import type { Collection } from '@/types';
 import { collectionsApi } from '@/services/api';
@@ -75,9 +74,9 @@ export default function CollectionPage() {
   }
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
+      <main className="pt-20 md:pt-16 pb-8">
         <header className="sticky top-0 z-40 glass-heavy border-b border-white/5">
           <div className="flex items-center gap-4 px-4 h-14">
             <button onClick={c.goBack} className="p-2 -ml-2 text-white/50 hover:text-white">
@@ -173,7 +172,6 @@ export default function CollectionPage() {
           )}
         </div>
       </main>
-      <BottomNav />
       {c.collection && <EditPlaylistModal isOpen={c.showEditModal} onClose={() => c.setShowEditModal(false)} collection={c.collection} onUpdated={c.setCollection} />}
     </div>
   );

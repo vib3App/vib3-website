@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { SideNav } from '@/components/ui/SideNav';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 interface Product {
   id: string;
@@ -109,9 +108,9 @@ export default function ShopPage() {
   };
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
+      <main className="pt-20 md:pt-16 pb-8">
         {/* Hero Header - Liquid Glass */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-600/50 via-pink-500/50 to-teal-400/50" />
@@ -273,7 +272,6 @@ export default function ShopPage() {
           </div>
         )}
       </main>
-      <BottomNav />
 
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {

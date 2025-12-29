@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { SideNav } from '@/components/ui/SideNav';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 const requirements = [
   { id: 1, label: 'At least 10,000 followers', met: true, current: '45.2K' },
@@ -66,9 +65,9 @@ export default function CreatorFundPage() {
   const availableBalance = 1870.46;
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
+      <main className="pt-20 md:pt-16 pb-8">
         {/* Hero Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/60 via-emerald-500/60 to-teal-500/60 backdrop-blur-3xl" />
@@ -294,7 +293,6 @@ export default function CreatorFundPage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </div>
   );
 }

@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { liveApi } from '@/services/api';
 import type { LiveStream } from '@/types';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 function formatViewers(count: number): string {
   if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
@@ -133,10 +132,10 @@ export default function LivePage() {
   const displayedStreams = activeTab === 'following' ? followingStreams : streams;
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="pt-20 md:pt-16 pb-8">
         <header className="sticky top-0 z-40">
           <div className="glass-heavy mx-4 mt-3 rounded-2xl">
             <div className="flex items-center justify-between px-4 h-14">
@@ -292,8 +291,6 @@ export default function LivePage() {
           )}
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

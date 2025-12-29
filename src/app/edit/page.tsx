@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { useVideoEditor, EDITOR_FILTERS } from '@/hooks/useVideoEditor';
 import { EditorHeader, EditorTabs, TrimPanel, FilterPanel, TextPanel, AudioPanel } from '@/components/edit';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 function EditLoading() {
   return (
@@ -21,7 +21,8 @@ function EditContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen aurora-bg">
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
       <EditorHeader onCancel={editor.goBack} onDone={editor.handleDone} />
 
       <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
@@ -116,8 +117,6 @@ function EditContent() {
           )}
         </div>
       </div>
-
-      <BottomNav />
     </div>
   );
 }

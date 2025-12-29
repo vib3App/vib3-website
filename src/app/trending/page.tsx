@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { feedApi } from '@/services/api';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import type { Video } from '@/types';
 
 function formatCount(count: number): string {
@@ -66,10 +65,10 @@ export default function TrendingPage() {
   };
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="pt-20 md:pt-16 pb-8">
         {/* Header */}
         <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
@@ -203,8 +202,6 @@ export default function TrendingPage() {
           )}
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

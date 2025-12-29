@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { feedApi } from '@/services/api';
-import { SideNav } from '@/components/ui/SideNav';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { TopNav } from '@/components/ui/TopNav';
 import { AuroraContainer, GlassButton, GlassCard, GlassPill, GradientText, SoundVisualizer } from '@/components/ui/Glass';
 import type { Video } from '@/types';
 
@@ -87,10 +86,10 @@ export default function DiscoverPage() {
   const heroVideo = trendingVideos[0];
 
   return (
-    <AuroraContainer className="flex min-h-screen bg-[#030014]">
-      <SideNav />
+    <AuroraContainer className="min-h-screen bg-[#030014]">
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-24 md:pb-8 overflow-x-hidden">
+      <main className="pt-20 md:pt-16 pb-8 overflow-x-hidden">
         {/* Hero Header */}
         <header className="px-4 md:px-8 pt-6 pb-4">
           <h1 className="text-4xl md:text-5xl font-black mb-2">
@@ -430,8 +429,6 @@ export default function DiscoverPage() {
           </Link>
         </div>
       </main>
-
-      <BottomNav />
     </AuroraContainer>
   );
 }

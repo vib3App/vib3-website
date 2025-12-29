@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SideNav } from '@/components/ui/SideNav';
-import { BottomNav } from '@/components/ui/BottomNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 interface StatCard {
   label: string;
@@ -55,9 +54,9 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
+      <main className="pt-20 md:pt-16 pb-8">
         {/* Header */}
         <div className="px-6 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -273,7 +272,6 @@ export default function AnalyticsPage() {
           </section>
         </div>
       </main>
-      <BottomNav />
     </div>
   );
 }

@@ -4,8 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useUpload } from '@/hooks/useUpload';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 import {
   VideoDropzone,
   DraftsPanel,
@@ -39,10 +38,10 @@ export default function UploadPage() {
   const scheduledDate = isScheduled ? `${upload.scheduleDate}T${upload.scheduleTime}` : undefined;
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="pt-20 md:pt-16 pb-8">
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Header */}
           <UploadHeader
@@ -142,8 +141,6 @@ export default function UploadPage() {
           )}
         </div>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useCollections } from '@/hooks/useCollections';
 import { CollectionCard, CreatePlaylistModal, CollectionTabs } from '@/components/collections-list';
-import { BottomNav } from '@/components/ui/BottomNav';
-import { SideNav } from '@/components/ui/SideNav';
+import { TopNav } from '@/components/ui/TopNav';
 
 export default function CollectionsPage() {
   const c = useCollections();
@@ -18,10 +17,10 @@ export default function CollectionsPage() {
   }
 
   return (
-    <div className="flex min-h-screen aurora-bg">
-      <SideNav />
+    <div className="min-h-screen aurora-bg">
+      <TopNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="pt-20 md:pt-16 pb-8">
         {/* Header */}
         <header className="sticky top-0 z-40 glass-heavy mx-4 mt-3 rounded-2xl">
           <div className="flex items-center justify-between px-4 h-14">
@@ -90,7 +89,6 @@ export default function CollectionsPage() {
         </div>
       </main>
 
-      <BottomNav />
       <CreatePlaylistModal
         isOpen={c.showCreateModal}
         onClose={() => c.setShowCreateModal(false)}
