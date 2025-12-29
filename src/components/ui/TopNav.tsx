@@ -86,6 +86,7 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isActive = config.items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
@@ -100,6 +101,11 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
+
+  const handleItemClick = (href: string) => {
+    onClose();
+    router.push(href);
+  };
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -128,11 +134,10 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
             {config.items.map((item) => {
               const isItemActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
-                <Link
+                <button
                   key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                  onClick={() => handleItemClick(item.href)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
                     isItemActive
                       ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20 text-white'
                       : 'text-white/70 hover:bg-white/5 hover:text-white'
@@ -145,7 +150,7 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
                       <div className="text-xs text-white/40">{item.description}</div>
                     )}
                   </div>
-                </Link>
+                </button>
               );
             })}
           </div>
@@ -160,6 +165,7 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
   onToggle: () => void;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuthStore();
   // TODO: Load actual following list
@@ -180,6 +186,11 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
+
+  const handleNavigate = (href: string) => {
+    onClose();
+    router.push(href);
+  };
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -210,13 +221,12 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
           {!isAuthenticated ? (
             <div className="p-4 text-center">
               <p className="text-white/50 text-sm mb-3">Sign in to see who you follow</p>
-              <Link
-                href="/login"
-                onClick={onClose}
+              <button
+                onClick={() => handleNavigate('/login')}
                 className="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white text-sm font-medium"
               >
                 Sign In
-              </Link>
+              </button>
             </div>
           ) : following.length === 0 ? (
             <div className="p-4 text-center text-white/50 text-sm">
@@ -225,11 +235,10 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
           ) : (
             <div className="py-2 max-h-[300px] overflow-y-auto">
               {following.map((user) => (
-                <Link
+                <button
                   key={user.id}
-                  href={`/profile/${user.id}`}
-                  onClick={onClose}
-                  className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors"
+                  onClick={() => handleNavigate(`/profile/${user.id}`)}
+                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors text-left"
                 >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center text-white font-bold">
                     {user.avatar ? (
@@ -239,7 +248,7 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
                     )}
                   </div>
                   <span className="text-white font-medium">@{user.username}</span>
-                </Link>
+                </button>
               ))}
             </div>
           )}
@@ -303,18 +312,18 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
                 <div className="text-white/50 text-sm">{user.email}</div>
               </div>
               <div className="py-2">
-                <Link href="/profile" onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                <button onClick={() => { onClose(); router.push('/profile'); }} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
                   <span>👤</span>
                   <span>Your Profile</span>
-                </Link>
-                <Link href="/settings" onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                </button>
+                <button onClick={() => { onClose(); router.push('/settings'); }} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
                   <span>⚙️</span>
                   <span>Settings</span>
-                </Link>
-                <Link href="/notifications" onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                </button>
+                <button onClick={() => { onClose(); router.push('/notifications'); }} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
                   <span>🔔</span>
                   <span>Notifications</span>
-                </Link>
+                </button>
                 <div className="h-px bg-white/10 my-2" />
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors">
                   <span>🚪</span>
