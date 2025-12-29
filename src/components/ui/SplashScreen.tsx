@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
 
 interface SplashScreenProps {
@@ -13,13 +12,11 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuthStore();
   const [phase, setPhase] = useState<'spin' | 'pulse' | 'fadeOut'>('spin');
-  const [showText, setShowText] = useState(false);
 
   useEffect(() => {
     // Phase 1: Spin for 1.5s
     const spinTimer = setTimeout(() => {
       setPhase('pulse');
-      setShowText(true);
     }, 1500);
 
     // Phase 2: Pulse for 2s (about 3 pulses)
@@ -59,56 +56,84 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#1a1b26] transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black transition-opacity duration-500 ${
         phase === 'fadeOut' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      {/* Ambient glow background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, transparent 70%)' }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] blur-2xl"
-          style={{ background: 'radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%)' }}
-        />
-      </div>
-
-      {/* Logo container */}
+      {/* Logo + Text spinning together */}
       <div
-        className={`relative w-48 h-48 md:w-64 md:h-64 ${
+        className={`flex flex-col items-center ${
           phase === 'spin' ? 'animate-logo-spin' : phase === 'pulse' ? 'animate-logo-pulse' : ''
         }`}
       >
-        <Image
-          src="/vib3-logo.png"
-          alt="VIB3"
-          fill
-          priority
-          className="object-contain drop-shadow-2xl"
+        {/* V3 Icon - CSS gradient recreation */}
+        <div className="relative">
+          {/* Glow effect behind */}
+          <div
+            className="absolute inset-0 blur-2xl opacity-60"
+            style={{
+              background: 'linear-gradient(135deg, #22d3ee 0%, #a855f7 50%, #f97316 100%)',
+              transform: 'scale(1.5)',
+            }}
+          />
+
+          {/* The V3 symbol */}
+          <svg
+            viewBox="0 0 120 100"
+            className="relative w-32 h-28 md:w-48 md:h-40"
+            style={{
+              filter: 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.5)) drop-shadow(0 0 40px rgba(34, 211, 238, 0.3))'
+            }}
+          >
+            <defs>
+              <linearGradient id="v3Gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#22d3ee" />
+                <stop offset="35%" stopColor="#a855f7" />
+                <stop offset="65%" stopColor="#ec4899" />
+                <stop offset="100%" stopColor="#f97316" />
+              </linearGradient>
+            </defs>
+            {/* V shape */}
+            <path
+              d="M10 10 L35 80 L60 10"
+              fill="none"
+              stroke="url(#v3Gradient)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* 3 shape */}
+            <path
+              d="M70 15 Q110 15 95 40 Q80 50 95 60 Q110 85 70 85"
+              fill="none"
+              stroke="url(#v3Gradient)"
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+
+        {/* Vib3 Text */}
+        <div
+          className="mt-4 text-4xl md:text-5xl font-bold tracking-tight"
           style={{
-            filter: 'drop-shadow(0 0 40px rgba(168, 85, 247, 0.4)) drop-shadow(0 0 80px rgba(34, 211, 238, 0.2))'
+            background: 'linear-gradient(135deg, #22d3ee 0%, #a855f7 50%, #f97316 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.4))'
           }}
-        />
+        >
+          Vib3
+        </div>
       </div>
 
-      {/* Loading text */}
-      <div
-        className={`mt-8 transition-all duration-700 ${
-          showText ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}
-      >
-        <p className="text-white/60 text-sm tracking-widest uppercase">
-          Welcome to the Vibe
-        </p>
-      </div>
-
-      {/* Loading dots */}
-      <div className={`flex gap-2 mt-6 transition-opacity duration-500 ${showText ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-2 h-2 bg-gradient-to-r from-pink-500 to-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+      {/* Loading dots - appear after spin */}
+      <div className={`flex gap-2 mt-12 transition-opacity duration-500 ${phase !== 'spin' ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#22d3ee', animationDelay: '0ms' }} />
+        <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#a855f7', animationDelay: '150ms' }} />
+        <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: '#f97316', animationDelay: '300ms' }} />
       </div>
     </div>
   );
