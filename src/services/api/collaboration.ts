@@ -46,7 +46,14 @@ export const collaborationApi = {
    * Create a collab room
    */
   async createCollabRoom(input: CreateCollabRoomInput): Promise<CollabRoom> {
-    const { data } = await apiClient.post<{ room: CollabRoom }>('/collab/rooms', input);
+    // Map frontend 'title' to backend 'name'
+    const payload = {
+      name: input.title,
+      description: input.description,
+      maxParticipants: input.maxParticipants,
+      isPrivate: input.isPrivate,
+    };
+    const { data } = await apiClient.post<{ room: CollabRoom }>('/collab/rooms', payload);
     return data.room;
   },
 
