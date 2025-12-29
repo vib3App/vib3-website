@@ -86,7 +86,6 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
   onClose: () => void;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isActive = config.items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'));
 
@@ -101,14 +100,6 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
-
-  const handleItemClick = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    router.push(href);
-    // Close after navigation starts
-    setTimeout(() => onClose(), 100);
-  };
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -138,10 +129,10 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
             {config.items.map((item) => {
               const isItemActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
-                <button
+                <Link
                   key={item.href}
-                  type="button"
-                  onClick={(e) => handleItemClick(e, item.href)}
+                  href={item.href}
+                  onClick={onClose}
                   className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left cursor-pointer ${
                     isItemActive
                       ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20 text-white'
@@ -155,7 +146,7 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
                       <div className="text-xs text-white/40">{item.description}</div>
                     )}
                   </div>
-                </button>
+                </Link>
               );
             })}
           </div>
@@ -170,7 +161,6 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
   onToggle: () => void;
   onClose: () => void;
 }) {
-  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuthStore();
   // TODO: Load actual following list
@@ -191,13 +181,6 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen, onClose]);
-
-  const handleNavigate = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    router.push(href);
-    setTimeout(() => onClose(), 100);
-  };
 
   return (
     <div ref={dropdownRef} className="relative">
@@ -229,12 +212,13 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
           {!isAuthenticated ? (
             <div className="p-4 text-center">
               <p className="text-white/50 text-sm mb-3">Sign in to see who you follow</p>
-              <button
-                onClick={(e) => handleNavigate(e, '/login')}
+              <Link
+                href="/login"
+                onClick={onClose}
                 className="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white text-sm font-medium"
               >
                 Sign In
-              </button>
+              </Link>
             </div>
           ) : following.length === 0 ? (
             <div className="p-4 text-center text-white/50 text-sm">
@@ -243,9 +227,10 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
           ) : (
             <div className="py-2 max-h-[300px] overflow-y-auto">
               {following.map((user) => (
-                <button
+                <Link
                   key={user.id}
-                  onClick={(e) => handleNavigate(e, `/profile/${user.id}`)}
+                  href={`/profile/${user.id}`}
+                  onClick={onClose}
                   className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors text-left"
                 >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center text-white font-bold">
@@ -256,7 +241,7 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
                     )}
                   </div>
                   <span className="text-white font-medium">@{user.username}</span>
-                </button>
+                </Link>
               ))}
             </div>
           )}
@@ -287,20 +272,11 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
     }
   }, [isOpen, onClose]);
 
-  const handleNavigate = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    router.push(href);
-    setTimeout(() => onClose(), 100);
-  };
-
-  const handleLogout = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleLogout = async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
     logout();
+    onClose();
     router.push('/');
-    setTimeout(() => onClose(), 100);
   };
 
   return (
@@ -330,20 +306,20 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
                 <div className="text-white/50 text-sm">{user.email}</div>
               </div>
               <div className="py-2">
-                <button onClick={(e) => handleNavigate(e, '/profile')} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
+                <Link href="/profile" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
                   <span>👤</span>
                   <span>Your Profile</span>
-                </button>
-                <button onClick={(e) => handleNavigate(e, '/settings')} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
+                </Link>
+                <Link href="/settings" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
                   <span>⚙️</span>
                   <span>Settings</span>
-                </button>
-                <button onClick={(e) => handleNavigate(e, '/notifications')} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
+                </Link>
+                <Link href="/notifications" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
                   <span>🔔</span>
                   <span>Notifications</span>
-                </button>
+                </Link>
                 <div className="h-px bg-white/10 my-2" />
-                <button onClick={(e) => handleLogout(e)} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors">
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors text-left">
                   <span>🚪</span>
                   <span>Log Out</span>
                 </button>
