@@ -129,24 +129,25 @@ function Dropdown({ config, isOpen, onToggle, onClose }: {
             {config.items.map((item) => {
               const isItemActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
-                <Link
+                <a
                   key={item.href}
                   href={item.href}
-                  onClick={onClose}
-                  className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left cursor-pointer ${
+                  className={`block w-full px-4 py-3 transition-colors cursor-pointer ${
                     isItemActive
                       ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20 text-white'
                       : 'text-white/70 hover:bg-white/5 hover:text-white'
                   }`}
                 >
-                  <span className="text-lg">{item.icon}</span>
-                  <div>
-                    <div className="font-medium">{item.label}</div>
-                    {item.description && (
-                      <div className="text-xs text-white/40">{item.description}</div>
-                    )}
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">{item.icon}</span>
+                    <div>
+                      <div className="font-medium">{item.label}</div>
+                      {item.description && (
+                        <div className="text-xs text-white/40">{item.description}</div>
+                      )}
+                    </div>
                   </div>
-                </Link>
+                </a>
               );
             })}
           </div>
@@ -212,13 +213,12 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
           {!isAuthenticated ? (
             <div className="p-4 text-center">
               <p className="text-white/50 text-sm mb-3">Sign in to see who you follow</p>
-              <Link
+              <a
                 href="/login"
-                onClick={onClose}
                 className="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white text-sm font-medium"
               >
                 Sign In
-              </Link>
+              </a>
             </div>
           ) : following.length === 0 ? (
             <div className="p-4 text-center text-white/50 text-sm">
@@ -227,21 +227,22 @@ function FollowingDropdown({ isOpen, onToggle, onClose }: {
           ) : (
             <div className="py-2 max-h-[300px] overflow-y-auto">
               {following.map((user) => (
-                <Link
+                <a
                   key={user.id}
                   href={`/profile/${user.id}`}
-                  onClick={onClose}
-                  className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors text-left"
+                  className="block w-full px-4 py-2 hover:bg-white/5 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center text-white font-bold">
-                    {user.avatar ? (
-                      <Image src={user.avatar} alt={user.username} width={40} height={40} className="rounded-full" />
-                    ) : (
-                      user.username.charAt(0).toUpperCase()
-                    )}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center text-white font-bold">
+                      {user.avatar ? (
+                        <Image src={user.avatar} alt={user.username} width={40} height={40} className="rounded-full" />
+                      ) : (
+                        user.username.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <span className="text-white font-medium">@{user.username}</span>
                   </div>
-                  <span className="text-white font-medium">@{user.username}</span>
-                </Link>
+                </a>
               ))}
             </div>
           )}
@@ -306,18 +307,24 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
                 <div className="text-white/50 text-sm">{user.email}</div>
               </div>
               <div className="py-2">
-                <Link href="/profile" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
-                  <span>👤</span>
-                  <span>Your Profile</span>
-                </Link>
-                <Link href="/settings" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
-                  <span>⚙️</span>
-                  <span>Settings</span>
-                </Link>
-                <Link href="/notifications" onClick={onClose} className="w-full flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors text-left">
-                  <span>🔔</span>
-                  <span>Notifications</span>
-                </Link>
+                <a href="/profile" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span>👤</span>
+                    <span>Your Profile</span>
+                  </div>
+                </a>
+                <a href="/settings" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span>⚙️</span>
+                    <span>Settings</span>
+                  </div>
+                </a>
+                <a href="/notifications" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span>🔔</span>
+                    <span>Notifications</span>
+                  </div>
+                </a>
                 <div className="h-px bg-white/10 my-2" />
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors text-left">
                   <span>🚪</span>
@@ -328,13 +335,12 @@ function ProfileDropdown({ isOpen, onToggle, onClose }: {
           ) : (
             <div className="p-4 text-center">
               <p className="text-white/50 text-sm mb-3">Sign in to access your account</p>
-              <Link
+              <a
                 href="/login"
-                onClick={onClose}
                 className="inline-block w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white text-sm font-medium text-center"
               >
                 Sign In
-              </Link>
+              </a>
             </div>
           )}
         </div>
