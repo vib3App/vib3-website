@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { SideNav } from '@/components/ui/SideNav';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { CommentSheet } from '@/components/video/CommentSheet';
 import { ShareSheet } from '@/components/video/ShareSheet';
 import { useAuthStore } from '@/stores/authStore';
@@ -121,9 +122,12 @@ function FeedContent() {
 
 export default function FeedPage() {
   return (
-    <div className="flex h-screen bg-neutral-950 overflow-hidden">
+    <div className="flex h-screen overflow-hidden relative">
+      {/* Aurora background for visual distinction */}
+      <AuroraBackground intensity={20} />
+
       <SideNav />
-      <main className="flex-1 md:ml-64 h-full relative">
+      <main className="flex-1 md:ml-64 h-full relative z-10">
         <Suspense fallback={<FeedLoadingState message="Loading..." />}>
           <FeedContent />
         </Suspense>

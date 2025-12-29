@@ -10,6 +10,7 @@ import { websocketService } from '@/services/websocket';
 import type { Conversation, Message } from '@/types';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { SideNav } from '@/components/ui/SideNav';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -170,10 +171,11 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex min-h-screen aurora-bg">
+    <div className="flex min-h-screen relative">
+      <AuroraBackground intensity={20} />
       <SideNav />
 
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0">
+      <main className="flex-1 md:ml-64 pb-20 md:pb-0 relative z-10">
         {/* Header */}
         <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10">
           <div className="flex items-center justify-between px-4 h-14">

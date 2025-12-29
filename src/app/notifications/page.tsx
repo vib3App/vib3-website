@@ -4,6 +4,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationItem } from '@/components/notifications';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { SideNav } from '@/components/ui/SideNav';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 export default function NotificationsPage() {
   const n = useNotifications();
@@ -17,7 +18,8 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex min-h-screen aurora-bg">
+    <div className="flex min-h-screen relative">
+      <AuroraBackground intensity={20} />
       <SideNav />
 
       <main className="flex-1 md:ml-64 pb-20 md:pb-0">

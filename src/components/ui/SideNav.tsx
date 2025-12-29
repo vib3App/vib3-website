@@ -5,9 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { authApi } from '@/services/api';
 import { SidebarSearch } from './SidebarSearch';
 import { FollowingAccounts } from './FollowingAccounts';
 import { EnergyMeter } from './EnergyMeter';
+import { ThemeToggle } from '@/components/personalization';
 
 const mainNavItems = [
   { href: '/feed', label: 'For You', icon: 'home' },
@@ -173,9 +175,15 @@ function NavIcon({ name, active }: { name: string; active: boolean }) {
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
   const [showMore, setShowMore] = useState(false);
   const [showEnergyMeter, setShowEnergyMeter] = useState(false);
+
+  const handleLogout = async () => {
+    try { await authApi.logout(); } catch { /* ignore */ }
+    logout();
+    router.push('/');
+  };
 
   const handleLogoClick = () => {
     if (pathname === '/feed') {
@@ -362,42 +370,68 @@ export function SideNav() {
           <FollowingAccounts />
         </nav>
 
+        {/* Theme Toggle & Settings */}
+        <div className="relative px-3 py-2 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-white/60 text-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+              <span>Theme</span>
+            </div>
+            <ThemeToggle />
+          </div>
+        </div>
+
         {/* User Profile */}
         <div className="relative p-3 border-t border-white/10">
           {isAuthenticated && user ? (
-            <Link
-              href="/profile"
-              className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl blur-sm opacity-50 group-hover:opacity-70 transition-opacity" />
-                <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500 to-teal-500 p-0.5">
-                  <div className="w-full h-full rounded-lg overflow-hidden bg-neutral-900">
-                    {user.profilePicture ? (
-                      <Image
-                        src={user.profilePicture}
-                        alt={user.username}
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                        {user.username.charAt(0).toUpperCase()}
-                      </div>
-                    )}
+            <div className="space-y-2">
+              <Link
+                href="/profile"
+                className="group flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl blur-sm opacity-50 group-hover:opacity-70 transition-opacity" />
+                  <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500 to-teal-500 p-0.5">
+                    <div className="w-full h-full rounded-lg overflow-hidden bg-neutral-900">
+                      {user.profilePicture ? (
+                        <Image
+                          src={user.profilePicture}
+                          alt={user.username}
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white font-bold">
+                          {user.username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-white font-medium truncate">{user.username}</div>
-                <div className="text-white/40 text-sm truncate group-hover:text-purple-400 transition-colors">View profile</div>
-              </div>
-            </Link>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white font-medium truncate">{user.username}</div>
+                  <div className="text-white/40 text-sm truncate group-hover:text-purple-400 transition-colors">View profile</div>
+                </div>
+              </Link>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="text-sm font-medium">Log out</span>
+              </button>
+            </div>
           ) : (
             <Link
               href="/login"
-              className="relative flex items-center justify-center gap-2 p-3 rounded-xl overflow-hidden group"
+              className="relative flex items-center justify-center gap-2 p-3 rounded-xl overflow-hidden group glow-button"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-teal-500 opacity-80 group-hover:opacity-100 transition-opacity" />
               <span className="relative text-white font-semibold">Log in</span>

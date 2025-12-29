@@ -918,6 +918,166 @@ body {
   opacity: 1;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   GLOWING BUTTONS - Eye-catching CTAs
+   ═══════════════════════════════════════════════════════════ */
+
+.glow-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-button::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    90deg,
+    var(--vib3-purple),
+    var(--vib3-teal),
+    var(--vib3-purple)
+  );
+  background-size: 200% 100%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: glow-rotate 3s linear infinite;
+  filter: blur(8px);
+  opacity: 0.7;
+}
+
+.glow-button:hover::before {
+  opacity: 1;
+  filter: blur(12px);
+}
+
+@keyframes glow-rotate {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Primary CTA with pulsing glow */
+.btn-primary-glow {
+  background: linear-gradient(135deg, var(--vib3-purple) 0%, var(--vib3-teal) 100%);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 20px rgba(139, 92, 246, 0.4),
+    0 0 40px rgba(139, 92, 246, 0.2);
+}
+
+.btn-primary-glow:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 30px rgba(139, 92, 246, 0.6),
+    0 0 60px rgba(139, 92, 246, 0.3),
+    0 0 90px rgba(20, 184, 166, 0.2);
+}
+
+.btn-primary-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-primary-glow:hover::after {
+  transform: translateX(100%);
+}
+
+/* Subtle border glow for secondary buttons */
+.btn-secondary-glow {
+  background: transparent;
+  border: 1px solid rgba(139, 92, 246, 0.5);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-glow:hover {
+  border-color: var(--vib3-purple);
+  box-shadow:
+    0 0 20px rgba(139, 92, 246, 0.3),
+    inset 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+/* Icon buttons with glow */
+.icon-glow {
+  transition: all 0.3s ease;
+}
+
+.icon-glow:hover {
+  filter: drop-shadow(0 0 8px currentColor);
+  transform: scale(1.1);
+}
+
+/* Text glow on hover */
+.text-glow:hover {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+}
+
+/* Neon border effect */
+.neon-border {
+  border: 1px solid var(--vib3-purple);
+  box-shadow:
+    0 0 5px var(--vib3-purple),
+    inset 0 0 5px rgba(139, 92, 246, 0.1);
+  transition: all 0.3s ease;
+}
+
+.neon-border:hover {
+  box-shadow:
+    0 0 10px var(--vib3-purple),
+    0 0 20px var(--vib3-purple),
+    inset 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+/* Action button with ring glow */
+.action-ring {
+  position: relative;
+}
+
+.action-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--vib3-purple),
+    var(--vib3-teal),
+    var(--vib3-orange),
+    var(--vib3-pink),
+    var(--vib3-purple)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  animation: spin 3s linear infinite;
+}
+
+.action-ring:hover::before {
+  opacity: 0.5;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Accessibility: Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .aurora-orb,
@@ -928,13 +1088,17 @@ body {
   .breathe-glow,
   .shimmer::after,
   .vib3-pulse,
-  .glow-pulse {
+  .glow-pulse,
+  .glow-button::before,
+  .action-ring::before {
     animation: none !important;
   }
 
   .card-elevated:hover,
   .hover-lift:hover,
-  .glass-card:hover {
+  .glass-card:hover,
+  .btn-primary-glow:hover,
+  .icon-glow:hover {
     transform: none !important;
   }
 }

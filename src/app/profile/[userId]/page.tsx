@@ -5,6 +5,9 @@ import Image from 'next/image';
 import { useProfile, type UserProfile } from '@/hooks/useProfile';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { ProfileQRModal } from '@/components/profile/ProfileQRModal';
+import { BottomNav } from '@/components/ui/BottomNav';
+import { SideNav } from '@/components/ui/SideNav';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
 
@@ -50,22 +53,29 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen aurora-bg">
-      <ProfileHeader profile={p.profile} onBack={p.goBack} onQRClick={() => p.setShowQRModal(true)} showMoreMenu={p.showMoreMenu} onToggleMenu={() => p.setShowMoreMenu(!p.showMoreMenu)} onCopyLink={p.copyProfileLink} isOwnProfile={p.isOwnProfile} isAuthenticated={p.isAuthenticated} />
+    <div className="flex min-h-screen relative">
+      <AuroraBackground intensity={20} />
+      <SideNav />
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        <ProfileInfo profile={p.profile} isOwnProfile={p.isOwnProfile} isFollowing={p.isFollowing} isFollowLoading={p.isFollowLoading} onFollow={p.handleFollow} onEditClick={() => p.setShowEditModal(true)} />
-        <ProfileStats stats={p.profile.stats} />
-        <ProfileTabs activeTab={p.activeTab} onTabChange={p.setActiveTab} />
-        <ProfileVideos activeTab={p.activeTab} videos={p.videos} likedVideos={p.likedVideos} />
-      </div>
+      <main className="flex-1 md:ml-64 pb-20 md:pb-0 relative z-10">
+        <ProfileHeader profile={p.profile} onBack={p.goBack} onQRClick={() => p.setShowQRModal(true)} showMoreMenu={p.showMoreMenu} onToggleMenu={() => p.setShowMoreMenu(!p.showMoreMenu)} onCopyLink={p.copyProfileLink} isOwnProfile={p.isOwnProfile} isAuthenticated={p.isAuthenticated} />
 
-      {p.profile && (
-        <>
-          <EditProfileModal isOpen={p.showEditModal} onClose={() => p.setShowEditModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, bio: p.profile.bio, profilePicture: p.profile.profilePicture }} onSave={(updates) => p.updateProfile(updates)} />
-          <ProfileQRModal isOpen={p.showQRModal} onClose={() => p.setShowQRModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, profilePicture: p.profile.profilePicture, isVerified: p.profile.isVerified }} profileUrl={p.profileUrl} />
-        </>
-      )}
+        <div className="max-w-3xl mx-auto px-4 py-6">
+          <ProfileInfo profile={p.profile} isOwnProfile={p.isOwnProfile} isFollowing={p.isFollowing} isFollowLoading={p.isFollowLoading} onFollow={p.handleFollow} onEditClick={() => p.setShowEditModal(true)} />
+          <ProfileStats stats={p.profile.stats} />
+          <ProfileTabs activeTab={p.activeTab} onTabChange={p.setActiveTab} />
+          <ProfileVideos activeTab={p.activeTab} videos={p.videos} likedVideos={p.likedVideos} />
+        </div>
+
+        {p.profile && (
+          <>
+            <EditProfileModal isOpen={p.showEditModal} onClose={() => p.setShowEditModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, bio: p.profile.bio, profilePicture: p.profile.profilePicture }} onSave={(updates) => p.updateProfile(updates)} />
+            <ProfileQRModal isOpen={p.showQRModal} onClose={() => p.setShowQRModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, profilePicture: p.profile.profilePicture, isVerified: p.profile.isVerified }} profileUrl={p.profileUrl} />
+          </>
+        )}
+      </main>
+
+      <BottomNav />
     </div>
   );
 }
