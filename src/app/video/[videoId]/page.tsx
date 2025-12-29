@@ -29,7 +29,6 @@ export default function VideoPlayerPage() {
   const [shareOpen, setShareOpen] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Load the initial video and user's other videos
   useEffect(() => {
@@ -101,39 +100,38 @@ export default function VideoPlayerPage() {
     }
   }, [videoId, userId]);
 
-  // Intersection observer for detecting current video
+  // Scroll-based detection for current video (more reliable with snap scrolling)
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-            const index = Number(entry.target.getAttribute('data-index'));
-            if (!isNaN(index)) {
-              setCurrentIndex(index);
-            }
-          }
-        });
-      },
-      { root: container, threshold: 0.5 }
-    );
+    const handleScroll = () => {
+      const containerHeight = container.clientHeight;
+      const scrollTop = container.scrollTop;
 
-    return () => observerRef.current?.disconnect();
-  }, []);
+      // Calculate which video is most visible
+      const newIndex = Math.round(scrollTop / containerHeight);
+      if (newIndex !== currentIndex && newIndex >= 0 && newIndex < videos.length) {
+        setCurrentIndex(newIndex);
+      }
+    };
 
-  // Observe video elements
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    const observer = observerRef.current;
-    if (!container || !observer) return;
+    // Also use scroll end detection for snap scrolling
+    let scrollTimeout: NodeJS.Timeout;
+    const handleScrollEnd = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        handleScroll();
+      }, 50);
+    };
 
-    const videoElements = container.querySelectorAll('[data-index]');
-    videoElements.forEach((el) => observer.observe(el));
+    container.addEventListener('scroll', handleScrollEnd, { passive: true });
 
-    return () => videoElements.forEach((el) => observer.unobserve(el));
-  }, [videos]);
+    return () => {
+      container.removeEventListener('scroll', handleScrollEnd);
+      clearTimeout(scrollTimeout);
+    };
+  }, [currentIndex, videos.length]);
 
   const toggleMute = useCallback(() => setIsMuted(prev => !prev), []);
 
@@ -228,7 +226,7 @@ export default function VideoPlayerPage() {
           style={{ scrollSnapType: 'y mandatory' }}
         >
           {videos.map((video, index) => (
-            <div key={`${video.id}-${index}`} data-index={index} className="h-full w-full">
+            <div key={`${video.id}-${index}`} data-index={index} className="h-full w-full snap-start snap-always flex-shrink-0" style={{ minHeight: '100%' }}>
               <FeedVideoItem
                 video={video}
                 isActive={index === currentIndex}
