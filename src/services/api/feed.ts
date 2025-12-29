@@ -1,11 +1,11 @@
 /**
  * Feed API service
- * Handles video feeds: For You, Following, Trending, etc.
+ * Handles video feeds: For You, Following, Trending, Category feeds, etc.
  */
 import { apiClient } from './client';
-import type { Video, PaginatedResponse } from '@/types';
+import type { Video, PaginatedResponse, FeedOrder } from '@/types';
 
-type FeedType = 'forYou' | 'following' | 'friends' | 'trending' | 'discover';
+type FeedType = 'forYou' | 'following' | 'friends' | 'trending' | 'discover' | 'self';
 type VibeType = 'Energetic' | 'Chill' | 'Creative' | 'Social' | 'Romantic' | 'Funny' | 'Inspirational';
 
 interface FeedVideoResponse {
@@ -131,6 +131,42 @@ export const feedApi = {
   },
 
   /**
+   * Get Friends feed (mutual follows only)
+   */
+  async getFriendsFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+    const { data } = await apiClient.get<FeedResponse>('/videos/friends', {
+      params: { page, limit },
+    });
+    return transformFeedResponse(data);
+  },
+
+  /**
+   * Get user's own videos (My Videos / Self feed)
+   */
+  async getSelfFeed(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+    const { data } = await apiClient.get<FeedResponse>(`/videos/user/${userId}`, {
+      params: { page, limit },
+    });
+    return transformFeedResponse(data);
+  },
+
+  /**
+   * Get category-specific feed
+   * For custom categories, returns videos from users assigned to that category
+   */
+  async getCategoryFeed(
+    categoryId: string,
+    page = 1,
+    limit = 10,
+    feedOrder: FeedOrder = 'chronological'
+  ): Promise<PaginatedResponse<Video>> {
+    const { data } = await apiClient.get<FeedResponse>(`/videos/category/${categoryId}`, {
+      params: { page, limit, order: feedOrder },
+    });
+    return transformFeedResponse(data);
+  },
+
+  /**
    * Get generic feed (For You is default)
    */
   async getFeed(
@@ -141,12 +177,42 @@ export const feedApi = {
     switch (type) {
       case 'following':
         return this.getFollowingFeed(page, limit);
+      case 'friends':
+        return this.getFriendsFeed(page, limit);
       case 'trending':
         return this.getTrendingFeed(page, limit);
       case 'discover':
         return this.getDiscoverFeed(page, limit);
       default:
         return this.getForYouFeed(page, limit);
+    }
+  },
+
+  /**
+   * Get feed by category - handles all category types
+   */
+  async getFeedByCategory(
+    categoryId: string,
+    page = 1,
+    limit = 10,
+    userId?: string,
+    feedOrder: FeedOrder = 'chronological'
+  ): Promise<PaginatedResponse<Video>> {
+    switch (categoryId) {
+      case 'foryou':
+        return this.getForYouFeed(page, limit);
+      case 'following':
+        return this.getFollowingFeed(page, limit);
+      case 'friends':
+        return this.getFriendsFeed(page, limit);
+      case 'self':
+        if (!userId) {
+          return { items: [], page, hasMore: false };
+        }
+        return this.getSelfFeed(userId, page, limit);
+      default:
+        // Custom or default categories (family, etc.)
+        return this.getCategoryFeed(categoryId, page, limit, feedOrder);
     }
   },
 };

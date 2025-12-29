@@ -5,3 +5,5 @@ export { FeedQueuePanel } from './FeedQueuePanel';
 export { FeedTopActions } from './FeedTopActions';
 export { FeedEmptyState } from './FeedEmptyState';
 export { FeedLoadingState, FeedLoadingMore } from './FeedLoadingState';
+export { CategoryDropdown } from './CategoryDropdown';
+export { FollowCategoryPicker } from './FollowCategoryPicker';

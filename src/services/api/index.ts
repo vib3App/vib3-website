@@ -6,6 +6,7 @@ export type { ApiError } from './client';
 export { authApi } from './auth';
 export { videoApi } from './video';
 export { feedApi } from './feed';
+export { feedCategoryApi } from './feedCategory';
 export { userApi } from './user';
 export { messagesApi } from './messages';
 export { notificationsApi } from './notifications';

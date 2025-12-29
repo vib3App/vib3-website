@@ -12,3 +12,4 @@ export * from './collaboration';
 export * from './creator';
 export * from './capsule';
 export * from './ai';
+export * from './feedCategory';

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { CommentSheet } from '@/components/video/CommentSheet';
@@ -16,6 +16,8 @@ import {
   FeedEmptyState,
   FeedLoadingState,
   FeedLoadingMore,
+  CategoryDropdown,
+  FollowCategoryPicker,
 } from '@/components/feed';
 
 function FeedContent() {
@@ -26,6 +28,16 @@ function FeedContent() {
     setVideos: feed.setVideos,
     isAuthenticated,
   });
+
+  // Follow category picker state
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [pickerUser, setPickerUser] = useState<{ id: string; username: string; avatar?: string } | null>(null);
+
+  // Show category picker after successful follow
+  const handleFollowWithPicker = (userId: string, username: string, avatar?: string) => {
+    setPickerUser({ id: userId, username, avatar });
+    setShowCategoryPicker(true);
+  };
 
   useFeedNavigation({
     currentIndex: feed.currentIndex,
@@ -40,6 +52,11 @@ function FeedContent() {
 
   return (
     <>
+      {/* Category dropdown - top left */}
+      <div className="fixed top-20 md:top-[4.5rem] left-4 z-40">
+        <CategoryDropdown />
+      </div>
+
       <FeedTopActions
         showQueue={actions.showQueue}
         onToggleQueue={actions.toggleQueue}
@@ -99,6 +116,20 @@ function FeedContent() {
             onClose={actions.closeShare}
           />
         </>
+      )}
+
+      {/* Follow category picker */}
+      {pickerUser && (
+        <FollowCategoryPicker
+          isOpen={showCategoryPicker}
+          onClose={() => {
+            setShowCategoryPicker(false);
+            setPickerUser(null);
+          }}
+          followedUserId={pickerUser.id}
+          followedUsername={pickerUser.username}
+          followedAvatar={pickerUser.avatar}
+        />
       )}
 
       <style jsx global>{`

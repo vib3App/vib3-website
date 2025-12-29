@@ -4,11 +4,15 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { feedApi } from '@/services/api';
 import { watchHistoryService } from '@/services/watchHistory';
-import type { Video } from '@/types';
+import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
+import { useAuthStore } from '@/stores/authStore';
+import type { Video, FeedCategory } from '@/types';
 import type { FeedTab, VibeType } from '@/components/feed/FeedHeader';
 
 export function useFeed() {
   const searchParams = useSearchParams();
+  const { selectedCategory } = useFeedCategoryStore();
+  const { user } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const [selectedVibe, setSelectedVibe] = useState<VibeType>(null);
@@ -42,7 +46,7 @@ export function useFeed() {
     video.muted = true;
   }, []);
 
-  // Load videos
+  // Load videos based on selected category
   const loadVideos = useCallback(async (reset = false) => {
     if (reset) {
       setIsLoading(true);
@@ -54,9 +58,23 @@ export function useFeed() {
       const currentPage = reset ? 1 : page;
 
       let response;
+
+      // If a vibe is selected, use vibe feed
       if (selectedVibe) {
         response = await feedApi.getVibesFeed(selectedVibe, currentPage);
-      } else if (activeTab === 'following') {
+      }
+      // Use category-based loading if a category is selected
+      else if (selectedCategory) {
+        response = await feedApi.getFeedByCategory(
+          selectedCategory.id,
+          currentPage,
+          10,
+          user?.id,
+          selectedCategory.settings?.feedOrder || 'chronological'
+        );
+      }
+      // Fallback to legacy tab-based loading
+      else if (activeTab === 'following') {
         response = await feedApi.getFollowingFeed(currentPage);
       } else {
         response = await feedApi.getForYouFeed(currentPage);
@@ -79,11 +97,12 @@ export function useFeed() {
       setIsLoading(false);
       setLoadingMore(false);
     }
-  }, [activeTab, page, selectedVibe, preloadVideo]);
+  }, [activeTab, page, selectedVibe, selectedCategory, user?.id, preloadVideo]);
 
+  // Reload when category, tab, or vibe changes
   useEffect(() => {
     loadVideos(true);
-  }, [activeTab, selectedVibe]);
+  }, [activeTab, selectedVibe, selectedCategory?.id]);
 
   // Preload next videos when current index changes
   useEffect(() => {
