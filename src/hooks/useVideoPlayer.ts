@@ -7,6 +7,7 @@ import type { Chapter, QualityLevel } from '@/components/video/player/types';
 interface UseVideoPlayerOptions {
   src: string;
   autoPlay: boolean;
+  muted: boolean;
   isActive: boolean;
   chapters: Chapter[];
   onPlay?: () => void;
@@ -19,6 +20,7 @@ interface UseVideoPlayerOptions {
 export function useVideoPlayer({
   src,
   autoPlay,
+  muted: externalMuted,
   isActive,
   chapters,
   onPlay,
@@ -34,7 +36,7 @@ export function useVideoPlayer({
 
   // Core state
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(externalMuted);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
@@ -112,17 +114,37 @@ export function useVideoPlayer({
     };
   }, [src, autoPlay, isActive, onError]);
 
-  // Handle active state
+  // Handle active state - autoplay when active
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     if (isActive) {
-      video.play().catch(() => {});
+      // Small delay to ensure video is ready
+      const playVideo = () => {
+        video.play().catch((err) => {
+          console.log('Autoplay prevented:', err);
+        });
+      };
+
+      // If video is ready, play immediately, otherwise wait for canplay
+      if (video.readyState >= 3) {
+        playVideo();
+      } else {
+        video.addEventListener('canplay', playVideo, { once: true });
+      }
     } else {
       video.pause();
     }
   }, [isActive]);
+
+  // Sync muted state with external prop
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = externalMuted;
+    setIsMuted(externalMuted);
+  }, [externalMuted]);
 
   // Track current chapter
   useEffect(() => {

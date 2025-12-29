@@ -56,6 +56,7 @@ export function VideoPlayer({
   const player = useVideoPlayer({
     src,
     autoPlay,
+    muted, // Pass external muted state
     isActive,
     chapters,
     onPlay,
@@ -77,7 +78,7 @@ export function VideoPlayer({
       <video
         ref={player.videoRef}
         poster={poster}
-        muted={player.isMuted || muted}
+        muted={muted}
         loop={loop}
         playsInline
         onClick={player.togglePlay}
