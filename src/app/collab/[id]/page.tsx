@@ -135,9 +135,11 @@ export default function CollabRoomPage() {
       {collab.showShareModal && (
         <CollabShareModal
           inviteCode={room.inviteCode}
+          roomId={room.id}
           copied={collab.copied}
           onCopyCode={collab.copyInviteCode}
           onShareLink={collab.shareLink}
+          onInviteUser={collab.inviteUser}
           onClose={() => collab.setShowShareModal(false)}
         />
       )}

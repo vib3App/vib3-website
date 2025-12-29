@@ -97,6 +97,28 @@ export const userApi = {
   },
 
   /**
+   * Get friends (mutual followers - people you follow who also follow you)
+   */
+  async getFriends(limit: number = 50): Promise<Array<{
+    id: string;
+    username: string;
+    displayName?: string;
+    avatar?: string;
+    bio?: string;
+  }>> {
+    const { data } = await apiClient.get<{ friends: Array<{
+      id: string;
+      username: string;
+      displayName?: string;
+      avatar?: string;
+      bio?: string;
+    }> }>('/users/friends', {
+      params: { limit }
+    });
+    return data.friends || [];
+  },
+
+  /**
    * Follow a user
    */
   async followUser(userId: string): Promise<{ following: boolean }> {

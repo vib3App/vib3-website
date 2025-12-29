@@ -33,6 +33,7 @@ interface UseCollabRoomReturn {
   handleLeave: () => Promise<void>;
   copyInviteCode: () => void;
   shareLink: () => void;
+  inviteUser: (userId: string) => Promise<void>;
 }
 
 export function useCollabRoom(roomId: string): UseCollabRoomReturn {
@@ -207,6 +208,16 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     setTimeout(() => setCopied(false), 2000);
   }, [roomId, room?.inviteCode]);
 
+  const inviteUser = useCallback(async (userId: string) => {
+    try {
+      await collaborationApi.inviteUser(roomId, userId);
+    } catch (err: any) {
+      console.error('Failed to invite user:', err);
+      const message = err?.message || 'Failed to send invite';
+      throw new Error(message);
+    }
+  }, [roomId]);
+
   const allReady = room?.participants.every(p => p.isReady) ?? false;
   const allSubmitted = room?.participants.every(p => p.hasRecorded) ?? false;
 
@@ -238,5 +249,6 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     handleLeave,
     copyInviteCode,
     shareLink,
+    inviteUser,
   };
 }

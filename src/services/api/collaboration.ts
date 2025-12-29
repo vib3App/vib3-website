@@ -134,6 +134,13 @@ export const collaborationApi = {
   },
 
   /**
+   * Invite a user to a collab room
+   */
+  async inviteUser(roomId: string, userId: string): Promise<void> {
+    await apiClient.post(`/collab/rooms/${roomId}/invite`, { userId });
+  },
+
+  /**
    * Start recording session
    */
   async startRecording(roomId: string): Promise<void> {
