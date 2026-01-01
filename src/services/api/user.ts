@@ -51,25 +51,22 @@ export const userApi = {
 
   /**
    * Get user's videos
-   * Uses /videos endpoint with client-side filtering since /user/videos requires auth
+   * Uses /user/videos endpoint with userId query param for proper server-side filtering
    */
   async getUserVideos(userId: string, page: number = 1, limit: number = 100): Promise<UserVideosResponse> {
     try {
-      // Use the public videos endpoint and filter by userId
-      const { data } = await apiClient.get<{ videos?: Array<Video & { _id?: string }> }>(`/videos`, {
-        params: { page: 1, limit: 100 } // Get more to filter
+      // Use the backend's user videos endpoint with userId param
+      const { data } = await apiClient.get<{ videos?: Array<Video & { _id?: string }> }>(`/user/videos`, {
+        params: { userId, page, limit }
       });
 
-      // Filter videos by userId and transform _id to id
-      const allVideos = data.videos || [];
-      const userVideos = allVideos
-        .filter(v => v.userId === userId || (v.userId as string) === userId)
-        .map(v => ({
-          ...v,
-          id: v.id || v._id || '',
-        }));
+      // Transform _id to id for consistency
+      const videos = (data.videos || []).map(v => ({
+        ...v,
+        id: v.id || v._id || '',
+      }));
 
-      return { videos: userVideos };
+      return { videos };
     } catch (error) {
       console.error('Failed to fetch user videos:', error);
       return { videos: [] };
