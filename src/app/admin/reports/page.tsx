@@ -58,12 +58,8 @@ export default function ReportsPage() {
   };
 
   const loadUserDetails = async (userId: string) => {
-    try {
-      const { user } = await adminApi.getUser(userId);
-      return user;
-    } catch {
-      return undefined;
-    }
+    const result = await adminApi.getUser(userId);
+    return result?.user;
   };
 
   const handleAction = async (reportId: string, action: ModerationAction, notes?: string) => {
