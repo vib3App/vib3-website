@@ -1,6 +1,6 @@
 /**
  * Landing page header component
- * Logo + navigation
+ * Logo + navigation (PUBLIC - no admin links here)
  */
 'use client';
 
@@ -8,13 +8,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { SoundToggle } from '@/components/audio';
 import { ThemeToggle } from '@/components/personalization';
-import { useAuthStore } from '@/stores/authStore';
 import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user, isAuthenticated } = useAuthStore();
-  const isAdmin = user?.isAdmin || user?.role === 'admin';
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-heavy border-b border-white/5">
@@ -44,31 +41,12 @@ export function Header() {
             <ThemeToggle />
             <SoundToggle />
           </div>
-          {isAuthenticated ? (
-            <div className="flex items-center gap-4">
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="text-red-400 hover:text-red-300 transition-colors text-sm font-medium"
-                >
-                  Admin
-                </Link>
-              )}
-              <Link
-                href="/feed"
-                className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"
-              >
-                Go to Feed
-              </Link>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"
-            >
-              Sign In
-            </Link>
-          )}
+          <Link
+            href="/login"
+            className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"
+          >
+            Sign In
+          </Link>
         </nav>
 
         {/* Mobile menu button */}
@@ -125,34 +103,13 @@ export function Header() {
               <ThemeToggle />
               <SoundToggle />
             </div>
-            {isAuthenticated ? (
-              <>
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="text-red-400 hover:text-red-300 transition-colors text-sm font-medium py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Admin Dashboard
-                  </Link>
-                )}
-                <Link
-                  href="/feed"
-                  className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Go to Feed
-                </Link>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 text-center"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </Link>
-            )}
+            <Link
+              href="/login"
+              className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 text-center"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Sign In
+            </Link>
           </nav>
         </div>
       )}
