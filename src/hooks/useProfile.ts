@@ -103,10 +103,7 @@ export function useProfile() {
         setVideos([]);
       }
 
-      // Load followed users if not already loaded
-      if (isAuthenticated && !socialLoaded) {
-        loadFollowedUsers();
-      }
+      // Note: followed users are loaded in separate useEffect to avoid infinite loop
     } catch (err: unknown) {
       const error = err as { message?: string; response?: { status: number } };
       console.error('Profile load error:', error);
@@ -122,7 +119,7 @@ export function useProfile() {
     } finally {
       setIsLoading(false);
     }
-  }, [userId, isOwnProfile, isAuthenticated, socialLoaded, loadFollowedUsers]);
+  }, [userId, isOwnProfile, isAuthenticated]);
 
   useEffect(() => {
     if (userId) loadProfile();
