@@ -1,13 +1,11 @@
 /**
  * Landing page header component
- * Logo + navigation (PUBLIC - no admin links here)
+ * Logo + navigation (PUBLIC - minimal, just sign in)
  */
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { SoundToggle } from '@/components/audio';
-import { ThemeToggle } from '@/components/personalization';
 import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 
 export function Header() {
@@ -37,10 +35,6 @@ export function Header() {
           <Link href="/terms" className="text-white/60 hover:text-white transition-colors text-sm font-medium">
             Terms
           </Link>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <SoundToggle />
-          </div>
           <Link
             href="/login"
             className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40"
@@ -99,10 +93,6 @@ export function Header() {
             >
               Terms
             </Link>
-            <div className="flex items-center gap-4 py-2">
-              <ThemeToggle />
-              <SoundToggle />
-            </div>
             <Link
               href="/login"
               className="px-5 py-2.5 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-500 hover:to-teal-400 rounded-xl font-medium text-sm transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 text-center"

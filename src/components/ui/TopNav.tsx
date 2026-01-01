@@ -7,6 +7,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { authApi } from '@/services/api';
+import { ThemeToggle } from '@/components/personalization';
+import { SoundToggle } from '@/components/audio';
 import type { FeedCategory } from '@/types';
 
 interface DropdownItem {
@@ -467,8 +469,10 @@ export function TopNav() {
           ))}
         </div>
 
-        {/* Profile */}
+        {/* Quick Actions + Profile */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <SoundToggle />
           <ProfileDropdown
             isOpen={openDropdown === 'profile'}
             onToggle={() => handleToggle('profile')}
