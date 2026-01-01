@@ -11,7 +11,7 @@ export const videoApi = {
    */
   async getForYouFeed(cursor?: string): Promise<VideoFeedResponse> {
     const params = cursor ? { cursor } : {};
-    const response = await apiClient.get('/api/discover/for-you', { params });
+    const response = await apiClient.get('/discover/for-you', { params });
     return response.data;
   },
 
@@ -19,7 +19,7 @@ export const videoApi = {
    * Get a single video by ID
    */
   async getVideo(id: string): Promise<Video> {
-    const response = await apiClient.get(`/api/videos/${id}`);
+    const response = await apiClient.get(`/videos/${id}`);
     return response.data;
   },
 
@@ -27,7 +27,7 @@ export const videoApi = {
    * Like a video
    */
   async likeVideo(id: string): Promise<{ liked: boolean; likeCount: number }> {
-    const response = await apiClient.post(`/api/videos/${id}/like`);
+    const response = await apiClient.post(`/videos/${id}/like`);
     return response.data;
   },
 
@@ -35,7 +35,7 @@ export const videoApi = {
    * Unlike a video
    */
   async unlikeVideo(id: string): Promise<{ liked: boolean; likeCount: number }> {
-    const response = await apiClient.delete(`/api/videos/${id}/like`);
+    const response = await apiClient.delete(`/videos/${id}/like`);
     return response.data;
   },
 
@@ -43,7 +43,7 @@ export const videoApi = {
    * Record a video view
    */
   async recordView(id: string, watchTime: number): Promise<void> {
-    await apiClient.post(`/api/videos/${id}/view`, { watchTime });
+    await apiClient.post(`/videos/${id}/view`, { watchTime });
   },
 
   /**
@@ -51,7 +51,7 @@ export const videoApi = {
    */
   async getUserVideos(userId: string, cursor?: string): Promise<VideoFeedResponse> {
     const params = cursor ? { cursor } : {};
-    const response = await apiClient.get(`/api/users/${userId}/videos`, { params });
+    const response = await apiClient.get(`/users/${userId}/videos`, { params });
     return response.data;
   },
 
@@ -60,7 +60,7 @@ export const videoApi = {
    */
   async searchVideos(query: string, cursor?: string): Promise<VideoFeedResponse> {
     const params = { q: query, ...(cursor ? { cursor } : {}) };
-    const response = await apiClient.get('/api/search/videos', { params });
+    const response = await apiClient.get('/search/videos', { params });
     return response.data;
   },
 };
