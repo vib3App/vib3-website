@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Text3D, Center, Float, MeshTransmissionMaterial, Environment } from '@react-three/drei';
+import { Float, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface Logo3DProps {
@@ -39,36 +39,86 @@ function LogoMesh({ autoRotate = true, interactive = true }: { autoRotate?: bool
         onPointerOut={() => setHovered(false)}
         scale={hovered ? 1.1 : 1}
       >
-        <Center>
-          <Text3D
-            font="/fonts/inter-bold.json"
-            size={1}
-            height={0.3}
-            curveSegments={12}
-            bevelEnabled
-            bevelThickness={0.02}
-            bevelSize={0.02}
-            bevelOffset={0}
-            bevelSegments={5}
-          >
-            V3
-            <MeshTransmissionMaterial
-              backside
-              samples={16}
-              resolution={512}
-              transmission={0.9}
-              roughness={0.1}
-              thickness={0.5}
-              ior={1.5}
-              chromaticAberration={0.06}
-              anisotropy={0.1}
-              distortion={0.2}
-              distortionScale={0.3}
-              temporalDistortion={0.5}
+        {/* V shape using boxes */}
+        <group position={[-0.6, 0, 0]}>
+          {/* Left arm of V */}
+          <mesh position={[-0.3, 0, 0]} rotation={[0, 0, 0.3]}>
+            <boxGeometry args={[0.25, 1.2, 0.3]} />
+            <meshStandardMaterial
               color="#8B5CF6"
+              emissive="#8B5CF6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
             />
-          </Text3D>
-        </Center>
+          </mesh>
+          {/* Right arm of V */}
+          <mesh position={[0.3, 0, 0]} rotation={[0, 0, -0.3]}>
+            <boxGeometry args={[0.25, 1.2, 0.3]} />
+            <meshStandardMaterial
+              color="#8B5CF6"
+              emissive="#8B5CF6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </mesh>
+        </group>
+
+        {/* 3 using spheres/boxes */}
+        <group position={[0.7, 0, 0]}>
+          <mesh position={[0, 0.4, 0]}>
+            <boxGeometry args={[0.5, 0.2, 0.3]} />
+            <meshStandardMaterial
+              color="#14B8A6"
+              emissive="#14B8A6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </mesh>
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[0.5, 0.2, 0.3]} />
+            <meshStandardMaterial
+              color="#14B8A6"
+              emissive="#14B8A6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </mesh>
+          <mesh position={[0, -0.4, 0]}>
+            <boxGeometry args={[0.5, 0.2, 0.3]} />
+            <meshStandardMaterial
+              color="#14B8A6"
+              emissive="#14B8A6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </mesh>
+          {/* Right side connectors */}
+          <mesh position={[0.2, 0.2, 0]}>
+            <boxGeometry args={[0.2, 0.4, 0.3]} />
+            <meshStandardMaterial
+              color="#14B8A6"
+              emissive="#14B8A6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </mesh>
+          <mesh position={[0.2, -0.2, 0]}>
+            <boxGeometry args={[0.2, 0.4, 0.3]} />
+            <meshStandardMaterial
+              color="#14B8A6"
+              emissive="#14B8A6"
+              emissiveIntensity={hovered ? 0.5 : 0.2}
+              metalness={0.8}
+              roughness={0.2}
+            />
+          </mesh>
+        </group>
 
         {/* Glow ring */}
         <mesh position={[0, 0, -0.5]} rotation={[0, 0, 0]}>
