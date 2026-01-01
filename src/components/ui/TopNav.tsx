@@ -301,6 +301,7 @@ function ProfileDropdown({ isOpen, onToggle }: {
 }) {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuthStore();
+  const isAdmin = user?.isAdmin || user?.role === 'admin';
 
   const handleLogout = async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
@@ -353,6 +354,14 @@ function ProfileDropdown({ isOpen, onToggle }: {
                     <span>Notifications</span>
                   </div>
                 </a>
+                {isAdmin && (
+                  <a href="/admin" className="block w-full px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span>🛡️</span>
+                      <span>Admin Dashboard</span>
+                    </div>
+                  </a>
+                )}
                 <div className="h-px bg-white/10 my-2" />
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors text-left">
                   <span>🚪</span>
