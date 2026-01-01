@@ -24,6 +24,8 @@ export interface AuthUser {
   email: string;
   profilePicture?: string;
   isVerified: boolean;
+  isAdmin?: boolean;
+  role?: string;
   token: string;
   refreshToken: string;
 }

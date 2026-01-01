@@ -25,3 +25,16 @@ export { creatorFundApi } from './creatorFund';
 export { analyticsApi } from './analytics';
 export { walletApi } from './wallet';
 export { paymentApi } from './payment';
+export { adminApi } from './admin';
+export type {
+  ContentReport,
+  ReportStats,
+  DMCANotice,
+  WithdrawalRequest,
+  ModerationAction,
+  FlaggedReporter,
+  AdminUser,
+  TeamMember,
+  UserStats,
+  UserRole
+} from './admin';

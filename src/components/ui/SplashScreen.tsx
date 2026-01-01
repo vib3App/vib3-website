@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
+import { AnimatedLogo } from './AnimatedLogo';
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -61,19 +61,13 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         phase === 'fadeOut' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      {/* Logo spinning */}
+      {/* Animated Logo */}
       <div
-        className={`relative w-64 h-64 md:w-80 md:h-80 ${
-          phase === 'spin' ? 'animate-logo-spin' : phase === 'pulse' ? 'animate-logo-pulse' : ''
+        className={`relative ${
+          phase === 'pulse' ? 'animate-logo-pulse' : ''
         }`}
       >
-        <Image
-          src="/vib3-logo.png"
-          alt="VIB3"
-          fill
-          priority
-          className="object-contain"
-        />
+        <AnimatedLogo size={320} />
       </div>
 
       {/* Loading dots - appear after spin */}

@@ -6,7 +6,8 @@
 
 import { AppStoreButtons } from './AppStoreButtons';
 import { FadeUp, AnimatedButton, AnimatedStat, ScaleUp, StaggerContainer } from '@/components/motion';
-import { Logo3D, ParticleField } from '@/components/3d';
+import { ParticleField } from '@/components/3d';
+import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { MoodIndicator } from '@/components/ai';
 
 export function Hero() {
@@ -18,10 +19,10 @@ export function Hero() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        {/* 3D Logo */}
+        {/* Animated Logo */}
         <ScaleUp>
           <div className="w-32 h-32 mx-auto mb-8">
-            <Logo3D />
+            <AnimatedLogo size={128} />
           </div>
         </ScaleUp>
 

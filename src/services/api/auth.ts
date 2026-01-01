@@ -15,6 +15,8 @@ interface AuthResponse {
     email: string;
     profilePicture?: string;
     isVerified?: boolean;
+    isAdmin?: boolean;
+    role?: string;
   };
   // Or at top level (some API responses)
   _id?: string;
@@ -22,6 +24,8 @@ interface AuthResponse {
   email?: string;
   profilePicture?: string;
   isVerified?: boolean;
+  isAdmin?: boolean;
+  role?: string;
 }
 
 interface RefreshResponse {
@@ -149,6 +153,8 @@ export const authApi = {
       const email = data.user?.email || data.email || '';
       const profilePicture = data.user?.profilePicture || data.profilePicture;
       const isVerified = data.user?.isVerified || data.isVerified || false;
+      const isAdmin = data.user?.isAdmin || data.isAdmin || false;
+      const role = data.user?.role || data.role;
 
       return {
         id: userId,
@@ -156,6 +162,8 @@ export const authApi = {
         email,
         profilePicture,
         isVerified,
+        isAdmin,
+        role,
         token: token || '',
         refreshToken: refreshToken || '',
       };
@@ -177,11 +185,10 @@ function transformAuthResponse(data: AuthResponse): AuthUser {
   const email = data.user?.email || data.email || '';
   const profilePicture = data.user?.profilePicture || data.profilePicture;
   const isVerified = data.user?.isVerified || data.isVerified || false;
+  const isAdmin = data.user?.isAdmin || data.isAdmin || false;
+  const role = data.user?.role || data.role;
 
-  console.log('Auth transform - extracted userId:', userId, 'from data:', {
-    nested: data.user?._id,
-    topLevel: data._id
-  });
+  console.log('Auth transform - extracted userId:', userId, 'isAdmin:', isAdmin);
 
   return {
     id: userId,
@@ -189,6 +196,8 @@ function transformAuthResponse(data: AuthResponse): AuthUser {
     email,
     profilePicture,
     isVerified,
+    isAdmin,
+    role,
     token: data.token,
     refreshToken: data.refreshToken,
   };
