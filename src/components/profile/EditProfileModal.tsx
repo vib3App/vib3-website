@@ -155,7 +155,7 @@ export function EditProfileModal({
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/50">
-                    {profile.username.charAt(0).toUpperCase()}
+                    {(profile.username || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>

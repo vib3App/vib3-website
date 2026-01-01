@@ -324,7 +324,7 @@ function ProfileDropdown({ isOpen, onToggle }: {
           <Image src={user.profilePicture} alt={user.username} width={40} height={40} className="object-cover" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-purple-500 to-teal-500 flex items-center justify-center text-white font-bold">
-            {isAuthenticated && user ? user.username.charAt(0).toUpperCase() : '?'}
+            {isAuthenticated && user?.username ? user.username.charAt(0).toUpperCase() : '?'}
           </div>
         )}
       </button>

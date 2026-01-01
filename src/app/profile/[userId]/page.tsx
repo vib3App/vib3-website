@@ -128,7 +128,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
           {profile.profilePicture ? (
             <Image src={profile.profilePicture} alt={profile.username} fill className="object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/70">{profile.username.charAt(0).toUpperCase()}</div>
+            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/70">{(profile.username || 'U').charAt(0).toUpperCase()}</div>
           )}
         </div>
         {profile.isVerified && (

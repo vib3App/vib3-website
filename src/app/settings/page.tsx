@@ -42,7 +42,7 @@ function ProfileCard({ user }: { user: { username: string; email: string; profil
             <Image src={user.profilePicture} alt={user.username} width={64} height={64} className="object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white/70">
-              {user?.username.charAt(0).toUpperCase()}
+              {(user?.username || 'U').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
