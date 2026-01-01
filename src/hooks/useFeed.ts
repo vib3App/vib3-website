@@ -102,6 +102,7 @@ export function useFeed() {
   // Reload when category, tab, or vibe changes
   useEffect(() => {
     loadVideos(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedVibe, selectedCategory?.id]);
 
   // Preload next videos when current index changes
@@ -142,6 +143,7 @@ export function useFeed() {
     if (page > 1 && hasMore) {
       loadVideos(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, hasMore]);
 
   // Handle URL video parameter

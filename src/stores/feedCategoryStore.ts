@@ -12,6 +12,7 @@ interface FeedCategoryState {
   categories: FeedCategory[];
   selectedCategory: FeedCategory | null;
   isLoading: boolean;
+  isInitialized: boolean;
   error: string | null;
   categoryCounts: Record<string, number>;
 
@@ -44,29 +45,44 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
       categories: getDefaultCategories(),
       selectedCategory: getDefaultCategories()[0], // Default to "For You"
       isLoading: false,
+      isInitialized: false,
       error: null,
       categoryCounts: {},
 
       initialize: async () => {
-        const { loadCategories, categories, selectedCategory } = get();
+        // Prevent duplicate initialization
+        const state = get();
+        if (state.isInitialized || state.isLoading) return;
+
+        const { loadCategories, categories, selectedCategory } = state;
         // Only set default selection if not already set
         if (!selectedCategory && categories.length > 0) {
           set({ selectedCategory: categories[0] });
         }
+        set({ isInitialized: true });
         await loadCategories();
       },
 
       loadCategories: async (forceRefresh = false) => {
+        // Prevent concurrent loads
+        const state = get();
+        if (state.isLoading) return;
+
         set({ isLoading: true, error: null });
         try {
           const categories = await feedCategoryApi.getCategories(forceRefresh);
-          const stats = await feedCategoryApi.getCategoryStats();
 
-          const counts: Record<string, number> = {};
-          if (stats?.categories) {
-            stats.categories.forEach(c => {
-              counts[c.categoryId] = c.userCount;
-            });
+          // Try to get stats but don't fail if it errors (e.g., 401)
+          let counts: Record<string, number> = {};
+          try {
+            const stats = await feedCategoryApi.getCategoryStats();
+            if (stats?.categories) {
+              stats.categories.forEach(c => {
+                counts[c.categoryId] = c.userCount;
+              });
+            }
+          } catch {
+            // Stats failed (likely auth issue) - continue with empty counts
           }
 
           set({ categories, categoryCounts: counts, isLoading: false });

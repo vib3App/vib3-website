@@ -153,10 +153,11 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
     initialize,
   } = useFeedCategoryStore();
 
-  // Initialize categories on mount
+  // Initialize categories on mount - run once only
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isActive = pathname === '/feed' || pathname.startsWith('/feed/');
 
@@ -169,19 +170,48 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
     }
   };
 
+  const handleSettingsClick = (e: React.MouseEvent, categoryId: string) => {
+    e.stopPropagation();
+    onClose();
+    router.push(`/settings/categories/${categoryId}`);
+  };
+
+  // Get description for category
+  const getCategoryDescription = (category: FeedCategory) => {
+    switch (category.id) {
+      case 'foryou': return 'Personalized for you';
+      case 'following': return 'Everyone you follow';
+      case 'self': return 'Your own videos';
+      case 'friends': return 'Mutual follows only';
+      case 'family': return `${categoryCounts[category.id] || 0} people`;
+      default:
+        if (category.type === 'custom' || category.type === 'default') {
+          const count = categoryCounts[category.id] || 0;
+          return `${count} ${count === 1 ? 'person' : 'people'}`;
+        }
+        return '';
+    }
+  };
+
   return (
     <div className="relative">
+      {/* Dropdown Trigger - Shows selected category name like Flutter app */}
       <button
         type="button"
         onClick={onToggle}
         className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
           isActive || isOpen
-            ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20 text-white border border-white/20'
-            : 'glass text-white/70 hover:text-white hover:bg-white/10'
+            ? 'bg-black/70 text-white border border-teal-500/50'
+            : 'bg-black/50 text-white/90 hover:bg-black/70 border border-white/10'
         }`}
       >
-        <span>{selectedCategory?.icon || '✨'}</span>
-        <span>Feed</span>
+        <span
+          className="w-5 h-5 rounded flex items-center justify-center text-sm"
+          style={{ color: selectedCategory?.color || '#8B5CF6' }}
+        >
+          {selectedCategory?.icon || '✨'}
+        </span>
+        <span>{selectedCategory?.name || 'For You'}</span>
         <svg
           className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
@@ -193,38 +223,39 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-[280px] glass-heavy rounded-2xl border border-white/10 shadow-xl overflow-hidden z-[100] animate-in">
-          {/* Header */}
+        <div className="absolute top-full left-0 mt-2 w-[300px] bg-black/95 backdrop-blur-xl rounded-2xl border border-teal-500/30 shadow-2xl overflow-hidden z-[100] animate-in">
+          {/* Header with reorder hint */}
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-            <span className="text-white/50 text-xs uppercase tracking-wider">Feed Categories</span>
+            <span className="text-white/50 text-xs">Categories</span>
             <a
               href="/settings/categories"
               className="text-purple-400 text-xs hover:text-purple-300 transition-colors"
+              onClick={() => onClose()}
             >
               Manage
             </a>
           </div>
 
           {/* Categories list */}
-          <div className="py-2 max-h-[400px] overflow-y-auto">
+          <div className="py-2 max-h-[50vh] overflow-y-auto">
             {categories.map((category) => {
               const isSelected = selectedCategory?.id === category.id;
-              const userCount = categoryCounts[category.id] || 0;
 
               return (
-                <button
+                <div
                   key={category.id}
-                  onClick={() => handleSelectCategory(category)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
+                  className={`flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-r from-purple-500/20 to-teal-500/20'
-                      : 'hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-purple-500/15 to-transparent border-l-2'
+                      : 'hover:bg-white/5 border-l-2 border-transparent'
                   }`}
+                  style={{ borderLeftColor: isSelected ? category.color : 'transparent' }}
+                  onClick={() => handleSelectCategory(category)}
                 >
-                  {/* Icon with category color */}
+                  {/* Category icon */}
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ backgroundColor: `${category.color}20` }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
+                    style={{ backgroundColor: `${category.color}25` }}
                   >
                     {category.icon}
                   </div>
@@ -232,33 +263,32 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
                   {/* Category info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium truncate ${isSelected ? 'text-white' : 'text-white/80'}`}>
+                      <span className={`font-medium text-sm truncate ${isSelected ? 'text-white' : 'text-white/80'}`}>
                         {category.name}
                       </span>
                       {isSelected && (
-                        <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-4 h-4 flex-shrink-0" style={{ color: category.color }} fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
                     </div>
-                    {/* Description based on category type */}
                     <span className="text-white/40 text-xs">
-                      {category.id === 'foryou' && 'Personalized for you'}
-                      {category.id === 'following' && 'Everyone you follow'}
-                      {category.id === 'friends' && 'Mutual follows only'}
-                      {(category.type === 'default' || category.type === 'custom') && category.id !== 'friends' && (
-                        `${userCount} ${userCount === 1 ? 'person' : 'people'}`
-                      )}
+                      {getCategoryDescription(category)}
                     </span>
                   </div>
 
-                  {/* Custom badge */}
-                  {category.type === 'custom' && (
-                    <span className="px-2 py-0.5 text-[10px] uppercase text-purple-400 bg-purple-500/20 rounded-full flex-shrink-0">
-                      Custom
-                    </span>
-                  )}
-                </button>
+                  {/* Settings gear icon */}
+                  <button
+                    onClick={(e) => handleSettingsClick(e, category.id)}
+                    className="p-1.5 text-white/30 hover:text-white/70 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+                    title="Category settings"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -268,11 +298,12 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
             <a
               href="/discover"
               className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+              onClick={() => onClose()}
             >
               <div className="flex items-center gap-3">
                 <span className="text-lg">🔍</span>
                 <div>
-                  <div className="font-medium">Discover</div>
+                  <div className="font-medium text-sm">Discover</div>
                   <div className="text-xs text-white/40">Explore trending content</div>
                 </div>
               </div>
@@ -280,11 +311,12 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
             <a
               href="/live"
               className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+              onClick={() => onClose()}
             >
               <div className="flex items-center gap-3">
                 <span className="text-lg">📡</span>
                 <div>
-                  <div className="font-medium">LIVE</div>
+                  <div className="font-medium text-sm">LIVE</div>
                   <div className="text-xs text-white/40">Watch live streams</div>
                 </div>
               </div>

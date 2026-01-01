@@ -47,6 +47,16 @@ export const SYSTEM_CATEGORIES: FeedCategory[] = [
     isDeletable: false,
     settings: { feedOrder: 'chronological', notifications: true, vibeMeter: true },
   },
+  {
+    id: 'self',
+    name: 'My Vib3s',
+    type: 'system',
+    icon: '🎬',
+    color: '#9932CC', // Purple
+    order: 2,
+    isDeletable: false,
+    settings: { feedOrder: 'chronological', notifications: false, vibeMeter: false },
+  },
 ];
 
 export const DEFAULT_CATEGORIES: FeedCategory[] = [
@@ -56,7 +66,7 @@ export const DEFAULT_CATEGORIES: FeedCategory[] = [
     type: 'default',
     icon: '🤝',
     color: '#00CED1', // Turquoise
-    order: 2,
+    order: 3,
     isDeletable: false,
     settings: { feedOrder: 'chronological', notifications: true, vibeMeter: true },
   },
@@ -66,7 +76,7 @@ export const DEFAULT_CATEGORIES: FeedCategory[] = [
     type: 'default',
     icon: '🏠',
     color: '#FF6B6B', // Light Coral
-    order: 3,
+    order: 4,
     isDeletable: false,
     settings: { feedOrder: 'chronological', notifications: true, vibeMeter: true },
   },
@@ -74,17 +84,17 @@ export const DEFAULT_CATEGORIES: FeedCategory[] = [
 
 export const SELF_CATEGORY: FeedCategory = {
   id: 'self',
-  name: 'My Videos',
+  name: 'My Vib3s',
   type: 'system',
-  icon: '📹',
+  icon: '🎬',
   color: '#9932CC', // Purple
-  order: 99,
+  order: 2,
   isDeletable: false,
   settings: { feedOrder: 'chronological', notifications: false, vibeMeter: false },
 };
 
 // Reserved category names that users cannot use
-export const RESERVED_NAMES = ['for you', 'following', 'friends', 'family', 'coworkers', 'my videos', 'self'];
+export const RESERVED_NAMES = ['for you', 'following', 'friends', 'family', 'coworkers', 'my videos', 'my vib3s', 'self'];
 
 // Maximum custom categories allowed
 export const MAX_CUSTOM_CATEGORIES = 10;

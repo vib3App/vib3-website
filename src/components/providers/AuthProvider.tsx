@@ -15,6 +15,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { user, setUser, logout, setLoading, isAuthenticated } = useAuthStore();
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
   // Parse JWT to get expiration time
   const getTokenExpiry = useCallback((token: string): number | null => {
@@ -88,6 +89,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Initialize auth state on mount
   useEffect(() => {
+    // Prevent duplicate initialization
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+
     const initializeAuth = async () => {
       const token = localStorage.getItem('auth_token');
 
@@ -133,6 +138,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         clearTimeout(refreshTimeoutRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Schedule refresh when user changes
@@ -146,7 +152,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         clearTimeout(refreshTimeoutRef.current);
       }
     };
-  }, [isAuthenticated, user?.token, scheduleTokenRefresh]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.token]);
 
   // Listen for storage events (for multi-tab sync)
   useEffect(() => {

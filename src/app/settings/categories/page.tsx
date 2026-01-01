@@ -14,6 +14,7 @@ export default function ManageCategoriesPage() {
   const { isAuthenticated } = useAuthStore();
   const {
     categories,
+    categoryCounts,
     isLoading,
     error,
     loadCategories,
@@ -30,7 +31,8 @@ export default function ManageCategoriesPage() {
 
   useEffect(() => {
     loadCategories(true);
-  }, [loadCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreate = async () => {
     const name = newCategoryName.trim();
@@ -100,13 +102,19 @@ export default function ManageCategoriesPage() {
       <TopNav />
 
       <main className="pt-20 pb-8 px-4 max-w-2xl mx-auto relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Feed Categories</h1>
-            <p className="text-white/50 text-sm mt-1">
-              Organize who you follow into custom feeds
-            </p>
+        {/* Header with back button */}
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-white">Feed Categories</h1>
+            <p className="text-white/50 text-sm">Organize who you follow</p>
           </div>
           {canCreateMore() && (
             <button
@@ -119,6 +127,26 @@ export default function ManageCategoriesPage() {
               <span>New</span>
             </button>
           )}
+        </div>
+
+        {/* Stats bar */}
+        <div className="glass-card p-4 rounded-xl mb-6">
+          <div className="flex items-center justify-around text-center">
+            <div>
+              <div className="text-2xl font-bold text-white">{categories.length}</div>
+              <div className="text-white/40 text-xs uppercase tracking-wider">Categories</div>
+            </div>
+            <div className="h-8 w-px bg-white/10" />
+            <div>
+              <div className="text-2xl font-bold text-white">{getCustomCategories().length}</div>
+              <div className="text-white/40 text-xs uppercase tracking-wider">Custom</div>
+            </div>
+            <div className="h-8 w-px bg-white/10" />
+            <div>
+              <div className="text-2xl font-bold text-white">{MAX_CUSTOM_CATEGORIES - getCustomCategories().length}</div>
+              <div className="text-white/40 text-xs uppercase tracking-wider">Available</div>
+            </div>
+          </div>
         </div>
 
         {/* Error message */}
@@ -144,7 +172,12 @@ export default function ManageCategoriesPage() {
               {categories
                 .filter(c => c.type === 'system')
                 .map(category => (
-                  <CategoryRow key={category.id} category={category} />
+                  <CategoryRow
+                    key={category.id}
+                    category={category}
+                    userCount={categoryCounts[category.id] || 0}
+                    onClick={() => router.push(`/settings/categories/${category.id}`)}
+                  />
                 ))}
             </div>
 
@@ -154,7 +187,12 @@ export default function ManageCategoriesPage() {
               {categories
                 .filter(c => c.type === 'default')
                 .map(category => (
-                  <CategoryRow key={category.id} category={category} />
+                  <CategoryRow
+                    key={category.id}
+                    category={category}
+                    userCount={categoryCounts[category.id] || 0}
+                    onClick={() => router.push(`/settings/categories/${category.id}`)}
+                  />
                 ))}
             </div>
 
@@ -180,6 +218,8 @@ export default function ManageCategoriesPage() {
                   <CategoryRow
                     key={category.id}
                     category={category}
+                    userCount={categoryCounts[category.id] || 0}
+                    onClick={() => router.push(`/settings/categories/${category.id}`)}
                     onDelete={() => handleDelete(category)}
                   />
                 ))
@@ -240,13 +280,37 @@ export default function ManageCategoriesPage() {
 
 function CategoryRow({
   category,
+  userCount,
+  onClick,
   onDelete,
 }: {
   category: FeedCategory;
+  userCount: number;
+  onClick?: () => void;
   onDelete?: () => void;
 }) {
+  const getDescription = () => {
+    switch (category.id) {
+      case 'foryou':
+        return 'Personalized for you';
+      case 'following':
+        return 'Everyone you follow';
+      case 'self':
+        return 'Your own videos';
+      case 'friends':
+        return 'Mutual follows only';
+      default:
+        return userCount > 0
+          ? `${userCount} ${userCount === 1 ? 'person' : 'people'}`
+          : 'No users yet';
+    }
+  };
+
   return (
-    <div className="glass-card flex items-center gap-4 p-4 rounded-xl mb-2">
+    <div
+      className="glass-card flex items-center gap-4 p-4 rounded-xl mb-2 cursor-pointer hover:bg-white/5 transition-colors group"
+      onClick={onClick}
+    >
       {/* Icon */}
       <div
         className="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
@@ -265,20 +329,28 @@ function CategoryRow({
             </span>
           )}
         </div>
-        <span className="text-white/40 text-sm capitalize">{category.type}</span>
+        <span className="text-white/40 text-sm">{getDescription()}</span>
       </div>
 
-      {/* Delete button for custom categories */}
-      {category.isDeletable && onDelete && (
-        <button
-          onClick={onDelete}
-          className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      )}
+      {/* Chevron / Delete */}
+      <div className="flex items-center gap-2">
+        {category.isDeletable && onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        )}
+        <svg className="w-5 h-5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
     </div>
   );
 }

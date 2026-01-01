@@ -22,10 +22,11 @@ export function CategoryDropdown({ onCategoryChange }: CategoryDropdownProps) {
     initialize,
   } = useFeedCategoryStore();
 
-  // Initialize categories on mount
+  // Initialize categories on mount - run once only
   useEffect(() => {
     initialize();
-  }, [initialize]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {

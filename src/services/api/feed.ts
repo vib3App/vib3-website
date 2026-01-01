@@ -132,12 +132,19 @@ export const feedApi = {
 
   /**
    * Get Friends feed (mutual follows only)
+   * Note: Falls back to Following feed since /videos/friends doesn't exist yet
    */
   async getFriendsFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/videos/friends', {
-      params: { page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      // Try the friends endpoint first
+      const { data } = await apiClient.get<FeedResponse>('/videos/friends', {
+        params: { page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch {
+      // Fall back to following feed if friends endpoint doesn't exist
+      return this.getFollowingFeed(page, limit);
+    }
   },
 
   /**
