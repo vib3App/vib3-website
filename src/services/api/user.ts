@@ -145,12 +145,17 @@ export const userApi = {
    * Get user's followed user IDs
    */
   async getFollowedUsers(): Promise<string[]> {
-    const { data } = await apiClient.get<string[] | { followedUserIds: string[] }>('/user/followed-users');
-    // Backend returns array directly, handle both formats for compatibility
-    if (Array.isArray(data)) {
-      return data;
+    try {
+      const { data } = await apiClient.get<string[] | { followedUserIds: string[] }>('/user/followed-users');
+      // Backend returns array directly, handle both formats for compatibility
+      if (Array.isArray(data)) {
+        return data;
+      }
+      return data.followedUserIds || [];
+    } catch (error) {
+      console.error('Failed to get followed users:', error);
+      return [];
     }
-    return data.followedUserIds || [];
   },
 
   /**

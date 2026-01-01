@@ -9,27 +9,32 @@ import { useSocialStore } from '@/stores/socialStore';
  * This should be wrapped around the app layout
  */
 export function SocialProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading: authLoading } = useAuthStore();
-  const { loadFollowedUsers, reset } = useSocialStore();
+  const { isAuthenticated, user } = useAuthStore();
   const hasLoadedRef = useRef(false);
+  const hasResetRef = useRef(false);
 
   useEffect(() => {
-    // Wait for auth to finish loading
-    if (authLoading) return;
+    // Get store actions directly to avoid re-render on store changes
+    const { loadFollowedUsers, reset } = useSocialStore.getState();
 
-    if (isAuthenticated) {
-      // Force refresh on first load after auth
+    // Only proceed if we have an actual token (not just persisted isAuthenticated)
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+
+    if (isAuthenticated && user?.id && token) {
+      // Load social data only once per session
       if (!hasLoadedRef.current) {
         console.log('[SocialProvider] Auth complete, loading social data...');
         hasLoadedRef.current = true;
-        loadFollowedUsers(true); // Force refresh
+        hasResetRef.current = false;
+        loadFollowedUsers(true);
       }
-    } else {
-      // Clear social data when logged out
+    } else if (!isAuthenticated && !hasResetRef.current) {
+      // Clear social data when logged out (only once)
       hasLoadedRef.current = false;
+      hasResetRef.current = true;
       reset();
     }
-  }, [isAuthenticated, authLoading, loadFollowedUsers, reset]);
+  }, [isAuthenticated, user?.id]);
 
   return <>{children}</>;
 }
