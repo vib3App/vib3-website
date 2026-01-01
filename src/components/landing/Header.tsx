@@ -6,10 +6,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { SoundToggle } from '@/components/audio';
 import { ThemeToggle } from '@/components/personalization';
 import { useAuthStore } from '@/stores/authStore';
+import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,17 +21,8 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="relative w-12 h-12 group-hover:scale-105 transition-transform">
-            <Image
-              src="/vib3-logo.png"
-              alt="VIB3"
-              fill
-              className="object-contain"
-              style={{
-                filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))'
-              }}
-              priority
-            />
+          <div className="relative group-hover:scale-105 transition-transform">
+            <AnimatedLogo size={48} />
           </div>
         </Link>
 
