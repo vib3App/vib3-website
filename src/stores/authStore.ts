@@ -51,11 +51,12 @@ function migrateUser(user: AuthUser | null): AuthUser | null {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set, get) => ({
-      // State
+    (set) => ({
+      // State - Start with isLoading: false to prevent flash/loops
+      // The persist middleware will restore any saved auth state
       user: null,
       isAuthenticated: false,
-      isLoading: true,
+      isLoading: false,
 
       // Actions
       setUser: (user) => {
@@ -82,16 +83,13 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-      // Migrate stored user data on rehydration
+      // Migrate stored user data on rehydration - don't set isLoading
       onRehydrateStorage: () => (state) => {
         if (state?.user && !state.user.id) {
           const migratedUser = migrateUser(state.user);
           if (migratedUser?.id) {
             state.user = migratedUser;
           }
-        }
-        if (state) {
-          state.isLoading = false;
         }
       },
     }

@@ -87,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshTimeoutRef.current = setTimeout(refreshToken, refreshTime);
   }, [getTokenExpiry, refreshToken]);
 
-  // Initialize auth state on mount
+  // Initialize auth state on mount - only if there's a stored token
   useEffect(() => {
     // Prevent duplicate initialization
     if (isInitializedRef.current) return;
@@ -96,8 +96,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const initializeAuth = async () => {
       const token = localStorage.getItem('auth_token');
 
+      // No token = not authenticated, nothing to do
+      // Don't call setLoading - store already has isLoading: false
       if (!token) {
-        setLoading(false);
         return;
       }
 
@@ -105,8 +106,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const expiry = getTokenExpiry(token);
       if (expiry && expiry < Date.now()) {
         // Token expired, try to refresh
-        await refreshToken();
-        setLoading(false);
+        const refreshTokenValue = localStorage.getItem('refresh_token');
+        if (refreshTokenValue) {
+          await refreshToken();
+        } else {
+          // No refresh token, clear the expired token
+          localStorage.removeItem('auth_token');
+        }
         return;
       }
 
@@ -121,14 +127,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
           scheduleTokenRefresh(token);
         } else {
-          logout();
+          // API returned null, clear tokens
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
         }
       } catch {
-        // If verification fails, try refresh
-        await refreshToken();
+        // Verification failed (401/network error) - clear tokens silently
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
       }
-
-      setLoading(false);
     };
 
     initializeAuth();
