@@ -1,6 +1,10 @@
 /**
  * Feed Category Store
  * Manages feed categories state using Zustand
+ *
+ * IMPORTANT: This store is pre-initialized with defaults.
+ * Components should NOT call initialize() - just use the store directly.
+ * Only call loadCategories() when user is authenticated and you want fresh data.
  */
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -8,16 +12,17 @@ import { feedCategoryApi } from '@/services/api';
 import type { FeedCategory, FeedCategorySettings } from '@/types';
 import { getDefaultCategories, MAX_CUSTOM_CATEGORIES, isAssignableCategory } from '@/types';
 
+// Get defaults once at module load
+const DEFAULT_CATEGORIES = getDefaultCategories();
+
 interface FeedCategoryState {
   categories: FeedCategory[];
   selectedCategory: FeedCategory | null;
   isLoading: boolean;
-  isInitialized: boolean;
   error: string | null;
   categoryCounts: Record<string, number>;
 
-  // Actions
-  initialize: () => Promise<void>;
+  // Actions - NO initialize needed, store works with defaults
   loadCategories: (forceRefresh?: boolean) => Promise<void>;
   selectCategory: (category: FeedCategory) => void;
   createCategory: (name: string, icon?: string, color?: string) => Promise<FeedCategory | null>;
@@ -42,59 +47,12 @@ interface FeedCategoryState {
 export const useFeedCategoryStore = create<FeedCategoryState>()(
   persist(
     (set, get) => ({
-      categories: getDefaultCategories(),
-      selectedCategory: getDefaultCategories()[0], // Default to "For You"
+      // Pre-initialized with defaults - no initialization needed!
+      categories: DEFAULT_CATEGORIES,
+      selectedCategory: DEFAULT_CATEGORIES[0], // Default to "For You"
       isLoading: false,
-      isInitialized: false,
       error: null,
       categoryCounts: {},
-
-      initialize: async () => {
-        // Prevent duplicate initialization - use synchronous check
-        const state = get();
-        if (state.isInitialized || state.isLoading) return;
-
-        // Set initialized FIRST to prevent race conditions
-        // This ensures no other initialize() calls proceed
-        set({ isInitialized: true, isLoading: true });
-
-        const { categories, selectedCategory } = state;
-        // Only set default selection if not already set
-        if (!selectedCategory && categories.length > 0) {
-          set({ selectedCategory: categories[0] });
-        }
-
-        // Load categories (already marked as loading)
-        try {
-          const newCategories = await feedCategoryApi.getCategories(false);
-
-          let counts: Record<string, number> = {};
-          try {
-            const stats = await feedCategoryApi.getCategoryStats();
-            if (stats?.categories) {
-              stats.categories.forEach(c => {
-                counts[c.categoryId] = c.userCount;
-              });
-            }
-          } catch {
-            // Stats failed (likely auth issue) - continue with empty counts
-          }
-
-          const currentSelected = get().selectedCategory;
-          const selectedStillExists = currentSelected && newCategories.find(c => c.id === currentSelected.id);
-
-          set({
-            categories: newCategories,
-            categoryCounts: counts,
-            isLoading: false,
-            // Only update selected if it was deleted
-            ...(selectedStillExists ? {} : { selectedCategory: newCategories[0] }),
-          });
-        } catch (error) {
-          console.error('Failed to load categories:', error);
-          set({ error: 'Failed to load categories', isLoading: false });
-        }
-      },
 
       loadCategories: async (forceRefresh = false) => {
         // Prevent concurrent loads

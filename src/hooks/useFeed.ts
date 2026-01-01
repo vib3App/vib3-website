@@ -11,7 +11,8 @@ import type { FeedTab, VibeType } from '@/components/feed/FeedHeader';
 
 export function useFeed() {
   const searchParams = useSearchParams();
-  const { selectedCategory, isInitialized: categoryStoreReady } = useFeedCategoryStore();
+  // Store is pre-initialized with defaults - always ready to use
+  const { selectedCategory } = useFeedCategoryStore();
   const { user } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
@@ -105,16 +106,11 @@ export function useFeed() {
 
   // Reload when category, tab, or vibe changes
   useEffect(() => {
-    // Wait for category store to be initialized before loading
-    if (!categoryStoreReady) return;
-
-    // Track previous category to detect actual changes
-    const isInitialLoad = !hasInitialLoadRef.current;
+    // Store is pre-initialized - safe to load immediately
     hasInitialLoadRef.current = true;
-
     loadVideos(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, selectedVibe, selectedCategory?.id, categoryStoreReady]);
+  }, [activeTab, selectedVibe, selectedCategory?.id]);
 
   // Preload next videos when current index changes
   useEffect(() => {

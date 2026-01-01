@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import type { FeedCategory } from '@/types';
+// Note: useRef and useEffect are still used for click-outside handling
 
 interface CategoryDropdownProps {
   onCategoryChange?: (category: FeedCategory) => void;
@@ -12,24 +13,15 @@ interface CategoryDropdownProps {
 export function CategoryDropdown({ onCategoryChange }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const hasInitializedRef = useRef(false);
 
+  // Store is pre-initialized with defaults - no initialization needed!
   const {
     categories,
     selectedCategory,
     selectCategory,
     categoryCounts,
     isLoading,
-    initialize,
   } = useFeedCategoryStore();
-
-  // Initialize categories on mount - use ref to guarantee once-only
-  useEffect(() => {
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-    initialize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {

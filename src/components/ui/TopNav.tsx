@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -145,22 +145,13 @@ function FeedCategoryDropdown({ isOpen, onToggle, onClose }: {
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const hasInitializedRef = useRef(false);
+  // Store is pre-initialized with defaults - no initialization call needed!
   const {
     categories,
     selectedCategory,
     selectCategory,
     categoryCounts,
-    initialize,
   } = useFeedCategoryStore();
-
-  // Initialize categories on mount - use ref to guarantee once-only
-  useEffect(() => {
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-    initialize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const isActive = pathname === '/feed' || pathname.startsWith('/feed/');
 
