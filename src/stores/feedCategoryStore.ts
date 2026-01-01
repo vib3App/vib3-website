@@ -50,17 +50,50 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
       categoryCounts: {},
 
       initialize: async () => {
-        // Prevent duplicate initialization
+        // Prevent duplicate initialization - use synchronous check
         const state = get();
         if (state.isInitialized || state.isLoading) return;
 
-        const { loadCategories, categories, selectedCategory } = state;
+        // Set initialized FIRST to prevent race conditions
+        // This ensures no other initialize() calls proceed
+        set({ isInitialized: true, isLoading: true });
+
+        const { categories, selectedCategory } = state;
         // Only set default selection if not already set
         if (!selectedCategory && categories.length > 0) {
           set({ selectedCategory: categories[0] });
         }
-        set({ isInitialized: true });
-        await loadCategories();
+
+        // Load categories (already marked as loading)
+        try {
+          const newCategories = await feedCategoryApi.getCategories(false);
+
+          let counts: Record<string, number> = {};
+          try {
+            const stats = await feedCategoryApi.getCategoryStats();
+            if (stats?.categories) {
+              stats.categories.forEach(c => {
+                counts[c.categoryId] = c.userCount;
+              });
+            }
+          } catch {
+            // Stats failed (likely auth issue) - continue with empty counts
+          }
+
+          const currentSelected = get().selectedCategory;
+          const selectedStillExists = currentSelected && newCategories.find(c => c.id === currentSelected.id);
+
+          set({
+            categories: newCategories,
+            categoryCounts: counts,
+            isLoading: false,
+            // Only update selected if it was deleted
+            ...(selectedStillExists ? {} : { selectedCategory: newCategories[0] }),
+          });
+        } catch (error) {
+          console.error('Failed to load categories:', error);
+          set({ error: 'Failed to load categories', isLoading: false });
+        }
       },
 
       loadCategories: async (forceRefresh = false) => {
@@ -85,13 +118,18 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
             // Stats failed (likely auth issue) - continue with empty counts
           }
 
-          set({ categories, categoryCounts: counts, isLoading: false });
+          // Check if selected category still exists before updating state
+          const currentSelected = get().selectedCategory;
+          const selectedStillExists = currentSelected && categories.find(c => c.id === currentSelected.id);
 
-          // Update selected category if it was deleted
-          const { selectedCategory } = get();
-          if (selectedCategory && !categories.find(c => c.id === selectedCategory.id)) {
-            set({ selectedCategory: categories[0] });
-          }
+          // Update all state in one call to minimize re-renders
+          set({
+            categories,
+            categoryCounts: counts,
+            isLoading: false,
+            // Only update selected if it was deleted
+            ...(selectedStillExists ? {} : { selectedCategory: categories[0] }),
+          });
         } catch (error) {
           console.error('Failed to load categories:', error);
           set({ error: 'Failed to load categories', isLoading: false });
