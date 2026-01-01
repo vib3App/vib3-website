@@ -12,6 +12,7 @@ interface CategoryDropdownProps {
 export function CategoryDropdown({ onCategoryChange }: CategoryDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hasInitializedRef = useRef(false);
 
   const {
     categories,
@@ -22,8 +23,10 @@ export function CategoryDropdown({ onCategoryChange }: CategoryDropdownProps) {
     initialize,
   } = useFeedCategoryStore();
 
-  // Initialize categories on mount - run once only
+  // Initialize categories on mount - use ref to guarantee once-only
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

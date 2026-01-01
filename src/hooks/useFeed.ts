@@ -28,26 +28,29 @@ export function useFeed() {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const preloadedVideos = useRef<Set<string>>(new Set());
   const watchStartTime = useRef<number>(0);
+  const hasInitialLoadRef = useRef(false);
+  const isLoadingRef = useRef(false);
 
-  // Preload video function
+  // Preload video function - uses fetch instead of link preload for better compatibility
   const preloadVideo = useCallback((url: string) => {
     if (preloadedVideos.current.has(url)) return;
     preloadedVideos.current.add(url);
 
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'video';
-    link.href = url;
-    document.head.appendChild(link);
-
-    const video = document.createElement('video');
-    video.preload = 'metadata';
-    video.src = url;
-    video.muted = true;
+    // Use fetch with range request to preload just the start of the video
+    fetch(url, {
+      method: 'GET',
+      headers: { Range: 'bytes=0-100000' },
+    }).catch(() => {
+      // Silently ignore preload failures
+    });
   }, []);
 
   // Load videos based on selected category
   const loadVideos = useCallback(async (reset = false) => {
+    // Prevent concurrent loads
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
+
     if (reset) {
       setIsLoading(true);
     } else {
@@ -96,11 +99,16 @@ export function useFeed() {
     } finally {
       setIsLoading(false);
       setLoadingMore(false);
+      isLoadingRef.current = false;
     }
   }, [activeTab, page, selectedVibe, selectedCategory, user?.id, preloadVideo]);
 
   // Reload when category, tab, or vibe changes
   useEffect(() => {
+    // Skip if this is initial mount - wait for stable state
+    if (!hasInitialLoadRef.current) {
+      hasInitialLoadRef.current = true;
+    }
     loadVideos(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedVibe, selectedCategory?.id]);
