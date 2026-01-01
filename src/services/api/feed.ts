@@ -54,80 +54,120 @@ export const feedApi = {
    * Get For You feed (personalized)
    */
   async getForYouFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/videos', {
-      params: { page, limit, feed: 'foryou' },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/videos', {
+        params: { page, limit, feed: 'foryou' },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get ForYou feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Get Following feed
    */
   async getFollowingFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/videos', {
-      params: { page, limit, feed: 'following' },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/videos', {
+        params: { page, limit, feed: 'following' },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get Following feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Get Trending feed
    */
   async getTrendingFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/trending', {
-      params: { page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/trending', {
+        params: { page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get Trending feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Get Discover feed
    */
   async getDiscoverFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/videos', {
-      params: { page, limit, feed: 'discover' },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/videos', {
+        params: { page, limit, feed: 'discover' },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get Discover feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Get feed by vibe (mood)
    */
   async getVibesFeed(vibe: VibeType, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/feed/vibes', {
-      params: { vibe, page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/feed/vibes', {
+        params: { vibe, page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get Vibes feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Get hashtag feed
    */
   async getHashtagFeed(hashtag: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>(`/feed/hashtag/${encodeURIComponent(hashtag)}`, {
-      params: { page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>(`/feed/hashtag/${encodeURIComponent(hashtag)}`, {
+        params: { page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get hashtag feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Get user's videos
    */
   async getUserVideos(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>(`/users/${userId}/videos`, {
-      params: { page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>(`/users/${userId}/videos`, {
+        params: { page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get user videos:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
    * Search videos
    */
   async searchVideos(query: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>('/search/videos', {
-      params: { q: query, page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/search/videos', {
+        params: { q: query, page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to search videos:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
@@ -151,10 +191,16 @@ export const feedApi = {
    * Get user's own videos (My Videos / Self feed)
    */
   async getSelfFeed(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>(`/videos/user/${userId}`, {
-      params: { page, limit },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>(`/videos/user/${userId}`, {
+        params: { page, limit },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get self feed:', error);
+      // Return empty result on error to prevent re-render loops
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
@@ -167,10 +213,15 @@ export const feedApi = {
     limit = 10,
     feedOrder: FeedOrder = 'chronological'
   ): Promise<PaginatedResponse<Video>> {
-    const { data } = await apiClient.get<FeedResponse>(`/videos/category/${categoryId}`, {
-      params: { page, limit, order: feedOrder },
-    });
-    return transformFeedResponse(data);
+    try {
+      const { data } = await apiClient.get<FeedResponse>(`/videos/category/${categoryId}`, {
+        params: { page, limit, order: feedOrder },
+      });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get category feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   /**
@@ -225,11 +276,13 @@ export const feedApi = {
 };
 
 function transformFeedResponse(data: FeedResponse): PaginatedResponse<Video> {
+  // Defensive check - ensure videos array exists
+  const videos = data?.videos || [];
   return {
-    items: data.videos.map(transformVideo),
-    page: data.page,
-    hasMore: data.hasMore,
-    total: data.total,
+    items: videos.map(transformVideo),
+    page: data?.page || 1,
+    hasMore: data?.hasMore ?? false,
+    total: data?.total,
   };
 }
 
