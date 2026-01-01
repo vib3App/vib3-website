@@ -3,35 +3,49 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import { authApi } from '@/services/api';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuthStore();
-  const [debugInfo, setDebugInfo] = useState<string>('Loading...');
+  const { user, isAuthenticated, isLoading, setUser } = useAuthStore();
+  const [status, setStatus] = useState<string>('Loading...');
 
   useEffect(() => {
-    // Debug logging
-    console.log('Profile redirect - Auth state:', { isAuthenticated, isLoading, user });
-    setDebugInfo(`Auth: ${isAuthenticated}, Loading: ${isLoading}, User ID: ${user?.id || 'none'}`);
-
     if (isLoading) return;
 
     if (!isAuthenticated || !user) {
-      console.log('Not authenticated, redirecting to login');
-      router.replace('/login');
-    } else if (user.id) {
-      console.log('Redirecting to profile:', user.id);
-      router.replace(`/profile/${user.id}`);
-    } else {
-      console.error('User exists but no ID:', user);
-      setDebugInfo(`Error: User exists but no ID. User object: ${JSON.stringify(user)}`);
+      router.replace('/login?redirect=/profile');
+      return;
     }
-  }, [isAuthenticated, isLoading, user, router]);
+
+    // If user has a valid ID, redirect to their profile
+    if (user.id && user.id.length === 24) {
+      router.replace(`/profile/${user.id}`);
+      return;
+    }
+
+    // If user exists but no valid ID, fetch fresh profile from API
+    setStatus('Refreshing profile...');
+    authApi.getMe().then((freshUser) => {
+      if (freshUser?.id) {
+        // Update the store with fresh user data
+        setUser(freshUser);
+        router.replace(`/profile/${freshUser.id}`);
+      } else {
+        setStatus('Could not load profile. Please log in again.');
+        // Clear invalid auth state
+        setTimeout(() => router.replace('/login?redirect=/profile'), 2000);
+      }
+    }).catch(() => {
+      setStatus('Could not load profile. Please log in again.');
+      setTimeout(() => router.replace('/login?redirect=/profile'), 2000);
+    });
+  }, [isAuthenticated, isLoading, user, router, setUser]);
 
   return (
     <div className="min-h-screen aurora-bg flex flex-col items-center justify-center">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4" />
-      <div className="text-white/30 text-xs">{debugInfo}</div>
+      <div className="text-white/50 text-sm">{status}</div>
     </div>
   );
 }

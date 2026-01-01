@@ -59,11 +59,45 @@ export function useProfile() {
     setError(null);
 
     try {
-      const profileData = await userApi.getProfile(userId);
+      let profileData: UserProfile | null = null;
+
+      // Try to get the profile
+      if (isOwnProfile) {
+        // Use getMyProfile for own profile (more reliable, uses auth token)
+        profileData = await userApi.getMyProfile();
+      } else {
+        try {
+          profileData = await userApi.getProfile(userId);
+        } catch (profileErr: unknown) {
+          // If fetching by ID fails and we're authenticated, try getMyProfile as fallback
+          // This handles case where user.id in store is outdated
+          const err = profileErr as { response?: { status: number } };
+          if (isAuthenticated && (err.response?.status === 400 || err.response?.status === 404)) {
+            try {
+              const myProfile = await userApi.getMyProfile();
+              // Check if this is actually the same user (by matching the URL userId)
+              if (myProfile._id === userId) {
+                profileData = myProfile;
+              } else {
+                throw profileErr; // Not our profile, rethrow original error
+              }
+            } catch {
+              throw profileErr; // Fallback failed, rethrow original error
+            }
+          } else {
+            throw profileErr;
+          }
+        }
+      }
+
+      if (!profileData) {
+        throw new Error('Could not load profile');
+      }
+
       setProfile(profileData);
 
       try {
-        const videosData = await userApi.getUserVideos(userId);
+        const videosData = await userApi.getUserVideos(profileData._id || userId);
         setVideos(videosData.videos || []);
       } catch {
         setVideos([]);
@@ -75,17 +109,20 @@ export function useProfile() {
       }
     } catch (err: unknown) {
       const error = err as { message?: string; response?: { status: number } };
+      console.error('Profile load error:', error);
       if (error.response?.status === 404) {
         setError('User not found');
       } else if (error.response?.status === 400) {
         setError('Invalid user ID');
+      } else if (error.response?.status === 401) {
+        setError('Please log in to view this profile');
       } else {
         setError(error.message || 'Failed to load profile');
       }
     } finally {
       setIsLoading(false);
     }
-  }, [userId, isAuthenticated, socialLoaded, loadFollowedUsers]);
+  }, [userId, isOwnProfile, isAuthenticated, socialLoaded, loadFollowedUsers]);
 
   useEffect(() => {
     if (userId) loadProfile();
