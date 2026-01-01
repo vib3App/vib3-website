@@ -148,13 +148,21 @@ export const authApi = {
       const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 
       // Handle both nested user object and top-level fields
-      const userId = data.user?._id || data._id || '';
+      // MongoDB _id can be string or { $oid: string } depending on serialization
+      const rawId = data.user?._id || data._id;
+      const userId = typeof rawId === 'object' && rawId !== null && '$oid' in rawId
+        ? (rawId as { $oid: string }).$oid
+        : String(rawId || '');
+
       const username = data.user?.username || data.username || '';
       const email = data.user?.email || data.email || '';
       const profilePicture = data.user?.profilePicture || data.profilePicture;
       const isVerified = data.user?.isVerified || data.isVerified || false;
-      const isAdmin = data.user?.isAdmin || data.isAdmin || false;
       const role = data.user?.role || data.role;
+      // Check both isAdmin flag and role === 'admin' or 'owner'
+      const isAdmin = data.user?.isAdmin || data.isAdmin || role === 'admin' || role === 'owner' || false;
+
+      console.log('getMe - userId:', userId, 'role:', role, 'isAdmin:', isAdmin);
 
       return {
         id: userId,
@@ -180,15 +188,21 @@ function transformAuthResponse(data: AuthResponse): AuthUser {
   }
 
   // Handle both nested user object and top-level fields
-  const userId = data.user?._id || data._id || '';
+  // MongoDB _id can be string or { $oid: string } depending on serialization
+  const rawId = data.user?._id || data._id;
+  const userId = typeof rawId === 'object' && rawId !== null && '$oid' in rawId
+    ? (rawId as { $oid: string }).$oid
+    : String(rawId || '');
+
   const username = data.user?.username || data.username || '';
   const email = data.user?.email || data.email || '';
   const profilePicture = data.user?.profilePicture || data.profilePicture;
   const isVerified = data.user?.isVerified || data.isVerified || false;
-  const isAdmin = data.user?.isAdmin || data.isAdmin || false;
   const role = data.user?.role || data.role;
+  // Check both isAdmin flag and role === 'admin' or 'owner'
+  const isAdmin = data.user?.isAdmin || data.isAdmin || role === 'admin' || role === 'owner' || false;
 
-  console.log('Auth transform - extracted userId:', userId, 'isAdmin:', isAdmin);
+  console.log('Auth transform - userId:', userId, 'role:', role, 'isAdmin:', isAdmin);
 
   return {
     id: userId,

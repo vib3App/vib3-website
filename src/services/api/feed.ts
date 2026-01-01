@@ -112,17 +112,21 @@ export const feedApi = {
 
   /**
    * Get feed by vibe (mood)
+   * Maps vibe types to hashtag searches since backend doesn't have a dedicated vibes endpoint
    */
   async getVibesFeed(vibe: VibeType, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    try {
-      const { data } = await apiClient.get<FeedResponse>('/feed/vibes', {
-        params: { vibe, page, limit },
-      });
-      return transformFeedResponse(data);
-    } catch (error) {
-      console.error('Failed to get Vibes feed:', error);
-      return { items: [], page, hasMore: false };
-    }
+    // Map vibes to relevant hashtags
+    const vibeHashtags: Record<string, string> = {
+      'Energetic': 'hype',
+      'Chill': 'chill',
+      'Creative': 'creative',
+      'Social': 'friends',
+      'Romantic': 'love',
+      'Funny': 'funny',
+      'Inspirational': 'motivation',
+    };
+    const hashtag = vibeHashtags[vibe] || vibe.toLowerCase();
+    return this.getHashtagFeed(hashtag, page, limit);
   },
 
   /**
@@ -130,7 +134,8 @@ export const feedApi = {
    */
   async getHashtagFeed(hashtag: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
     try {
-      const { data } = await apiClient.get<FeedResponse>(`/feed/hashtag/${encodeURIComponent(hashtag)}`, {
+      // Backend uses /videos/hashtag/:hashtag
+      const { data } = await apiClient.get<FeedResponse>(`/videos/hashtag/${encodeURIComponent(hashtag)}`, {
         params: { page, limit },
       });
       return transformFeedResponse(data);
