@@ -41,7 +41,7 @@ export function useCreator(): UseCreatorReturn {
   const [coinBalance, setCoinBalance] = useState<CoinBalance | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Refs to prevent duplicate fetches
+  // Refs to prevent duplicate fetches (v2)
   const hasFetchedRef = useRef(false);
   const lastPeriodRef = useRef(period);
   const isMountedRef = useRef(true);
