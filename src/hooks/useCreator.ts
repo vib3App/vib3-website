@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { creatorApi } from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 import type {
   CreatorAnalytics,
   AnalyticsTrend,
@@ -27,6 +28,10 @@ interface UseCreatorReturn {
 }
 
 export function useCreator(): UseCreatorReturn {
+  // Use selectors to prevent re-render loops
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
+
   const [activeTab, setActiveTab] = useState<CreatorTab>('overview');
   const [period, setPeriod] = useState<Period>('30d');
   const [analytics, setAnalytics] = useState<CreatorAnalytics | null>(null);
@@ -36,10 +41,36 @@ export function useCreator(): UseCreatorReturn {
   const [coinBalance, setCoinBalance] = useState<CoinBalance | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Refs to prevent duplicate fetches
+  const hasFetchedRef = useRef(false);
+  const lastPeriodRef = useRef(period);
+  const isMountedRef = useRef(true);
+
   useEffect(() => {
+    isMountedRef.current = true;
+
+    // Wait for auth verification
+    if (!isAuthVerified) {
+      return;
+    }
+
+    // Don't fetch if not authenticated
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    // Only fetch once per period change
+    if (hasFetchedRef.current && lastPeriodRef.current === period) {
+      return;
+    }
+    hasFetchedRef.current = true;
+    lastPeriodRef.current = period;
+
     const fetchData = async () => {
       try {
-        const [analyticsData, trendsData, videosData, supportersData, balanceData] = await Promise.all([
+        // These endpoints may not exist - handle gracefully
+        const results = await Promise.allSettled([
           creatorApi.getAnalytics(period),
           creatorApi.getAnalyticsTrends(period),
           creatorApi.getMyVideos(1, 10),
@@ -47,20 +78,29 @@ export function useCreator(): UseCreatorReturn {
           creatorApi.getCoinBalance(),
         ]);
 
-        setAnalytics(analyticsData);
-        setTrends(trendsData);
-        setVideos(videosData.videos);
-        setTopSupporters(supportersData);
-        setCoinBalance(balanceData);
+        if (!isMountedRef.current) return;
+
+        // Only set state for successful results
+        if (results[0].status === 'fulfilled') setAnalytics(results[0].value);
+        if (results[1].status === 'fulfilled') setTrends(results[1].value);
+        if (results[2].status === 'fulfilled') setVideos(results[2].value.videos);
+        if (results[3].status === 'fulfilled') setTopSupporters(results[3].value);
+        if (results[4].status === 'fulfilled') setCoinBalance(results[4].value);
       } catch (err) {
         console.error('Failed to fetch creator data:', err);
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [period]);
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [period, isAuthenticated, isAuthVerified]);
 
   return {
     activeTab,
