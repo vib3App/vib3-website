@@ -12,7 +12,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { user, setUser, logout, setLoading, isAuthenticated } = useAuthStore();
+  const { user, setUser, logout, setLoading, isAuthenticated, setAuthVerified } = useAuthStore();
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
   const isInitializedRef = useRef(false);
@@ -96,9 +96,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const initializeAuth = async () => {
       const token = localStorage.getItem('auth_token');
 
-      // No token = not authenticated, nothing to do
-      // Don't call setLoading - store already has isLoading: false
+      // No token = not authenticated
+      // If Zustand has stale isAuthenticated, clear it
       if (!token) {
+        if (isAuthenticated) {
+          logout(); // This sets isAuthVerified: true
+        } else {
+          setAuthVerified(true); // Mark as verified (no auth)
+        }
         return;
       }
 
@@ -110,8 +115,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (refreshTokenValue) {
           await refreshToken();
         } else {
-          // No refresh token, clear the expired token
+          // No refresh token, clear everything and logout
           localStorage.removeItem('auth_token');
+          logout();
         }
         return;
       }
@@ -127,16 +133,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
           scheduleTokenRefresh(token);
         } else {
-          // API returned null, clear tokens
+          // API returned null - logout to clear stale state
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
+          logout();
         }
       } catch {
-        // Verification failed (401/network error) - clear tokens silently
+        // Verification failed (401/network error) - logout to clear stale state
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
+        logout();
       }
     };
+
+    // Listen for logout event from API client (401 responses)
+    const handleLogoutEvent = () => {
+      console.log('[AuthProvider] Received logout event');
+      logout();
+    };
+    window.addEventListener('auth:logout', handleLogoutEvent);
 
     initializeAuth();
 
@@ -144,6 +159,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (refreshTimeoutRef.current) {
         clearTimeout(refreshTimeoutRef.current);
       }
+      window.removeEventListener('auth:logout', handleLogoutEvent);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

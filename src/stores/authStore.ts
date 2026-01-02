@@ -10,12 +10,14 @@ interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAuthVerified: boolean; // True after AuthProvider has verified token
 }
 
 interface AuthActions {
   setUser: (user: AuthUser) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
+  setAuthVerified: (verified: boolean) => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -57,6 +59,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      isAuthVerified: false, // Not verified until AuthProvider checks
 
       // Actions
       setUser: (user) => {
@@ -65,17 +68,20 @@ export const useAuthStore = create<AuthStore>()(
         }
         // Ensure user has ID before storing
         const migratedUser = migrateUser(user) || user;
-        set({ user: migratedUser, isAuthenticated: true, isLoading: false });
+        set({ user: migratedUser, isAuthenticated: true, isLoading: false, isAuthVerified: true });
       },
 
       logout: () => {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
         }
-        set({ user: null, isAuthenticated: false, isLoading: false });
+        set({ user: null, isAuthenticated: false, isLoading: false, isAuthVerified: true });
       },
 
       setLoading: (isLoading) => set({ isLoading }),
+
+      setAuthVerified: (isAuthVerified) => set({ isAuthVerified }),
     }),
     {
       name: 'vib3-auth',

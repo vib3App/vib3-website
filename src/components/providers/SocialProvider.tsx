@@ -9,21 +9,24 @@ import { useSocialStore } from '@/stores/socialStore';
  * This should be wrapped around the app layout
  */
 export function SocialProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isAuthVerified } = useAuthStore();
   const hasLoadedRef = useRef(false);
   const hasResetRef = useRef(false);
 
   useEffect(() => {
+    // Wait for AuthProvider to verify the token before doing anything
+    // This prevents API calls with stale/expired tokens
+    if (!isAuthVerified) {
+      return;
+    }
+
     // Get store actions directly to avoid re-render on store changes
     const { loadFollowedUsers, reset } = useSocialStore.getState();
 
-    // Only proceed if we have an actual token (not just persisted isAuthenticated)
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-
-    if (isAuthenticated && user?.id && token) {
+    if (isAuthenticated && user?.id) {
       // Load social data only once per session
       if (!hasLoadedRef.current) {
-        console.log('[SocialProvider] Auth complete, loading social data...');
+        console.log('[SocialProvider] Auth verified, loading social data...');
         hasLoadedRef.current = true;
         hasResetRef.current = false;
         loadFollowedUsers(true);
@@ -34,7 +37,7 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
       hasResetRef.current = true;
       reset();
     }
-  }, [isAuthenticated, user?.id]);
+  }, [isAuthenticated, user?.id, isAuthVerified]);
 
   return <>{children}</>;
 }
