@@ -7,7 +7,12 @@ import { authApi } from '@/services/api';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isAuthenticated, isAuthVerified, setUser } = useAuthStore();
+  // Only subscribe to specific primitives to avoid re-render loops
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
+  const userId = useAuthStore((s) => s.user?.id);
+  const setUser = useAuthStore((s) => s.setUser);
+
   const [status, setStatus] = useState<string>('Loading...');
   const hasRedirectedRef = useRef(false);
   const isFetchingRef = useRef(false);
@@ -19,16 +24,16 @@ export default function ProfilePage() {
     // Prevent duplicate redirects
     if (hasRedirectedRef.current) return;
 
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated) {
       hasRedirectedRef.current = true;
       router.replace('/login?redirect=/profile');
       return;
     }
 
     // If user has a valid ID, redirect to their profile
-    if (user.id && user.id.length === 24) {
+    if (userId && userId.length === 24) {
       hasRedirectedRef.current = true;
-      router.replace(`/profile/${user.id}`);
+      router.replace(`/profile/${userId}`);
       return;
     }
 
@@ -65,7 +70,7 @@ export default function ProfilePage() {
         }
       }, 2000);
     });
-  }, [isAuthenticated, isAuthVerified, user, router, setUser]);
+  }, [isAuthenticated, isAuthVerified, userId, router, setUser]);
 
   return (
     <div className="min-h-screen aurora-bg flex flex-col items-center justify-center">

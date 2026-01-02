@@ -15,7 +15,14 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { user, setUser, logout, setLoading, isAuthenticated, setAuthVerified } = useAuthStore();
+  // Use selectors to avoid re-render loops - only subscribe to what we need
+  const user = useAuthStore((s) => s.user);
+  const userToken = useAuthStore((s) => s.user?.token);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setUser = useAuthStore((s) => s.setUser);
+  const logout = useAuthStore((s) => s.logout);
+  const setAuthVerified = useAuthStore((s) => s.setAuthVerified);
+
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
   const isInitializedRef = useRef(false);
@@ -198,8 +205,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Schedule refresh when user changes
   useEffect(() => {
-    if (isAuthenticated && user?.token) {
-      scheduleTokenRefresh(user.token);
+    if (isAuthenticated && userToken) {
+      scheduleTokenRefresh(userToken);
     }
 
     return () => {
@@ -208,7 +215,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user?.token]);
+  }, [isAuthenticated, userToken]);
 
   // Listen for storage events (for multi-tab sync)
   useEffect(() => {
@@ -217,7 +224,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (!e.newValue) {
           // Token removed in another tab
           logout();
-        } else if (e.newValue !== user?.token) {
+        } else if (e.newValue !== userToken) {
           // Token changed in another tab - reload to get new state
           window.location.reload();
         }
@@ -226,7 +233,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [user?.token, logout]);
+  }, [userToken, logout]);
 
   return <>{children}</>;
 }

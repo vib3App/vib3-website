@@ -9,7 +9,10 @@ import { useSocialStore } from '@/stores/socialStore';
  * This should be wrapped around the app layout
  */
 export function SocialProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user, isAuthVerified } = useAuthStore();
+  // Use selectors to avoid re-render loops
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const userId = useAuthStore((s) => s.user?.id);
+  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
   const hasLoadedRef = useRef(false);
   const hasResetRef = useRef(false);
 
@@ -23,7 +26,7 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
     // Get store actions directly to avoid re-render on store changes
     const { loadFollowedUsers, reset } = useSocialStore.getState();
 
-    if (isAuthenticated && user?.id) {
+    if (isAuthenticated && userId) {
       // Load social data only once per session
       if (!hasLoadedRef.current) {
         console.log('[SocialProvider] Auth verified, loading social data...');
@@ -37,7 +40,7 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
       hasResetRef.current = true;
       reset();
     }
-  }, [isAuthenticated, user?.id, isAuthVerified]);
+  }, [isAuthenticated, userId, isAuthVerified]);
 
   return <>{children}</>;
 }
