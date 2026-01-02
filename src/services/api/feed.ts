@@ -194,12 +194,15 @@ export const feedApi = {
 
   /**
    * Get user's own videos (My Videos / Self feed)
+   * Uses /user/videos endpoint which is authenticated
    */
-  async getSelfFeed(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getSelfFeed(_userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
     try {
-      const { data } = await apiClient.get<FeedResponse>(`/videos/user/${userId}`, {
+      // Use /user/videos which is the authenticated endpoint for current user's videos
+      const { data } = await apiClient.get<FeedResponse>('/user/videos', {
         params: { page, limit },
       });
+      console.log('[feedApi.getSelfFeed] Fetched videos:', data.videos?.length || 0);
       return transformFeedResponse(data);
     } catch (error) {
       console.error('Failed to get self feed:', error);
