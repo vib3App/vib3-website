@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -13,6 +13,8 @@ import {
   PauseIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
+import { collaborationApi } from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 import type { WatchParty, WatchPartyStatus } from '@/types/collaboration';
 
 const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> = {
@@ -25,10 +27,13 @@ const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> 
 export default function WatchPartiesPage() {
   const router = useRouter();
 
-  // Watch parties API is not implemented yet - show empty state
-  const [parties] = useState<WatchParty[]>([]);
-  const [loading] = useState(false);
-  const [hasMore] = useState(false);
+  // Use Zustand selectors to avoid re-render loops
+  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
+
+  // State
+  const [parties, setParties] = useState<WatchParty[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
 
   // Create modal
@@ -37,13 +42,76 @@ export default function WatchPartiesPage() {
   const [createIsPrivate, setCreateIsPrivate] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  // Note: API fetch disabled until watch-parties endpoint is implemented
+  // Refs to prevent duplicate fetches
+  const hasFetchedRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  // Fetch parties
+  const fetchParties = useCallback(async (pageNum: number = 1) => {
+    try {
+      const data = await collaborationApi.getWatchParties(pageNum);
+      if (!isMountedRef.current) return;
+
+      if (pageNum === 1) {
+        setParties(data.parties);
+      } else {
+        setParties(prev => [...prev, ...data.parties]);
+      }
+      setHasMore(data.hasMore);
+    } catch (error) {
+      console.error('Failed to fetch watch parties:', error);
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  // Initial fetch - wait for auth verification
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    // Wait for auth to be verified before fetching
+    if (!isAuthVerified) return;
+
+    // Only fetch once
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
+    fetchParties(1);
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [isAuthVerified, fetchParties]);
+
+  // Handle load more
+  const handleLoadMore = useCallback(() => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchParties(nextPage);
+  }, [page, fetchParties]);
 
   const handleCreateParty = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Watch parties feature coming soon
-    alert('Watch Parties coming soon! This feature is under development.');
-    setShowCreateModal(false);
+    if (!createTitle.trim() || creating) return;
+
+    setCreating(true);
+    try {
+      const party = await collaborationApi.createWatchParty({
+        title: createTitle.trim(),
+        isPrivate: createIsPrivate,
+      });
+      setShowCreateModal(false);
+      setCreateTitle('');
+      setCreateIsPrivate(false);
+      router.push(`/watch-party/${party.id}`);
+    } catch (error) {
+      console.error('Failed to create watch party:', error);
+      alert('Failed to create watch party. Please try again.');
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -216,7 +284,7 @@ export default function WatchPartiesPage() {
         {hasMore && (
           <div className="mt-8 text-center">
             <button
-              onClick={() => setPage(p => p + 1)}
+              onClick={handleLoadMore}
               className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-full font-medium transition"
             >
               Load More
