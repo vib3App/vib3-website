@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { feedApi } from '@/services/api';
 import { watchHistoryService } from '@/services/watchHistory';
@@ -8,6 +8,9 @@ import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { useAuthStore } from '@/stores/authStore';
 import type { Video, FeedCategory } from '@/types';
 import type { FeedTab, VibeType } from '@/components/feed/FeedHeader';
+
+// Stable empty array to prevent re-renders when no videos
+const EMPTY_VIDEOS: Video[] = [];
 
 export function useFeed() {
   const searchParams = useSearchParams();
@@ -85,11 +88,13 @@ export function useFeed() {
       }
 
       if (reset) {
-        setVideos(response.items);
+        // Use stable empty array reference when no videos to prevent re-render loops
+        setVideos(response.items.length > 0 ? response.items : EMPTY_VIDEOS);
         setCurrentIndex(0);
         setPage(1);
         preloadedVideos.current.clear();
-      } else {
+      } else if (response.items.length > 0) {
+        // Only update if there are new items to add
         setVideos(prev => [...prev, ...response.items]);
       }
       setHasMore(response.hasMore);
@@ -102,7 +107,8 @@ export function useFeed() {
       setLoadingMore(false);
       isLoadingRef.current = false;
     }
-  }, [activeTab, page, selectedVibe, selectedCategory, user?.id, preloadVideo]);
+    // Use specific properties instead of full object to prevent unnecessary recreations
+  }, [activeTab, page, selectedVibe, selectedCategory?.id, selectedCategory?.settings?.feedOrder, user?.id, preloadVideo]);
 
   // Reload when category, tab, or vibe changes
   useEffect(() => {
@@ -136,10 +142,13 @@ export function useFeed() {
 
   // Infinite scroll - load more when near end, or recycle if no more
   useEffect(() => {
+    // Only trigger when we have videos and are approaching the end
     if (currentIndex >= videos.length - 3 && videos.length > 0 && !loadingMore && !isLoading) {
       if (hasMore) {
         setPage(prev => prev + 1);
-      } else {
+      } else if (videos.length >= 3) {
+        // Only recycle if we have enough videos to make it meaningful
+        // This prevents unnecessary array creation with empty/small arrays
         setVideos(prev => [...prev, ...prev.slice(0, Math.min(10, prev.length))]);
       }
     }
