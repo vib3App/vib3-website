@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,6 +14,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { collaborationApi } from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 import type { WatchParty, WatchPartyStatus } from '@/types/collaboration';
 
 const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> = {
@@ -25,6 +26,8 @@ const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> 
 
 export default function WatchPartiesPage() {
   const router = useRouter();
+  const { isAuthVerified } = useAuthStore();
+  const hasFetchedRef = useRef(false);
 
   const [parties, setParties] = useState<WatchParty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,20 +41,35 @@ export default function WatchPartiesPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
+    // Wait for auth to be verified before fetching
+    if (!isAuthVerified) return;
+
+    // Prevent duplicate fetches on re-renders
+    if (hasFetchedRef.current && page === 1) return;
+
+    let isMounted = true;
+    hasFetchedRef.current = true;
+
     const fetchParties = async () => {
       try {
         const data = await collaborationApi.getWatchParties(page);
+        if (!isMounted) return;
         setParties(prev => page === 1 ? data.parties : [...prev, ...data.parties]);
         setHasMore(data.hasMore);
       } catch (err) {
-        console.error('Failed to fetch watch parties:', err);
+        // Error already handled in API layer for 404
+        if (isMounted) console.error('Failed to fetch watch parties:', err);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchParties();
-  }, [page]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page, isAuthVerified]);
 
   const handleCreateParty = async (e: React.FormEvent) => {
     e.preventDefault();

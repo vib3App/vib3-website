@@ -7,6 +7,9 @@ import { authApi } from '@/services/api';
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes (assuming 15min token expiry)
 const TOKEN_REFRESH_MARGIN = 60 * 1000; // 1 minute before expiry
 
+// Module-level flag to prevent auth verification loops across component remounts
+let hasAttemptedAuthVerification = false;
+
 interface AuthProviderProps {
   children: React.ReactNode;
 }
@@ -96,6 +99,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isInitializedRef.current = true;
 
     const initializeAuth = async () => {
+      // Module-level check: if we've already attempted verification in this session,
+      // don't repeat it (prevents loops across component remounts)
+      if (hasAttemptedAuthVerification) {
+        console.log('[AuthProvider] Skipping auth verification (already attempted this session)');
+        setAuthVerified(true);
+        return;
+      }
+      hasAttemptedAuthVerification = true;
+
       const token = localStorage.getItem('auth_token');
 
       // No token = not authenticated

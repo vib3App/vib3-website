@@ -4,14 +4,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Hls from 'hls.js';
 import { collaborationApi } from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 import type { WatchParty, WatchPartyChatMessage } from '@/types/collaboration';
 
 export function useWatchParty(partyId: string) {
   const router = useRouter();
+  const { isAuthVerified } = useAuthStore();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const hasFetchedRef = useRef(false);
 
   // Party data
   const [party, setParty] = useState<WatchParty | null>(null);
@@ -36,38 +39,72 @@ export function useWatchParty(partyId: string) {
 
   // Fetch party data
   useEffect(() => {
+    // Wait for auth to be verified before fetching
+    if (!isAuthVerified) return;
+
+    // Prevent duplicate initial fetches
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
+    let isMounted = true;
+    let interval: NodeJS.Timeout | null = null;
+
     const fetchParty = async () => {
       try {
         const data = await collaborationApi.getWatchParty(partyId);
-        setParty(data);
+        if (!isMounted) return;
+        if (data) {
+          setParty(data);
+          setLoading(false);
+        } else {
+          setError('Watch party feature not available');
+          setLoading(false);
+          // Stop polling if feature not available
+          if (interval) clearInterval(interval);
+        }
       } catch (err) {
+        if (!isMounted) return;
         console.error('Failed to fetch party:', err);
         setError('Watch party not found');
-      } finally {
         setLoading(false);
+        // Stop polling on error
+        if (interval) clearInterval(interval);
       }
     };
 
     fetchParty();
-    const interval = setInterval(fetchParty, 2000);
-    return () => clearInterval(interval);
-  }, [partyId]);
+    // Only poll if we successfully got a party
+    interval = setInterval(fetchParty, 2000);
 
-  // Fetch chat messages
+    return () => {
+      isMounted = false;
+      if (interval) clearInterval(interval);
+    };
+  }, [partyId, isAuthVerified]);
+
+  // Fetch chat messages - only after we have a party
   useEffect(() => {
+    // Don't fetch chat until we have a valid party
+    if (!party) return;
+
+    let isMounted = true;
+
     const fetchMessages = async () => {
       try {
         const msgs = await collaborationApi.getWatchPartyChat(partyId);
-        setMessages(msgs);
+        if (isMounted) setMessages(msgs);
       } catch (err) {
-        console.error('Failed to fetch messages:', err);
+        // Silently fail - chat is not critical
       }
     };
 
     fetchMessages();
     const interval = setInterval(fetchMessages, 2000);
-    return () => clearInterval(interval);
-  }, [partyId]);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [partyId, party]);
 
   // Auto-scroll chat
   useEffect(() => {

@@ -254,21 +254,41 @@ export const collaborationApi = {
 
   /**
    * Get active watch parties
+   * Note: Watch parties endpoint may not be implemented on backend yet
    */
   async getWatchParties(page = 1, limit = 20): Promise<{ parties: WatchParty[]; hasMore: boolean }> {
-    const { data } = await apiClient.get<{ parties: WatchParty[]; hasMore: boolean }>(
-      '/watch-parties',
-      { params: { page, limit } }
-    );
-    return data;
+    try {
+      const { data } = await apiClient.get<{ parties: WatchParty[]; hasMore: boolean }>(
+        '/watch-parties',
+        { params: { page, limit } }
+      );
+      return data;
+    } catch (error: any) {
+      // Handle 404 gracefully - endpoint may not exist yet
+      if (error?.status === 404) {
+        console.log('[Collaboration API] Watch parties endpoint not available');
+        return { parties: [], hasMore: false };
+      }
+      throw error;
+    }
   },
 
   /**
    * Get a watch party
+   * Note: Watch parties endpoint may not be implemented on backend yet
    */
-  async getWatchParty(partyId: string): Promise<WatchParty> {
-    const { data } = await apiClient.get<{ party: WatchParty }>(`/watch-parties/${partyId}`);
-    return data.party;
+  async getWatchParty(partyId: string): Promise<WatchParty | null> {
+    try {
+      const { data } = await apiClient.get<{ party: WatchParty }>(`/watch-parties/${partyId}`);
+      return data.party;
+    } catch (error: any) {
+      // Handle 404 gracefully - endpoint may not exist yet
+      if (error?.status === 404) {
+        console.log('[Collaboration API] Watch party endpoint not available');
+        return null;
+      }
+      throw error;
+    }
   },
 
   /**
@@ -347,17 +367,26 @@ export const collaborationApi = {
 
   /**
    * Get chat messages
+   * Note: Watch parties endpoint may not be implemented on backend yet
    */
   async getWatchPartyChat(
     partyId: string,
     before?: string,
     limit = 50
   ): Promise<WatchPartyChatMessage[]> {
-    const { data } = await apiClient.get<{ messages: WatchPartyChatMessage[] }>(
-      `/watch-parties/${partyId}/chat`,
-      { params: { before, limit } }
-    );
-    return data.messages;
+    try {
+      const { data } = await apiClient.get<{ messages: WatchPartyChatMessage[] }>(
+        `/watch-parties/${partyId}/chat`,
+        { params: { before, limit } }
+      );
+      return data.messages;
+    } catch (error: any) {
+      // Handle 404 gracefully - endpoint may not exist yet
+      if (error?.status === 404) {
+        return [];
+      }
+      throw error;
+    }
   },
 
   /**
