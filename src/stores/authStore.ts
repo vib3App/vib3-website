@@ -53,7 +53,7 @@ function migrateUser(user: AuthUser | null): AuthUser | null {
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // State - Start with isLoading: false to prevent flash/loops
       // The persist middleware will restore any saved auth state
       user: null,
@@ -72,6 +72,11 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       logout: () => {
+        // Idempotent - only update state if actually authenticated
+        const state = get();
+        if (!state.isAuthenticated && state.isAuthVerified) {
+          return; // Already logged out, no state change needed
+        }
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
