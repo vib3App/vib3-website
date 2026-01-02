@@ -102,10 +102,19 @@ export function useProfile() {
       console.log('[useProfile] Raw profile data:', JSON.stringify(profileData, null, 2));
       setProfile(profileData);
 
+      // Fetch videos - use getMyVideos for own profile (authenticated endpoint)
       try {
-        const videosData = await userApi.getUserVideos(profileData._id || userId);
+        let videosData;
+        if (isOwnProfile) {
+          videosData = await userApi.getMyVideos(1, 100);
+          console.log('[useProfile] Fetched own videos:', videosData.videos?.length || 0);
+        } else {
+          videosData = await userApi.getUserVideos(profileData._id || userId);
+          console.log('[useProfile] Fetched user videos:', videosData.videos?.length || 0);
+        }
         setVideos(videosData.videos || []);
-      } catch {
+      } catch (videoErr) {
+        console.error('[useProfile] Failed to fetch videos:', videoErr);
         setVideos([]);
       }
 
