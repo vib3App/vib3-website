@@ -34,6 +34,7 @@ export function useFeed() {
   const watchStartTime = useRef<number>(0);
   const hasInitialLoadRef = useRef(false);
   const isLoadingRef = useRef(false);
+  const lastLoadedCategoryRef = useRef<string | null>(null);
 
   // Preload video function - uses fetch instead of link preload for better compatibility
   const preloadVideo = useCallback((url: string) => {
@@ -102,6 +103,11 @@ export function useFeed() {
       response.items.slice(0, 3).forEach(video => preloadVideo(video.videoUrl));
     } catch (err) {
       console.error('Failed to load videos:', err);
+      // On error, set empty videos to prevent re-render loops
+      if (reset) {
+        setVideos(EMPTY_VIDEOS);
+        setHasMore(false);
+      }
     } finally {
       setIsLoading(false);
       setLoadingMore(false);
@@ -118,8 +124,24 @@ export function useFeed() {
       return;
     }
 
+    // Create a unique key for the current feed state
+    const currentKey = `${activeTab}-${selectedVibe}-${selectedCategory?.id}`;
+
+    // Skip if we're already loading or just loaded this same combination
+    if (isLoadingRef.current) {
+      console.log('[useFeed] Skipping load - already loading');
+      return;
+    }
+
+    // Skip if this is the same category we just loaded (prevents duplicate loads)
+    if (lastLoadedCategoryRef.current === currentKey && hasInitialLoadRef.current) {
+      console.log('[useFeed] Skipping load - same category already loaded:', currentKey);
+      return;
+    }
+
     // Store is pre-initialized - safe to load immediately
     hasInitialLoadRef.current = true;
+    lastLoadedCategoryRef.current = currentKey;
     loadVideos(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedVibe, selectedCategory?.id, isAuthVerified]);
