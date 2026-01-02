@@ -31,7 +31,7 @@ export interface UploadState {
   error: string | null;
 }
 
-export function useUpload(isAuthenticated: boolean) {
+export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
   const [step, setStep] = useState<UploadStep>('select');
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
@@ -57,12 +57,12 @@ export function useUpload(isAuthenticated: boolean) {
 
   const tusManagerRef = useRef<TusUploadManager | null>(null);
 
-  // Load drafts on mount
+  // Load drafts on mount - wait for auth to be verified first
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthVerified && isAuthenticated) {
       loadDrafts();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAuthVerified]);
 
   const loadDrafts = async () => {
     try {

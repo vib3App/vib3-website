@@ -17,16 +17,21 @@ import {
 
 export default function UploadPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
-  const upload = useUpload(isAuthenticated);
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
+  const upload = useUpload(isAuthenticated, isAuthVerified);
 
   useEffect(() => {
+    // Wait for auth to be verified before checking isAuthenticated
+    if (!isAuthVerified) {
+      return;
+    }
     if (!isAuthenticated) {
       router.push('/login?redirect=/upload');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
-  if (!isAuthenticated) {
+  // Show loading while auth is being verified or if not authenticated yet
+  if (!isAuthVerified || !isAuthenticated) {
     return (
       <div className="min-h-screen aurora-bg flex items-center justify-center">
         <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-purple-500 animate-spin" />
