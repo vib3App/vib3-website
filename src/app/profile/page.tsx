@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const { user, isAuthenticated, isAuthVerified, setUser } = useAuthStore();
   const [status, setStatus] = useState<string>('Loading...');
   const hasRedirectedRef = useRef(false);
+  const isFetchingRef = useRef(false);
 
   useEffect(() => {
     // Wait for auth to be verified before making decisions
@@ -30,6 +31,10 @@ export default function ProfilePage() {
       router.replace(`/profile/${user.id}`);
       return;
     }
+
+    // Prevent duplicate API calls
+    if (isFetchingRef.current) return;
+    isFetchingRef.current = true;
 
     // If user exists but no valid ID, fetch fresh profile from API
     setStatus('Refreshing profile...');
