@@ -161,24 +161,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
           scheduleTokenRefresh(token);
         } else {
-          // API returned null - logout to clear stale state
-          // Use ref to prevent duplicate logout calls
-          if (!isLoggingOutRef.current) {
-            isLoggingOutRef.current = true;
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('refresh_token');
-            logout();
-          }
-        }
-      } catch {
-        // Verification failed (401/network error) - logout to clear stale state
-        // Use ref to prevent duplicate logout calls
-        if (!isLoggingOutRef.current) {
-          isLoggingOutRef.current = true;
+          // API returned null - clear tokens and reset state
+          // Use direct store setState to batch the update and avoid cascade
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
-          logout();
+          useAuthStore.setState({
+            user: null,
+            isAuthenticated: false,
+            isAuthVerified: true
+          });
         }
+      } catch {
+        // Verification failed (401/network error) - clear tokens and reset state
+        // Use direct store setState to batch the update and avoid cascade
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+        useAuthStore.setState({
+          user: null,
+          isAuthenticated: false,
+          isAuthVerified: true
+        });
       }
     };
 
@@ -187,7 +189,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (!isLoggingOutRef.current) {
         isLoggingOutRef.current = true;
         console.log('[AuthProvider] Received logout event');
-        logout();
+        // Use direct store setState to avoid cascade
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+        useAuthStore.setState({
+          user: null,
+          isAuthenticated: false,
+          isAuthVerified: true
+        });
       }
     };
     window.addEventListener('auth:logout', handleLogoutEvent);
