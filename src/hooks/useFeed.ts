@@ -16,7 +16,7 @@ export function useFeed() {
   const searchParams = useSearchParams();
   // Store is pre-initialized with defaults - always ready to use
   const { selectedCategory } = useFeedCategoryStore();
-  const { user } = useAuthStore();
+  const { user, isAuthVerified } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
   const [selectedVibe, setSelectedVibe] = useState<VibeType>(null);
@@ -112,11 +112,17 @@ export function useFeed() {
 
   // Reload when category, tab, or vibe changes
   useEffect(() => {
+    // For "self" category, wait for auth to be verified since it needs authentication
+    if (selectedCategory?.id === 'self' && !isAuthVerified) {
+      console.log('[useFeed] Waiting for auth verification for self category');
+      return;
+    }
+
     // Store is pre-initialized - safe to load immediately
     hasInitialLoadRef.current = true;
     loadVideos(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, selectedVibe, selectedCategory?.id]);
+  }, [activeTab, selectedVibe, selectedCategory?.id, isAuthVerified]);
 
   // Preload next videos when current index changes
   useEffect(() => {

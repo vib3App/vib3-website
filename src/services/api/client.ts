@@ -93,9 +93,9 @@ const createApiClient = (): AxiosInstance => {
           return Promise.reject(formatApiError(error));
         }
 
-        // Skip token refresh entirely for public/profile endpoints
-        // These should fail gracefully without triggering auth flow
-        const skipRefreshPatterns = ['/videos/user/', '/users/', '/videos/friends'];
+        // Skip token refresh entirely for endpoints that should fail gracefully
+        // These are either public endpoints or need special handling
+        const skipRefreshPatterns = ['/videos/user/', '/users/', '/videos/friends', '/user/videos'];
         const shouldSkipRefresh = skipRefreshPatterns.some(pattern => originalRequest.url?.includes(pattern));
         if (shouldSkipRefresh) {
           console.log('[API Client] Skipping token refresh for:', originalRequest.url);
