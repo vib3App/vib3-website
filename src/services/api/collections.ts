@@ -54,12 +54,12 @@ function transformVideo(data: VideoResponse): Video {
 export const collectionsApi = {
   /**
    * Get all collections for current user
+   * DISABLED: Backend doesn't support this endpoint yet (returns 404)
    */
-  async getCollections(type?: CollectionType): Promise<Collection[]> {
-    const { data } = await apiClient.get<{ collections: Collection[] }>('/collections', {
-      params: type ? { type } : undefined,
-    });
-    return data.collections;
+  async getCollections(_type?: CollectionType): Promise<Collection[]> {
+    // Backend doesn't have /collections endpoint for web - skip the API call entirely
+    // This prevents 404 errors and potential re-render loops
+    return [];
   },
 
   /**

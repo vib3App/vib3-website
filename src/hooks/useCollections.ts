@@ -10,7 +10,7 @@ export type CollectionTabType = 'playlists' | 'saved' | 'liked' | 'history';
 
 export function useCollections() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [activeTab, setActiveTab] = useState<CollectionTabType>('playlists');
   const [playlists, setPlaylists] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,12 +29,16 @@ export function useCollections() {
   }, []);
 
   useEffect(() => {
+    // Wait for auth to be verified before checking isAuthenticated
+    if (!isAuthVerified) {
+      return;
+    }
     if (!isAuthenticated) {
       router.push('/login?redirect=/collections');
       return;
     }
     loadCollections();
-  }, [isAuthenticated, router, loadCollections]);
+  }, [isAuthenticated, isAuthVerified, router, loadCollections]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this playlist?')) return;
@@ -52,10 +56,11 @@ export function useCollections() {
 
   return {
     isAuthenticated,
+    isAuthVerified,
     activeTab,
     setActiveTab,
     playlists,
-    isLoading,
+    isLoading: isLoading || !isAuthVerified, // Show loading while auth is being verified
     showCreateModal,
     setShowCreateModal,
     handleDelete,

@@ -9,7 +9,8 @@ import { TopNav } from '@/components/ui/TopNav';
 export default function CollectionsPage() {
   const c = useCollections();
 
-  if (!c.isAuthenticated) {
+  // Show loading while auth is being verified or if not authenticated yet
+  if (!c.isAuthVerified || !c.isAuthenticated) {
     return (
       <div className="min-h-screen aurora-bg flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
