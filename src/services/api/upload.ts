@@ -101,12 +101,10 @@ export const uploadApi = {
 
   /**
    * Get all drafts
-   * DISABLED: Backend doesn't support this endpoint yet (returns 404)
    */
   async getDrafts(): Promise<VideoDraft[]> {
-    // Backend doesn't have /drafts endpoint for web
-    // Return empty to prevent 404 errors and re-render loops
-    return [];
+    const { data } = await apiClient.get<{ drafts: VideoDraft[] }>('/drafts');
+    return data.drafts;
   },
 
   /**
