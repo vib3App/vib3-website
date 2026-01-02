@@ -99,7 +99,7 @@ export function useProfile() {
         throw new Error('Could not load profile');
       }
 
-      console.log('[useProfile] Loaded profile:', profileData._id, profileData.username);
+      console.log('[useProfile] Raw profile data:', JSON.stringify(profileData, null, 2));
       setProfile(profileData);
 
       try {

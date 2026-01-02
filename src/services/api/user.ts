@@ -38,6 +38,7 @@ export const userApi = {
    */
   async getProfile(userId: string): Promise<UserProfile> {
     const { data } = await apiClient.get<UserProfile>(`/users/${userId}`);
+    console.log('[userApi.getProfile] Raw response:', JSON.stringify(data, null, 2));
     return data;
   },
 
@@ -46,6 +47,7 @@ export const userApi = {
    */
   async getMyProfile(): Promise<UserProfile> {
     const { data } = await apiClient.get<UserProfile>('/user/profile');
+    console.log('[userApi.getMyProfile] Raw response:', JSON.stringify(data, null, 2));
     return data;
   },
 
