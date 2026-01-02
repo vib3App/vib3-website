@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
@@ -22,7 +22,7 @@ export function useProfile() {
   const params = useParams();
   const router = useRouter();
   const userId = params.userId as string;
-  const { user: currentUser, isAuthenticated } = useAuthStore();
+  const { user: currentUser, isAuthenticated, isAuthVerified } = useAuthStore();
   const {
     isFollowing: checkIsFollowing,
     toggleFollow,
@@ -40,6 +40,7 @@ export function useProfile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const isLoadingRef = useRef(false); // Prevent duplicate profile loads
 
   const isOwnProfile = currentUser?.id === userId;
   const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/profile/${userId}` : '';
@@ -55,6 +56,10 @@ export function useProfile() {
   }, [isAuthenticated, socialLoaded, loadFollowedUsers]);
 
   const loadProfile = useCallback(async () => {
+    // Prevent duplicate concurrent loads
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
+
     setIsLoading(true);
     setError(null);
 
@@ -118,12 +123,17 @@ export function useProfile() {
       }
     } finally {
       setIsLoading(false);
+      isLoadingRef.current = false;
     }
   }, [userId, isOwnProfile, isAuthenticated]);
 
   useEffect(() => {
-    if (userId) loadProfile();
-  }, [userId, loadProfile]);
+    // Wait for auth to be verified before loading profile
+    // This prevents API calls with stale/invalid tokens
+    if (userId && isAuthVerified) {
+      loadProfile();
+    }
+  }, [userId, isAuthVerified, loadProfile]);
 
   const handleFollow = useCallback(async () => {
     if (!isAuthenticated) {
@@ -164,7 +174,7 @@ export function useProfile() {
     likedVideos,
     activeTab,
     setActiveTab,
-    isLoading,
+    isLoading: isLoading || !isAuthVerified, // Show loading while auth is being verified
     error,
     isFollowing,
     isFollowLoading,
