@@ -177,19 +177,13 @@ export const feedApi = {
 
   /**
    * Get Friends feed (mutual follows only)
-   * Returns empty result if endpoint doesn't exist (404)
+   * DISABLED: Backend doesn't support this endpoint yet (returns 404)
+   * Immediately returns empty result to prevent API call and re-render loops
    */
-  async getFriendsFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    try {
-      const { data } = await apiClient.get<FeedResponse>('/videos/friends', {
-        params: { page, limit },
-      });
-      return transformFeedResponse(data);
-    } catch (error) {
-      console.error('Failed to get Friends feed:', error);
-      // Return stable empty result - don't fall back to avoid potential loops
-      return { items: [], page, hasMore: false };
-    }
+  async getFriendsFeed(page = 1, _limit = 10): Promise<PaginatedResponse<Video>> {
+    // Backend doesn't have /videos/friends endpoint - skip the API call entirely
+    // This prevents 404 errors and potential re-render loops
+    return { items: [], page, hasMore: false };
   },
 
   /**

@@ -17,20 +17,22 @@ import type {
 export const liveApi = {
   /**
    * Get live streams (discover)
+   * DISABLED: Backend doesn't support this endpoint yet (returns 404)
+   * Immediately returns empty result to prevent API call and re-render loops
    */
-  async getLiveStreams(page = 1, limit = 20): Promise<{ streams: LiveStream[]; hasMore: boolean }> {
-    const { data } = await apiClient.get<{ streams: LiveStream[]; hasMore: boolean }>('/live', {
-      params: { page, limit },
-    });
-    return data;
+  async getLiveStreams(_page = 1, _limit = 20): Promise<{ streams: LiveStream[]; hasMore: boolean }> {
+    // Backend doesn't have /live endpoint for web - skip the API call entirely
+    // This prevents 404 errors and potential re-render loops
+    return { streams: [], hasMore: false };
   },
 
   /**
    * Get streams from followed users
+   * DISABLED: Backend doesn't support this endpoint yet
    */
   async getFollowingLive(): Promise<LiveStream[]> {
-    const { data } = await apiClient.get<{ streams: LiveStream[] }>('/live/following');
-    return data.streams;
+    // Backend doesn't have /live/following endpoint for web
+    return [];
   },
 
   /**
