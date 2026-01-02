@@ -151,12 +151,17 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
   );
 }
 
-function ProfileStats({ stats }: { stats: UserProfile['stats'] }) {
+function ProfileStats({ stats }: { stats?: UserProfile['stats'] }) {
+  // Handle undefined stats gracefully
+  const following = stats?.following ?? 0;
+  const followers = stats?.followers ?? 0;
+  const likes = stats?.likes ?? 0;
+
   return (
     <div className="flex justify-center gap-8 mb-8 py-4 border-y border-white/5">
-      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(stats.following)}</div><div className="text-white/50 text-sm">Following</div></div>
-      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(stats.followers)}</div><div className="text-white/50 text-sm">Followers</div></div>
-      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(stats.likes)}</div><div className="text-white/50 text-sm">Likes</div></div>
+      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(following)}</div><div className="text-white/50 text-sm">Following</div></div>
+      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(followers)}</div><div className="text-white/50 text-sm">Followers</div></div>
+      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(likes)}</div><div className="text-white/50 text-sm">Likes</div></div>
     </div>
   );
 }
