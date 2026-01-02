@@ -50,20 +50,16 @@ interface ConversationResponse {
 export const messagesApi = {
   /**
    * Get all conversations
+   * DISABLED: Backend doesn't support this endpoint yet (returns 404)
    */
-  async getConversations(page = 1, limit = 20): Promise<PaginatedResponse<Conversation>> {
-    const { data } = await apiClient.get<{
-      conversations: ConversationResponse[];
-      total: number;
-      page: number;
-      hasMore: boolean;
-    }>('/messages/conversations', { params: { page, limit } });
-
+  async getConversations(page = 1, _limit = 20): Promise<PaginatedResponse<Conversation>> {
+    // Backend doesn't have /messages/conversations endpoint for web
+    // Return empty to prevent 404 errors and re-render loops
     return {
-      items: data.conversations.map(transformConversation),
-      total: data.total,
-      page: data.page,
-      hasMore: data.hasMore,
+      items: [],
+      total: 0,
+      page,
+      hasMore: false,
     };
   },
 
