@@ -16,6 +16,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
   const isInitializedRef = useRef(false);
+  const isLoggingOutRef = useRef(false); // Prevent duplicate logout calls
 
   // Parse JWT to get expiration time
   const getTokenExpiry = useCallback((token: string): number | null => {
@@ -134,22 +135,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
           scheduleTokenRefresh(token);
         } else {
           // API returned null - logout to clear stale state
+          // Use ref to prevent duplicate logout calls
+          if (!isLoggingOutRef.current) {
+            isLoggingOutRef.current = true;
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
+            logout();
+          }
+        }
+      } catch {
+        // Verification failed (401/network error) - logout to clear stale state
+        // Use ref to prevent duplicate logout calls
+        if (!isLoggingOutRef.current) {
+          isLoggingOutRef.current = true;
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
           logout();
         }
-      } catch {
-        // Verification failed (401/network error) - logout to clear stale state
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        logout();
       }
     };
 
-    // Listen for logout event from API client (401 responses)
+    // Listen for logout event from API client (401 responses from other endpoints)
     const handleLogoutEvent = () => {
-      console.log('[AuthProvider] Received logout event');
-      logout();
+      if (!isLoggingOutRef.current) {
+        isLoggingOutRef.current = true;
+        console.log('[AuthProvider] Received logout event');
+        logout();
+      }
     };
     window.addEventListener('auth:logout', handleLogoutEvent);
 

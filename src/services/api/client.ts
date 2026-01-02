@@ -124,8 +124,12 @@ const createApiClient = (): AxiosInstance => {
             // Token refresh failed - user needs to re-login
             onTokenRefreshed('');
             // Dispatch logout event for the app to handle
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('auth:logout', { detail: { reason: 'token_expired' } }));
+            // Skip for /auth/me - AuthProvider handles that directly
+            // Use setTimeout to defer event to avoid triggering during React render
+            if (typeof window !== 'undefined' && !originalRequest.url?.includes('/auth/me')) {
+              setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('auth:logout', { detail: { reason: 'token_expired' } }));
+              }, 0);
             }
             return Promise.reject(formatApiError(error));
           }
