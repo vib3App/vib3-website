@@ -14,7 +14,8 @@ import { TopNav } from '@/components/ui/TopNav';
 export default function CameraPage() {
   const camera = useCamera();
 
-  if (!camera.isAuthenticated) {
+  // Show loading while auth is being verified or if not authenticated
+  if (!camera.isAuthVerified || !camera.isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />

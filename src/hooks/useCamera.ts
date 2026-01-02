@@ -37,7 +37,9 @@ export const CAMERA_SPEEDS = [
 
 export function useCamera() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  // Use selectors to avoid re-render loops
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
 
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [cameraFacing, setCameraFacing] = useState<CameraFacing>('user');
@@ -86,6 +88,11 @@ export function useCamera() {
   }, [cameraFacing]);
 
   useEffect(() => {
+    // Wait for auth verification before checking authentication
+    if (!isAuthVerified) {
+      return;
+    }
+
     if (!isAuthenticated) {
       router.push('/login?redirect=/camera');
       return;
@@ -95,7 +102,7 @@ export function useCamera() {
       streamRef.current?.getTracks().forEach(track => track.stop());
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     };
-  }, [isAuthenticated, router, initCamera]);
+  }, [isAuthenticated, isAuthVerified, router, initCamera]);
 
   const flipCamera = useCallback(() => {
     setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
@@ -228,6 +235,7 @@ export function useCamera() {
 
   return {
     isAuthenticated,
+    isAuthVerified,
     recordingState,
     cameraFacing,
     selectedFilter,
