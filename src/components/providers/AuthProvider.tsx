@@ -17,6 +17,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isRefreshingRef = useRef(false);
   const isInitializedRef = useRef(false);
   const isLoggingOutRef = useRef(false); // Prevent duplicate logout calls
+  const isVerifyingRef = useRef(false); // Prevent duplicate getMe calls
 
   // Parse JWT to get expiration time
   const getTokenExpiry = useCallback((token: string): number | null => {
@@ -124,6 +125,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Token valid, verify with backend
+      // Use ref to prevent duplicate getMe calls
+      if (isVerifyingRef.current) {
+        console.log('[AuthProvider] Skipping duplicate getMe call');
+        return;
+      }
+      isVerifyingRef.current = true;
+
       try {
         const userData = await authApi.getMe();
         if (userData) {
