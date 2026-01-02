@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -13,8 +13,6 @@ import {
   PauseIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
-import { collaborationApi } from '@/services/api';
-import { useAuthStore } from '@/stores/authStore';
 import type { WatchParty, WatchPartyStatus } from '@/types/collaboration';
 
 const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> = {
@@ -24,16 +22,13 @@ const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> 
   ended: { label: 'Ended', color: 'bg-gray-500' },
 };
 
-// Module-level flag to prevent fetch loops across component remounts
-let hasAttemptedWatchPartyFetch = false;
-
 export default function WatchPartiesPage() {
   const router = useRouter();
-  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
 
-  const [parties, setParties] = useState<WatchParty[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(false);
+  // Watch parties API is not implemented yet - show empty state
+  const [parties] = useState<WatchParty[]>([]);
+  const [loading] = useState(false);
+  const [hasMore] = useState(false);
   const [page, setPage] = useState(1);
 
   // Create modal
@@ -42,57 +37,13 @@ export default function WatchPartiesPage() {
   const [createIsPrivate, setCreateIsPrivate] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    // Wait for auth to be verified before fetching
-    if (!isAuthVerified) return;
-
-    // Module-level check to prevent loops across remounts
-    if (hasAttemptedWatchPartyFetch && page === 1) {
-      setLoading(false);
-      return;
-    }
-
-    let isMounted = true;
-    hasAttemptedWatchPartyFetch = true;
-
-    const fetchParties = async () => {
-      try {
-        const data = await collaborationApi.getWatchParties(page);
-        if (!isMounted) return;
-        setParties(prev => page === 1 ? data.parties : [...prev, ...data.parties]);
-        setHasMore(data.hasMore);
-      } catch (err) {
-        // Error already handled in API layer for 404
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchParties();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [page, isAuthVerified]);
+  // Note: API fetch disabled until watch-parties endpoint is implemented
 
   const handleCreateParty = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createTitle.trim()) return;
-
-    setCreating(true);
-    try {
-      const party = await collaborationApi.createWatchParty({
-        title: createTitle.trim(),
-        isPrivate: createIsPrivate,
-      });
-
-      router.push(`/watch-party/${party.id}`);
-    } catch (err) {
-      console.error('Failed to create party:', err);
-      alert('Failed to create watch party');
-    } finally {
-      setCreating(false);
-    }
+    // Watch parties feature coming soon
+    alert('Watch Parties coming soon! This feature is under development.');
+    setShowCreateModal(false);
   };
 
   return (
