@@ -300,7 +300,7 @@ export default function DiscoverPage() {
 
             {/* ═══ CHALLENGE BANNER ═══ */}
             <div className="bento-wide glass-card p-0 overflow-hidden">
-              <Link href={`/challenges/${MOCK_CHALLENGE.id}`}>
+              <Link href={`/challenges/${MOCK_CHALLENGE.id}`} prefetch={false}>
                 <div className="relative w-full h-full">
                   <div
                     className="absolute inset-0 bg-cover bg-center"
@@ -372,7 +372,7 @@ export default function DiscoverPage() {
               <h3 className="font-bold mb-3">Quick Categories</h3>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((cat) => (
-                  <Link key={cat} href={`/category/${cat.toLowerCase()}`}>
+                  <Link key={cat} href={`/category/${cat.toLowerCase()}`} prefetch={false}>
                     <GlassButton size="sm" variant="ghost" className="text-sm hover:scale-105 transition-transform">
                       {cat}
                     </GlassButton>

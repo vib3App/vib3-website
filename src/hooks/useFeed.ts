@@ -35,6 +35,7 @@ export function useFeed() {
   const hasInitialLoadRef = useRef(false);
   const isLoadingRef = useRef(false);
   const lastLoadedCategoryRef = useRef<string | null>(null);
+  const erroredCategoriesRef = useRef<Set<string>>(new Set()); // Track categories that errored to prevent retries
 
   // Preload video function - uses fetch instead of link preload for better compatibility
   const preloadVideo = useCallback((url: string) => {
@@ -103,6 +104,9 @@ export function useFeed() {
       response.items.slice(0, 3).forEach(video => preloadVideo(video.videoUrl));
     } catch (err) {
       console.error('Failed to load videos:', err);
+      // Track this category as errored to prevent retry loops
+      const errorKey = `${activeTab}-${selectedVibe}-${selectedCategory?.id}`;
+      erroredCategoriesRef.current.add(errorKey);
       // On error, set empty videos to prevent re-render loops
       if (reset) {
         setVideos(EMPTY_VIDEOS);
@@ -136,6 +140,12 @@ export function useFeed() {
     // Skip if this is the same category we just loaded (prevents duplicate loads)
     if (lastLoadedCategoryRef.current === currentKey && hasInitialLoadRef.current) {
       console.log('[useFeed] Skipping load - same category already loaded:', currentKey);
+      return;
+    }
+
+    // Skip if this category previously errored (prevents retry loops)
+    if (erroredCategoriesRef.current.has(currentKey)) {
+      console.log('[useFeed] Skipping load - category previously errored:', currentKey);
       return;
     }
 

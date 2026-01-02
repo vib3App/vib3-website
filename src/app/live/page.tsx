@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -88,7 +88,15 @@ export default function LivePage() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
+  // Refs to prevent duplicate loads and retry loops
+  const hasLoadedRef = useRef(false);
+  const hasErroredRef = useRef(false);
+
   const loadStreams = useCallback(async (pageNum: number, append = false) => {
+    // Prevent retrying after error
+    if (hasErroredRef.current && !append) {
+      return;
+    }
     try {
       const response = await liveApi.getLiveStreams(pageNum);
       if (append) {
@@ -100,6 +108,7 @@ export default function LivePage() {
       setPage(pageNum);
     } catch (error) {
       console.error('Failed to load streams:', error);
+      hasErroredRef.current = true;
     } finally {
       setIsLoading(false);
     }
@@ -116,11 +125,18 @@ export default function LivePage() {
   }, [isAuthenticated]);
 
   useEffect(() => {
+    // Prevent duplicate initial loads
+    if (hasLoadedRef.current) {
+      return;
+    }
+    hasLoadedRef.current = true;
+
     loadStreams(1);
     if (isAuthenticated) {
       loadFollowingStreams();
     }
-  }, [loadStreams, loadFollowingStreams, isAuthenticated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGoLive = () => {
     if (!isAuthenticated) {
