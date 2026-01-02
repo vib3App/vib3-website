@@ -11,9 +11,18 @@ interface UserProfile {
   displayName?: string;
   email?: string;
   profilePicture?: string;
+  profileImage?: string;
   bio?: string;
   isVerified?: boolean;
   createdAt?: string;
+  // Backend sometimes returns these directly
+  followers?: number;
+  following?: number;
+  followersCount?: number;
+  followingCount?: number;
+  totalLikes?: number;
+  videoCount?: number;
+  // Normalized stats object
   stats: {
     followers: number;
     following: number;
@@ -46,9 +55,24 @@ export const userApi = {
    * Get current user's profile
    */
   async getMyProfile(): Promise<UserProfile> {
-    const { data } = await apiClient.get<UserProfile>('/user/profile');
+    const { data } = await apiClient.get<{ user?: UserProfile } & UserProfile>('/user/profile');
     console.log('[userApi.getMyProfile] Raw response:', JSON.stringify(data, null, 2));
-    return data;
+
+    // Backend returns { user: {...} } - extract the user object
+    const profile = data.user || data;
+
+    // Normalize stats if not present (backend returns flat fields)
+    if (!profile.stats) {
+      profile.stats = {
+        followers: profile.followers ?? profile.followersCount ?? 0,
+        following: profile.following ?? profile.followingCount ?? 0,
+        likes: profile.totalLikes ?? 0,
+        videos: profile.videoCount ?? 0,
+      };
+    }
+
+    console.log('[userApi.getMyProfile] Normalized profile:', profile._id, profile.username);
+    return profile;
   },
 
   /**
