@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -24,10 +24,12 @@ const STATUS_CONFIG: Record<WatchPartyStatus, { label: string; color: string }> 
   ended: { label: 'Ended', color: 'bg-gray-500' },
 };
 
+// Module-level flag to prevent fetch loops across component remounts
+let hasAttemptedWatchPartyFetch = false;
+
 export default function WatchPartiesPage() {
   const router = useRouter();
-  const { isAuthVerified } = useAuthStore();
-  const hasFetchedRef = useRef(false);
+  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
 
   const [parties, setParties] = useState<WatchParty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,11 +46,14 @@ export default function WatchPartiesPage() {
     // Wait for auth to be verified before fetching
     if (!isAuthVerified) return;
 
-    // Prevent duplicate fetches on re-renders
-    if (hasFetchedRef.current && page === 1) return;
+    // Module-level check to prevent loops across remounts
+    if (hasAttemptedWatchPartyFetch && page === 1) {
+      setLoading(false);
+      return;
+    }
 
     let isMounted = true;
-    hasFetchedRef.current = true;
+    hasAttemptedWatchPartyFetch = true;
 
     const fetchParties = async () => {
       try {
@@ -58,7 +63,6 @@ export default function WatchPartiesPage() {
         setHasMore(data.hasMore);
       } catch (err) {
         // Error already handled in API layer for 404
-        if (isMounted) console.error('Failed to fetch watch parties:', err);
       } finally {
         if (isMounted) setLoading(false);
       }
