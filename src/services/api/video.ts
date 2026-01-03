@@ -7,21 +7,39 @@ import type { Video, Comment, PaginatedResponse } from '@/types';
 
 interface VideoResponse {
   _id: string;
-  userId: string;
-  username: string;
+  id?: string;
+  userId?: string;
+  // Backend returns user info in author object, not at top level
+  author?: {
+    _id?: string;
+    username?: string;
+    displayName?: string;
+    profileImage?: string;
+  };
+  // Legacy flat fields (for backwards compatibility)
+  username?: string;
   profilePicture?: string;
-  videoUrl: string;
+  // Backend returns video/thumbnail in media array
+  media?: Array<{
+    url?: string;
+    thumbnailUrl?: string;
+  }>;
+  // Legacy flat fields
+  videoUrl?: string;
   hlsUrl?: string;
   thumbnailUrl?: string;
-  caption: string;
-  hashtags: string[];
-  duration: number;
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
-  sharesCount: number;
-  isPublic: boolean;
-  createdAt: string;
+  caption?: string;
+  title?: string;
+  description?: string;
+  hashtags?: string[];
+  tags?: string[];
+  duration?: number;
+  likesCount?: number;
+  commentsCount?: number;
+  viewsCount?: number;
+  sharesCount?: number;
+  isPublic?: boolean;
+  createdAt?: string;
 }
 
 interface CommentResponse {
@@ -202,22 +220,31 @@ export const videoApi = {
 };
 
 function transformVideo(data: VideoResponse): Video {
+  // Extract user info from author object or flat fields
+  const username = data.author?.username || data.username || 'Unknown';
+  const userAvatar = data.author?.profileImage || data.profilePicture;
+  const userId = data.userId || data.author?._id || '';
+
+  // Extract video/thumbnail from media array or flat fields
+  const videoUrl = data.media?.[0]?.url || data.hlsUrl || data.videoUrl || '';
+  const thumbnailUrl = data.media?.[0]?.thumbnailUrl || data.thumbnailUrl;
+
   return {
-    id: data._id,
-    userId: data.userId,
-    username: data.username,
-    userAvatar: data.profilePicture,
-    videoUrl: data.hlsUrl || data.videoUrl,
-    thumbnailUrl: data.thumbnailUrl,
-    caption: data.caption,
-    hashtags: data.hashtags || [],
-    duration: data.duration,
+    id: data.id || data._id,
+    userId,
+    username,
+    userAvatar,
+    videoUrl,
+    thumbnailUrl,
+    caption: data.caption || data.title || data.description || '',
+    hashtags: data.hashtags || data.tags || [],
+    duration: data.duration || 0,
     likesCount: data.likesCount || 0,
     commentsCount: data.commentsCount || 0,
     viewsCount: data.viewsCount || 0,
     sharesCount: data.sharesCount || 0,
-    isPublic: data.isPublic,
-    createdAt: data.createdAt,
+    isPublic: data.isPublic !== false,
+    createdAt: data.createdAt || new Date().toISOString(),
   };
 }
 

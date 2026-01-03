@@ -82,18 +82,59 @@ export const userApi = {
   async getUserVideos(userId: string, page: number = 1, limit: number = 100): Promise<UserVideosResponse> {
     try {
       // Use the backend's videos/user endpoint which properly filters by user
-      // Backend returns raw array, not { videos: [...] }
-      const { data } = await apiClient.get<Array<Video & { _id?: string }> | { videos?: Array<Video & { _id?: string }> }>(`/videos/user/${userId}`, {
+      // Backend returns raw array with nested author/media objects
+      interface BackendVideo {
+        _id?: string;
+        id?: string;
+        userId?: string;
+        author?: {
+          _id?: string;
+          username?: string;
+          displayName?: string;
+          profileImage?: string;
+        };
+        media?: Array<{
+          url?: string;
+          thumbnailUrl?: string;
+        }>;
+        caption?: string;
+        title?: string;
+        description?: string;
+        duration?: number;
+        likesCount?: number;
+        commentsCount?: number;
+        viewsCount?: number;
+        sharesCount?: number;
+        hashtags?: string[];
+        tags?: string[];
+        createdAt?: string;
+        isLiked?: boolean;
+      }
+
+      const { data } = await apiClient.get<BackendVideo[] | { videos?: BackendVideo[] }>(`/videos/user/${userId}`, {
         params: { page, limit }
       });
 
       // Handle both formats: raw array (current backend) or { videos: [...] }
       const videosArray = Array.isArray(data) ? data : (data.videos || []);
 
-      // Transform _id to id for consistency
-      const videos = videosArray.map(v => ({
-        ...v,
+      // Transform backend format to frontend Video type
+      const videos: Video[] = videosArray.map(v => ({
         id: v.id || v._id || '',
+        userId: v.userId || v.author?._id || userId,
+        username: v.author?.username || 'Unknown',
+        userAvatar: v.author?.profileImage,
+        caption: v.caption || v.title || v.description || '',
+        videoUrl: v.media?.[0]?.url || '',
+        thumbnailUrl: v.media?.[0]?.thumbnailUrl,
+        duration: v.duration || 0,
+        likesCount: v.likesCount || 0,
+        commentsCount: v.commentsCount || 0,
+        viewsCount: v.viewsCount || 0,
+        sharesCount: v.sharesCount || 0,
+        hashtags: v.hashtags || v.tags || [],
+        createdAt: v.createdAt || new Date().toISOString(),
+        isLiked: v.isLiked,
       }));
 
       console.log(`[userApi.getUserVideos] Fetched ${videos.length} videos for user ${userId}`);
