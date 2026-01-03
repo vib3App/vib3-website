@@ -59,6 +59,8 @@ function BalanceCard({ coinBalance }: { coinBalance: CoinBalance }) {
 }
 
 function MonetizationOptions({ analytics }: { analytics: CreatorAnalytics | null }) {
+  const gifts = analytics?.revenueBreakdown?.gifts ?? 0;
+
   return (
     <div className="grid sm:grid-cols-3 gap-4">
       <div className="bg-white/5 rounded-2xl p-6">
@@ -70,7 +72,7 @@ function MonetizationOptions({ analytics }: { analytics: CreatorAnalytics | null
           Receive virtual gifts from your supporters during videos and live streams.
         </p>
         <div className="text-2xl font-bold text-yellow-400">
-          {analytics ? formatCount(analytics.revenueBreakdown.gifts / 100) : 0} coins
+          {formatCount(gifts / 100)} coins
         </div>
       </div>
 
