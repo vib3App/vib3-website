@@ -58,7 +58,7 @@ function VideoThumbnail({ video }: { video: Video }) {
 }
 
 export default function LikedVideosPage() {
-  const { isAuthenticated, isAuthVerified, user } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +66,7 @@ export default function LikedVideosPage() {
   useEffect(() => {
     if (!isAuthVerified) return;
 
-    if (!isAuthenticated || !user?.id) {
+    if (!isAuthenticated) {
       setLoading(false);
       return;
     }
@@ -75,7 +75,8 @@ export default function LikedVideosPage() {
       try {
         setLoading(true);
         setError(null);
-        const response = await userApi.getLikedVideos(user!.id);
+        // No userId needed - backend uses authenticated user from token
+        const response = await userApi.getLikedVideos();
         setVideos(response.videos || []);
       } catch (err) {
         console.error('Error fetching liked videos:', err);
@@ -86,7 +87,7 @@ export default function LikedVideosPage() {
     }
 
     fetchLikedVideos();
-  }, [isAuthenticated, isAuthVerified, user?.id]);
+  }, [isAuthenticated, isAuthVerified]);
 
   if (!isAuthVerified) {
     return (

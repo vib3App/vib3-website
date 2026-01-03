@@ -319,13 +319,76 @@ export const userApi = {
   },
 
   /**
-   * Get user's liked videos
+   * Get current user's liked videos (authenticated endpoint)
    */
-  async getLikedVideos(userId: string, page = 1, limit = 20): Promise<UserVideosResponse> {
-    const { data } = await apiClient.get<UserVideosResponse>(`/users/${userId}/liked-videos`, {
-      params: { page, limit },
-    });
-    return data;
+  async getLikedVideos(page = 1, limit = 20): Promise<UserVideosResponse> {
+    try {
+      // Backend uses /user/liked-videos (authenticated, no userId needed)
+      interface BackendVideo {
+        _id?: string;
+        id?: string;
+        userId?: string;
+        author?: {
+          _id?: string;
+          username?: string;
+          displayName?: string;
+          profileImage?: string;
+        };
+        media?: Array<{
+          url?: string;
+          thumbnailUrl?: string;
+        }>;
+        caption?: string;
+        title?: string;
+        description?: string;
+        duration?: number;
+        likesCount?: number;
+        commentsCount?: number;
+        viewsCount?: number;
+        sharesCount?: number;
+        hashtags?: string[];
+        tags?: string[];
+        createdAt?: string;
+      }
+
+      const { data } = await apiClient.get<BackendVideo[] | { videos?: BackendVideo[]; likedVideos?: BackendVideo[] }>('/user/liked-videos', {
+        params: { page, limit },
+      });
+
+      // Handle various response formats
+      let videosArray: BackendVideo[] = [];
+      if (Array.isArray(data)) {
+        videosArray = data;
+      } else if (data.videos) {
+        videosArray = data.videos;
+      } else if (data.likedVideos) {
+        videosArray = data.likedVideos;
+      }
+
+      // Transform backend format to frontend Video type
+      const videos: Video[] = videosArray.map(v => ({
+        id: v.id || v._id || '',
+        userId: v.userId || v.author?._id || '',
+        username: v.author?.username || 'Unknown',
+        userAvatar: v.author?.profileImage,
+        caption: v.caption || v.title || v.description || '',
+        videoUrl: v.media?.[0]?.url || '',
+        thumbnailUrl: v.media?.[0]?.thumbnailUrl,
+        duration: v.duration || 0,
+        likesCount: v.likesCount || 0,
+        commentsCount: v.commentsCount || 0,
+        viewsCount: v.viewsCount || 0,
+        sharesCount: v.sharesCount || 0,
+        hashtags: v.hashtags || v.tags || [],
+        createdAt: v.createdAt || new Date().toISOString(),
+      }));
+
+      console.log(`[userApi.getLikedVideos] Fetched ${videos.length} liked videos`);
+      return { videos };
+    } catch (error) {
+      console.error('Failed to fetch liked videos:', error);
+      return { videos: [] };
+    }
   },
 
   /**
