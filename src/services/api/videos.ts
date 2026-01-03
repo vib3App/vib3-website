@@ -48,11 +48,20 @@ export const videoApi = {
 
   /**
    * Get user's videos
+   * Uses /videos/user/:userId which returns a raw array
    */
   async getUserVideos(userId: string, cursor?: string): Promise<VideoFeedResponse> {
     const params = cursor ? { cursor } : {};
-    const response = await apiClient.get(`/users/${userId}/videos`, { params });
-    return response.data;
+    const response = await apiClient.get(`/videos/user/${userId}`, { params });
+    // Backend returns raw array, normalize to VideoFeedResponse format
+    const data = response.data;
+    if (Array.isArray(data)) {
+      return {
+        videos: data,
+        hasMore: data.length >= 10,
+      };
+    }
+    return data;
   },
 
   /**

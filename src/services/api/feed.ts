@@ -147,12 +147,23 @@ export const feedApi = {
 
   /**
    * Get user's videos
+   * Uses /videos/user/:userId which returns a raw array
    */
   async getUserVideos(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
     try {
-      const { data } = await apiClient.get<FeedResponse>(`/users/${userId}/videos`, {
+      // Backend returns raw array, not wrapped in { videos: [...] }
+      const { data } = await apiClient.get<FeedVideoResponse[] | FeedResponse>(`/videos/user/${userId}`, {
         params: { page, limit },
       });
+
+      // Handle both formats: raw array or { videos: [...] }
+      if (Array.isArray(data)) {
+        return {
+          items: data.map(transformVideo),
+          page,
+          hasMore: data.length >= limit,
+        };
+      }
       return transformFeedResponse(data);
     } catch (error) {
       console.error('Failed to get user videos:', error);
