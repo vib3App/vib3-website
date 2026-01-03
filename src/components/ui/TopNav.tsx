@@ -58,7 +58,7 @@ const DROPDOWNS: DropdownConfig[] = [
     items: [
       { href: '/messages', label: 'Messages', icon: '💬', description: 'Direct messages' },
       { href: '/capsule', label: 'Time Capsules', icon: '⏰', description: 'Messages to the future' },
-      { href: '/alerts', label: 'Alerts', icon: '🔔', description: 'System notifications' },
+      { href: '/notifications', label: 'Notifications', icon: '🔔', description: 'System notifications' },
     ],
   },
   {
