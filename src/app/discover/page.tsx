@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { feedApi } from '@/services/api';
+import { feedApi, soundsApi, challengesApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraContainer, GlassButton, GlassCard, GlassPill, GradientText, SoundVisualizer } from '@/components/ui/Glass';
 import type { Video } from '@/types';
+import type { Challenge } from '@/types/challenge';
+import type { MusicTrack } from '@/types/sound';
 
 // ═══════════════════════════════════════════════════════════
 // VIBE DATA
@@ -26,23 +28,6 @@ const CATEGORIES = [
   'Music', 'Dance', 'Comedy', 'Sports', 'Food', 'Gaming', 'Fashion', 'Art'
 ];
 
-// Mock data for demo - these will be replaced with real API data
-const MOCK_SOUNDS = [
-  { id: 's1', name: 'Midnight Drive', artist: 'Synth Wave', uses: 45000, coverUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100' },
-  { id: 's2', name: 'Viral Dance', artist: 'BassKing', uses: 128000, coverUrl: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100' },
-  { id: 's3', name: 'Chill Lofi', artist: 'StudyBeats', uses: 89000, coverUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=100' },
-];
-
-const MOCK_CHALLENGE = {
-  id: 'c1',
-  title: 'Neon Glow Challenge',
-  hashtag: 'NeonGlow',
-  participants: 847293,
-  reward: '$10,000',
-  backgroundUrl: 'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=800',
-  endsIn: '2 days',
-};
-
 function formatCount(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
   if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
@@ -53,6 +38,8 @@ export default function DiscoverPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [trendingVideos, setTrendingVideos] = useState<Video[]>([]);
+  const [trendingSounds, setTrendingSounds] = useState<MusicTrack[]>([]);
+  const [featuredChallenge, setFeaturedChallenge] = useState<Challenge | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeVibe, setActiveVibe] = useState<string | null>(null);
   const [activeSound, setActiveSound] = useState(0);
@@ -65,10 +52,16 @@ export default function DiscoverPage() {
   const loadDiscoverContent = async () => {
     try {
       setIsLoading(true);
-      const [videosResponse] = await Promise.all([
+      const [videosResponse, soundsResponse, challengesResponse] = await Promise.all([
         feedApi.getTrendingFeed(1, 12),
+        soundsApi.getTrending(1, 5),
+        challengesApi.getFeaturedChallenges().catch(() => []),
       ]);
       setTrendingVideos(videosResponse.items);
+      setTrendingSounds(soundsResponse.data || []);
+      if (challengesResponse.length > 0) {
+        setFeaturedChallenge(challengesResponse[0]);
+      }
     } catch (error) {
       console.error('Failed to load discover content:', error);
     } finally {
@@ -271,9 +264,11 @@ export default function DiscoverPage() {
               </div>
 
               <div className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
-                {MOCK_SOUNDS.map((sound, i) => (
+                {trendingSounds.length === 0 ? (
+                  <p className="text-white/40 text-center py-4 text-sm">No sounds available</p>
+                ) : trendingSounds.map((sound, i) => (
                   <button
-                    key={sound.id}
+                    key={sound._id || sound.id || i}
                     onClick={() => {
                       setActiveSound(i);
                       setIsPlaying(true);
@@ -283,53 +278,78 @@ export default function DiscoverPage() {
                       ${activeSound === i ? 'bg-white/10' : 'hover:bg-white/5'}
                     `}
                   >
-                    <img
-                      src={sound.coverUrl}
-                      alt={sound.name}
-                      className="w-10 h-10 rounded-lg object-cover"
-                    />
+                    {sound.coverUrl ? (
+                      <img
+                        src={sound.coverUrl}
+                        alt={sound.title || sound.name || 'Sound'}
+                        className="w-10 h-10 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg">
+                        🎵
+                      </div>
+                    )}
                     <div className="flex-1 text-left min-w-0">
-                      <p className="font-medium text-sm truncate">{sound.name}</p>
-                      <p className="text-xs text-white/60 truncate">{sound.artist}</p>
+                      <p className="font-medium text-sm truncate">{sound.title || sound.name || 'Untitled'}</p>
+                      <p className="text-xs text-white/60 truncate">{sound.artist || 'Unknown Artist'}</p>
                     </div>
-                    <span className="text-xs text-white/40">{(sound.uses / 1000).toFixed(1)}K</span>
+                    <span className="text-xs text-white/40">{formatCount(sound.usageCount || 0)}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* ═══ CHALLENGE BANNER ═══ */}
-            <div className="bento-wide glass-card p-0 overflow-hidden">
-              <Link href={`/challenges/${MOCK_CHALLENGE.id}`} prefetch={false}>
-                <div className="relative w-full h-full">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${MOCK_CHALLENGE.backgroundUrl})` }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-900/90 via-purple-900/70 to-transparent" />
+            {featuredChallenge ? (
+              <div className="bento-wide glass-card p-0 overflow-hidden">
+                <Link href={`/hashtag/${featuredChallenge.hashtag}`} prefetch={false}>
+                  <div className="relative w-full h-full">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{
+                        backgroundImage: featuredChallenge.coverImage
+                          ? `url(${featuredChallenge.coverImage})`
+                          : 'linear-gradient(135deg, #8B5CF6 0%, #F97316 100%)'
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-900/90 via-purple-900/70 to-transparent" />
 
-                  <div className="relative h-full flex items-center justify-between p-4">
-                    <div>
-                      <GlassPill color="purple" className="mb-2">
-                        #{MOCK_CHALLENGE.hashtag}
-                      </GlassPill>
-                      <h3 className="text-lg font-bold mb-1">{MOCK_CHALLENGE.title}</h3>
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="text-white/60">
-                          {MOCK_CHALLENGE.participants.toLocaleString()} joined
-                        </span>
-                        <span className="text-orange-400">Ends {MOCK_CHALLENGE.endsIn}</span>
+                    <div className="relative h-full flex items-center justify-between p-4">
+                      <div>
+                        <GlassPill color="purple" className="mb-2">
+                          #{featuredChallenge.hashtag}
+                        </GlassPill>
+                        <h3 className="text-lg font-bold mb-1">{featuredChallenge.title}</h3>
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="text-white/60">
+                            {formatCount(featuredChallenge.stats?.participantCount || 0)} joined
+                          </span>
+                          {featuredChallenge.endDate && (
+                            <span className="text-orange-400">
+                              Ends {new Date(featuredChallenge.endDate).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="text-right">
-                      <p className="text-xs text-white/60 mb-1">Prize</p>
-                      <p className="text-xl font-bold gradient-text">{MOCK_CHALLENGE.reward}</p>
+                      {featuredChallenge.prize && (
+                        <div className="text-right">
+                          <p className="text-xs text-white/60 mb-1">Prize</p>
+                          <p className="text-xl font-bold gradient-text">{featuredChallenge.prize}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              </Link>
-            </div>
+                </Link>
+              </div>
+            ) : (
+              <div className="bento-wide glass-card p-6 flex items-center justify-center">
+                <Link href="/challenges" className="text-center">
+                  <h3 className="text-lg font-bold mb-2">Explore Challenges</h3>
+                  <p className="text-white/60 text-sm">Join trending challenges and go viral</p>
+                </Link>
+              </div>
+            )}
 
             {/* ═══ VIDEO GRID ═══ */}
             {trendingVideos.slice(4, 8).map((video, i) => (

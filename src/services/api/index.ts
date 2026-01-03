@@ -39,3 +39,4 @@ export type {
   UserRole
 } from './admin';
 export { callsApi } from './calls';
+export { soundsApi } from './sounds';
