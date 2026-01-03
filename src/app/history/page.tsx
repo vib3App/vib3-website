@@ -23,18 +23,23 @@ function getWatchHistory(): WatchHistoryItem[] {
   if (typeof window === 'undefined') return [];
   try {
     const history = localStorage.getItem(HISTORY_KEY);
-    return history ? JSON.parse(history) : [];
+    if (!history) return [];
+    const parsed = JSON.parse(history) as WatchHistoryItem[];
+    // Filter out invalid items (missing video or video.id)
+    return parsed.filter(item => item?.video?.id);
   } catch {
+    // Clear corrupted data
+    try { localStorage.removeItem(HISTORY_KEY); } catch {}
     return [];
   }
 }
 
 export function addToWatchHistory(video: Video): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !video?.id) return;
   try {
     const history = getWatchHistory();
     // Remove if already exists (will re-add at top)
-    const filtered = history.filter(item => item.video.id !== video.id);
+    const filtered = history.filter(item => item?.video?.id && item.video.id !== video.id);
     // Add to beginning
     filtered.unshift({ video, watchedAt: new Date().toISOString() });
     // Limit size
@@ -216,13 +221,15 @@ export default function WatchHistoryPage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-1">
-              {history.map((item) => (
-                <VideoThumbnail
-                  key={`${item.video.id}-${item.watchedAt}`}
-                  video={item.video}
-                  watchedAt={item.watchedAt}
-                />
-              ))}
+              {history
+                .filter(item => item?.video?.id)
+                .map((item) => (
+                  <VideoThumbnail
+                    key={`${item.video.id}-${item.watchedAt}`}
+                    video={item.video}
+                    watchedAt={item.watchedAt}
+                  />
+                ))}
             </div>
           )}
         </div>
