@@ -50,12 +50,12 @@ export default function AnalyticsPage() {
 
   const overviewStats = analytics
     ? [
-        { label: 'Total Views', value: formatNumber(analytics.totalViews), change: analytics.viewsChange, icon: '👁️' },
-        { label: 'Followers', value: formatNumber(analytics.totalFollowers), change: analytics.followersChange, icon: '👥' },
-        { label: 'Likes', value: formatNumber(analytics.totalLikes), change: analytics.likesChange, icon: '❤️' },
-        { label: 'Comments', value: formatNumber(analytics.totalComments), change: analytics.commentsChange, icon: '💬' },
-        { label: 'Shares', value: formatNumber(analytics.totalShares), change: analytics.sharesChange, icon: '🔗' },
-        { label: 'Avg Watch Time', value: `${analytics.avgWatchTime}s`, change: 0, icon: '⏱️' },
+        { label: 'Total Views', value: formatNumber(analytics.totalViews ?? 0), change: analytics.viewsChange ?? 0, icon: '👁️' },
+        { label: 'Followers', value: formatNumber(analytics.totalFollowers ?? 0), change: analytics.followersChange ?? 0, icon: '👥' },
+        { label: 'Likes', value: formatNumber(analytics.totalLikes ?? 0), change: analytics.likesChange ?? 0, icon: '❤️' },
+        { label: 'Comments', value: formatNumber(analytics.totalComments ?? 0), change: analytics.commentsChange ?? 0, icon: '💬' },
+        { label: 'Shares', value: formatNumber(analytics.totalShares ?? 0), change: analytics.sharesChange ?? 0, icon: '🔗' },
+        { label: 'Avg Watch Time', value: `${analytics.avgWatchTime ?? 0}s`, change: 0, icon: '⏱️' },
       ]
     : [];
 
@@ -135,6 +135,7 @@ export default function AnalyticsPage() {
             </section>
 
             {/* Views Chart */}
+            {analytics.viewsHistory && analytics.viewsHistory.length > 0 && (
             <section>
               <h2 className="text-xl font-semibold text-white mb-4">Views Over Time</h2>
               <div className="glass-card p-6">
@@ -162,21 +163,22 @@ export default function AnalyticsPage() {
                 </div>
               </div>
             </section>
+            )}
 
             {/* Performance Metrics */}
             <section>
               <h2 className="text-xl font-semibold text-white mb-4">Performance</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="glass-card p-6 text-center">
-                  <div className="text-4xl font-bold text-white mb-2">{analytics.avgWatchTime}s</div>
+                  <div className="text-4xl font-bold text-white mb-2">{analytics.avgWatchTime ?? 0}s</div>
                   <div className="text-white/50">Avg Watch Time</div>
                 </div>
                 <div className="glass-card p-6 text-center">
-                  <div className="text-4xl font-bold text-white mb-2">{analytics.completionRate}%</div>
+                  <div className="text-4xl font-bold text-white mb-2">{analytics.completionRate ?? 0}%</div>
                   <div className="text-white/50">Completion Rate</div>
                 </div>
                 <div className="glass-card p-6 text-center">
-                  <div className="text-2xl font-bold text-white mb-2">{analytics.bestPostingTime}</div>
+                  <div className="text-2xl font-bold text-white mb-2">{analytics.bestPostingTime ?? 'N/A'}</div>
                   <div className="text-white/50">Best Posting Time</div>
                 </div>
               </div>
@@ -186,7 +188,7 @@ export default function AnalyticsPage() {
             <section>
               <h2 className="text-xl font-semibold text-white mb-4">Top Performing Videos</h2>
               <div className="glass-card overflow-hidden">
-                {analytics.topVideos.length === 0 ? (
+                {!analytics.topVideos || analytics.topVideos.length === 0 ? (
                   <div className="p-8 text-center text-white/50">
                     No videos yet. Start creating to see your analytics!
                   </div>
@@ -241,10 +243,12 @@ export default function AnalyticsPage() {
             </section>
 
             {/* Audience Insights */}
+            {(analytics.demographics || analytics.genderMale !== undefined || analytics.trafficSources) && (
             <section>
               <h2 className="text-xl font-semibold text-white mb-4">Audience Insights</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Age Distribution */}
+                {analytics.demographics && (
                 <div className="glass-card p-6">
                   <h3 className="text-white font-medium mb-4">Age Distribution</h3>
                   <div className="space-y-3">
@@ -264,8 +268,10 @@ export default function AnalyticsPage() {
                     ))}
                   </div>
                 </div>
+                )}
 
                 {/* Gender Split */}
+                {(analytics.genderMale !== undefined || analytics.genderFemale !== undefined) && (
                 <div className="glass-card p-6">
                   <h3 className="text-white font-medium mb-4">Gender Split</h3>
                   <div className="flex justify-center mb-4">
@@ -278,7 +284,7 @@ export default function AnalyticsPage() {
                           fill="none"
                           stroke="#3b82f6"
                           strokeWidth="20"
-                          strokeDasharray={`${analytics.genderMale * 2.51} 251`}
+                          strokeDasharray={`${(analytics.genderMale ?? 50) * 2.51} 251`}
                         />
                         <circle
                           cx="50"
@@ -287,8 +293,8 @@ export default function AnalyticsPage() {
                           fill="none"
                           stroke="#ec4899"
                           strokeWidth="20"
-                          strokeDasharray={`${analytics.genderFemale * 2.51} 251`}
-                          strokeDashoffset={`-${analytics.genderMale * 2.51}`}
+                          strokeDasharray={`${(analytics.genderFemale ?? 50) * 2.51} 251`}
+                          strokeDashoffset={`-${(analytics.genderMale ?? 50) * 2.51}`}
                         />
                       </svg>
                     </div>
@@ -296,16 +302,18 @@ export default function AnalyticsPage() {
                   <div className="flex justify-center gap-6">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-blue-500" />
-                      <span className="text-white/70">Male {analytics.genderMale}%</span>
+                      <span className="text-white/70">Male {analytics.genderMale ?? 50}%</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-pink-500" />
-                      <span className="text-white/70">Female {analytics.genderFemale}%</span>
+                      <span className="text-white/70">Female {analytics.genderFemale ?? 50}%</span>
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Traffic Sources */}
+                {analytics.trafficSources && (
                 <div className="glass-card p-6">
                   <h3 className="text-white font-medium mb-4">Traffic Sources</h3>
                   <div className="space-y-3">
@@ -326,8 +334,10 @@ export default function AnalyticsPage() {
                     })}
                   </div>
                 </div>
+                )}
               </div>
             </section>
+            )}
           </div>
         ) : null}
       </main>
