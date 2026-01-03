@@ -79,8 +79,10 @@ export const collaborationApi = {
    * Get my collab rooms (as creator or participant)
    */
   async getMyCollabRooms(): Promise<CollabRoom[]> {
-    const { data } = await apiClient.get<{ rooms: any[] }>('/collab/rooms/my');
-    return (data.rooms || []).map(mapBackendRoom);
+    const { data } = await apiClient.get<{ hosted: any[]; participating: any[] }>('/collab/my-rooms');
+    const hostedRooms = (data.hosted || []).map(mapBackendRoom);
+    const participatingRooms = (data.participating || []).map(mapBackendRoom);
+    return [...hostedRooms, ...participatingRooms];
   },
 
   /**
