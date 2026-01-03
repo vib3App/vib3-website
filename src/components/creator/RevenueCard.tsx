@@ -10,6 +10,9 @@ interface RevenueCardProps {
 }
 
 export function RevenueCard({ analytics }: RevenueCardProps) {
+  const overview = analytics?.overview;
+  const breakdown = analytics?.revenueBreakdown;
+
   return (
     <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4">
@@ -19,7 +22,7 @@ export function RevenueCard({ analytics }: RevenueCardProps) {
           </div>
           <div>
             <div className="text-sm text-gray-400">Total Revenue</div>
-            <div className="text-3xl font-bold">{formatCurrency(analytics.overview.totalRevenue)}</div>
+            <div className="text-3xl font-bold">{formatCurrency(overview?.totalRevenue ?? 0)}</div>
           </div>
         </div>
         <Link
@@ -33,15 +36,15 @@ export function RevenueCard({ analytics }: RevenueCardProps) {
       <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/10">
         <div>
           <div className="text-sm text-gray-400">From Gifts</div>
-          <div className="text-lg font-semibold">{formatCurrency(analytics.revenueBreakdown.gifts)}</div>
+          <div className="text-lg font-semibold">{formatCurrency(breakdown?.gifts ?? 0)}</div>
         </div>
         <div>
           <div className="text-sm text-gray-400">From Subscriptions</div>
-          <div className="text-lg font-semibold">{formatCurrency(analytics.revenueBreakdown.subscriptions)}</div>
+          <div className="text-lg font-semibold">{formatCurrency(breakdown?.subscriptions ?? 0)}</div>
         </div>
         <div>
           <div className="text-sm text-gray-400">Pending</div>
-          <div className="text-lg font-semibold">{formatCurrency(analytics.revenueBreakdown.pending)}</div>
+          <div className="text-lg font-semibold">{formatCurrency(breakdown?.pending ?? 0)}</div>
         </div>
       </div>
     </div>

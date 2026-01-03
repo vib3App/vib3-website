@@ -11,23 +11,25 @@ interface AudienceTabProps {
 
 function FollowerGrowthCard({ analytics, trends }: { analytics: CreatorAnalytics; trends: AnalyticsTrend[] }) {
   const maxFollowers = Math.max(...trends.map(t => t.followers), 1);
+  const overview = analytics?.overview;
+  const followerGrowth = overview?.followerGrowth ?? 0;
 
   return (
     <div className="bg-white/5 rounded-2xl p-6">
       <h2 className="text-lg font-semibold mb-4">Follower Growth</h2>
       <div className="flex items-center gap-4 mb-4">
-        <div className="text-4xl font-bold">{formatCount(analytics.overview.totalFollowers)}</div>
+        <div className="text-4xl font-bold">{formatCount(overview?.totalFollowers ?? 0)}</div>
         <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm ${
-          analytics.overview.followerGrowth >= 0
+          followerGrowth >= 0
             ? 'bg-green-500/20 text-green-400'
             : 'bg-red-500/20 text-red-400'
         }`}>
-          {analytics.overview.followerGrowth >= 0 ? (
+          {followerGrowth >= 0 ? (
             <ArrowUpIcon className="w-3 h-3" />
           ) : (
             <ArrowDownIcon className="w-3 h-3" />
           )}
-          {Math.abs(analytics.overview.followerGrowth)}%
+          {Math.abs(followerGrowth)}%
         </div>
       </div>
       <div className="h-40 flex items-end gap-1">
@@ -122,14 +124,19 @@ function ActiveHoursChart({ activeHours }: { activeHours: { hour: number; percen
 }
 
 export function AudienceTab({ analytics, trends }: AudienceTabProps) {
+  const insights = analytics?.audienceInsights;
+  const demographics = insights?.demographics;
+
   return (
     <div className="space-y-6">
       <FollowerGrowthCard analytics={analytics} trends={trends} />
-      <div className="grid sm:grid-cols-2 gap-6">
-        <AgeGroupsChart ageGroups={analytics.audienceInsights.demographics.ageGroups} />
-        <CountriesChart countries={analytics.audienceInsights.demographics.countries} />
-      </div>
-      <ActiveHoursChart activeHours={analytics.audienceInsights.activeHours} />
+      {demographics && (
+        <div className="grid sm:grid-cols-2 gap-6">
+          {demographics.ageGroups && <AgeGroupsChart ageGroups={demographics.ageGroups} />}
+          {demographics.countries && <CountriesChart countries={demographics.countries} />}
+        </div>
+      )}
+      {insights?.activeHours && <ActiveHoursChart activeHours={insights.activeHours} />}
     </div>
   );
 }

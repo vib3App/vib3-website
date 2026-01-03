@@ -19,11 +19,12 @@ function formatCount(count: number): string {
 }
 
 export function CreatorStatsGrid({ analytics }: CreatorStatsGridProps) {
+  const overview = analytics?.overview;
   const stats = [
-    { label: 'Total Views', value: analytics.overview.totalViews, icon: EyeIcon, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Total Likes', value: analytics.overview.totalLikes, icon: HeartIcon, color: 'from-pink-500 to-red-500' },
-    { label: 'Total Comments', value: analytics.overview.totalComments, icon: ChatBubbleLeftIcon, color: 'from-purple-500 to-indigo-500' },
-    { label: 'Followers', value: analytics.overview.totalFollowers, icon: UserGroupIcon, color: 'from-green-500 to-teal-500' },
+    { label: 'Total Views', value: overview?.totalViews ?? 0, icon: EyeIcon, color: 'from-blue-500 to-cyan-500' },
+    { label: 'Total Likes', value: overview?.totalLikes ?? 0, icon: HeartIcon, color: 'from-pink-500 to-red-500' },
+    { label: 'Total Comments', value: overview?.totalComments ?? 0, icon: ChatBubbleLeftIcon, color: 'from-purple-500 to-indigo-500' },
+    { label: 'Followers', value: overview?.totalFollowers ?? 0, icon: UserGroupIcon, color: 'from-green-500 to-teal-500' },
   ];
 
   return (
