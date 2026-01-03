@@ -1,5 +1,10 @@
 /**
  * Time Capsule API service
+ *
+ * Backend endpoints available:
+ * - /capsules/my - User's own capsules (can filter by status=locked or status=unlocked)
+ * - /capsules/public/discover - Public unlocked capsules
+ * - /capsules/feed - Capsules viewable by user (public + friends' unlocked capsules)
  */
 import { apiClient } from './client';
 import type {
@@ -10,39 +15,70 @@ import type {
 
 export const capsuleApi = {
   /**
-   * Get upcoming capsule reveals
+   * Get upcoming capsule reveals (public discover)
+   * Uses /capsules/public/discover for public unlocked capsules
    */
   async getUpcomingCapsules(page = 1, limit = 20): Promise<{ capsules: TimeCapsule[]; hasMore: boolean }> {
-    const { data } = await apiClient.get<{ capsules: TimeCapsule[]; hasMore: boolean }>('/capsules/upcoming', {
-      params: { page, limit },
-    });
-    return data;
+    try {
+      const { data } = await apiClient.get<{ capsules: TimeCapsule[]; pagination?: { pages: number; page: number } }>('/capsules/public/discover', {
+        params: { page, limit },
+      });
+      return {
+        capsules: data.capsules || [],
+        hasMore: data.pagination ? data.pagination.page < data.pagination.pages : false,
+      };
+    } catch (error) {
+      console.error('Error fetching upcoming capsules:', error);
+      return { capsules: [], hasMore: false };
+    }
   },
 
   /**
-   * Get recently unlocked capsules
+   * Get recently unlocked capsules (feed)
+   * Uses /capsules/feed for capsules viewable by current user
    */
   async getUnlockedCapsules(page = 1, limit = 20): Promise<{ capsules: TimeCapsule[]; hasMore: boolean }> {
-    const { data } = await apiClient.get<{ capsules: TimeCapsule[]; hasMore: boolean }>('/capsules/unlocked', {
-      params: { page, limit },
-    });
-    return data;
+    try {
+      const { data } = await apiClient.get<{ capsules: TimeCapsule[]; pagination?: { pages: number; page: number } }>('/capsules/feed', {
+        params: { page, limit },
+      });
+      return {
+        capsules: data.capsules || [],
+        hasMore: data.pagination ? data.pagination.page < data.pagination.pages : false,
+      };
+    } catch (error) {
+      console.error('Error fetching unlocked capsules:', error);
+      return { capsules: [], hasMore: false };
+    }
   },
 
   /**
    * Get my capsules (created by me)
    */
   async getMyCapsules(): Promise<TimeCapsule[]> {
-    const { data } = await apiClient.get<{ capsules: TimeCapsule[] }>('/capsules/my');
-    return data.capsules;
+    try {
+      const { data } = await apiClient.get<{ capsules: TimeCapsule[] }>('/capsules/my');
+      return data.capsules || [];
+    } catch (error) {
+      console.error('Error fetching my capsules:', error);
+      return [];
+    }
   },
 
   /**
-   * Get capsules sent to me
+   * Get capsules sent to me (from feed - includes friends' capsules)
+   * Uses /capsules/feed which includes capsules shared with the user
    */
   async getReceivedCapsules(): Promise<TimeCapsule[]> {
-    const { data } = await apiClient.get<{ capsules: TimeCapsule[] }>('/capsules/received');
-    return data.capsules;
+    try {
+      const { data } = await apiClient.get<{ capsules: TimeCapsule[] }>('/capsules/feed', {
+        params: { limit: 50 },
+      });
+      return data.capsules || [];
+    } catch (error) {
+      console.error('Error fetching received capsules:', error);
+      return [];
+    }
   },
 
   /**
@@ -100,8 +136,13 @@ export const capsuleApi = {
    * Get featured capsule reveals
    */
   async getFeaturedReveals(): Promise<CapsuleReveal[]> {
-    const { data } = await apiClient.get<{ reveals: CapsuleReveal[] }>('/capsules/featured');
-    return data.reveals;
+    try {
+      const { data } = await apiClient.get<{ reveals: CapsuleReveal[] }>('/capsules/featured');
+      return data.reveals || [];
+    } catch {
+      // Endpoint may not exist
+      return [];
+    }
   },
 
   /**
