@@ -155,8 +155,14 @@ export function useCamera() {
     recorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: 'video/webm' });
       setRecordedBlob(blob);
-      setPreviewUrl(URL.createObjectURL(blob));
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
       setRecordingState('preview');
+      // Store speed setting for post-processing in editor
+      const speed = CAMERA_SPEEDS[selectedSpeed]?.value || 1;
+      if (speed !== 1) {
+        sessionStorage.setItem('recordingSpeed', speed.toString());
+      }
     };
 
     recorder.start(100);

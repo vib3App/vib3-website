@@ -3,12 +3,15 @@
  * Handles DMs, typing indicators, presence, and notifications
  */
 import type { Message, TypingIndicator } from '@/types';
+import type { IncomingCall, CallEndedEvent } from '@/types/call';
 
 type MessageHandler = (message: Message) => void;
 type TypingHandler = (indicator: TypingIndicator) => void;
 type PresenceHandler = (userId: string, isOnline: boolean) => void;
 type NotificationHandler = (notification: Notification) => void;
 type ConnectionHandler = (connected: boolean) => void;
+type IncomingCallHandler = (call: IncomingCall) => void;
+type CallEndedHandler = (event: CallEndedEvent) => void;
 
 interface Notification {
   id: string;
@@ -37,6 +40,8 @@ class WebSocketService {
   private presenceHandlers: Set<PresenceHandler> = new Set();
   private notificationHandlers: Set<NotificationHandler> = new Set();
   private connectionHandlers: Set<ConnectionHandler> = new Set();
+  private incomingCallHandlers: Set<IncomingCallHandler> = new Set();
+  private callEndedHandlers: Set<CallEndedHandler> = new Set();
   private pendingMessages: WebSocketMessage[] = [];
   private isConnecting = false;
 
@@ -172,6 +177,22 @@ class WebSocketService {
   }
 
   /**
+   * Subscribe to incoming calls
+   */
+  onIncomingCall(handler: IncomingCallHandler): () => void {
+    this.incomingCallHandlers.add(handler);
+    return () => this.incomingCallHandlers.delete(handler);
+  }
+
+  /**
+   * Subscribe to call ended events
+   */
+  onCallEnded(handler: CallEndedHandler): () => void {
+    this.callEndedHandlers.add(handler);
+    return () => this.callEndedHandlers.delete(handler);
+  }
+
+  /**
    * Check if connected
    */
   isConnected(): boolean {
@@ -208,6 +229,28 @@ class WebSocketService {
 
       case 'pong':
         // Heartbeat response
+        break;
+
+      case 'incoming_call':
+        this.incomingCallHandlers.forEach((handler) =>
+          handler(data.payload as IncomingCall)
+        );
+        break;
+
+      case 'call_ended':
+        this.callEndedHandlers.forEach((handler) =>
+          handler(data.payload as CallEndedEvent)
+        );
+        break;
+
+      case 'call_answered':
+        // Call was answered by recipient, handled via call state update
+        break;
+
+      case 'call_declined':
+        this.callEndedHandlers.forEach((handler) =>
+          handler({ ...(data.payload as CallEndedEvent), reason: 'declined' })
+        );
         break;
 
       default:

@@ -44,6 +44,7 @@ export function useVideoEditor() {
   const [texts, setTexts] = useState<TextOverlay[]>([]);
   const [showTextInput, setShowTextInput] = useState(false);
   const [newText, setNewText] = useState('');
+  const [stickers, setStickers] = useState<{ id: string; emoji: string; x: number; y: number; scale: number; rotation: number }[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
 
@@ -168,6 +169,21 @@ export function useVideoEditor() {
     setTexts(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const addSticker = useCallback((emoji: string) => {
+    setStickers(prev => [...prev, {
+      id: Date.now().toString(),
+      emoji,
+      x: 50,
+      y: 50,
+      scale: 1,
+      rotation: 0,
+    }]);
+  }, []);
+
+  const removeSticker = useCallback((id: string) => {
+    setStickers(prev => prev.filter(s => s.id !== id));
+  }, []);
+
   const handleDone = useCallback(async () => {
     // Check if any edits were made
     const hasEdits = trimStart > 0 || trimEnd < duration || selectedFilter !== 0 || volume !== 1;
@@ -285,6 +301,9 @@ export function useVideoEditor() {
     handleTimelineMouseDown,
     addText,
     removeText,
+    stickers,
+    addSticker,
+    removeSticker,
     handleDone,
     formatTime,
     updateVolume,

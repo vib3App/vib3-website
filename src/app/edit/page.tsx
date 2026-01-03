@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react';
 import { useVideoEditor, EDITOR_FILTERS } from '@/hooks/useVideoEditor';
-import { EditorHeader, EditorTabs, TrimPanel, FilterPanel, TextPanel, AudioPanel } from '@/components/edit';
+import { EditorHeader, EditorTabs, TrimPanel, FilterPanel, TextPanel, AudioPanel, StickerPanel } from '@/components/edit';
 import { TopNav } from '@/components/ui/TopNav';
 
 function ProcessingModal({ progress }: { progress: { stage: string; percent: number; message: string } | null }) {
@@ -106,6 +106,22 @@ function EditContent() {
           </div>
         ))}
 
+        {editor.stickers.map((sticker) => (
+          <div
+            key={sticker.id}
+            className="absolute cursor-move select-none"
+            style={{
+              left: `${sticker.x}%`,
+              top: `${sticker.y}%`,
+              transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
+              fontSize: '48px',
+              filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
+            }}
+          >
+            {sticker.emoji}
+          </div>
+        ))}
+
         <button onClick={editor.togglePlayPause} className="absolute inset-0 flex items-center justify-center">
           {!editor.isPlaying && (
             <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
@@ -156,10 +172,11 @@ function EditContent() {
           )}
 
           {editor.editMode === 'stickers' && (
-            <div className="text-center text-white/50 py-8">
-              <span className="text-4xl mb-4 block">🎨</span>
-              <p>Stickers coming soon!</p>
-            </div>
+            <StickerPanel
+              stickers={editor.stickers}
+              onAddSticker={editor.addSticker}
+              onRemoveSticker={editor.removeSticker}
+            />
           )}
 
           {editor.editMode === 'audio' && (
