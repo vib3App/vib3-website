@@ -82,16 +82,21 @@ export const userApi = {
   async getUserVideos(userId: string, page: number = 1, limit: number = 100): Promise<UserVideosResponse> {
     try {
       // Use the backend's videos/user endpoint which properly filters by user
-      const { data } = await apiClient.get<{ videos?: Array<Video & { _id?: string }> }>(`/videos/user/${userId}`, {
+      // Backend returns raw array, not { videos: [...] }
+      const { data } = await apiClient.get<Array<Video & { _id?: string }> | { videos?: Array<Video & { _id?: string }> }>(`/videos/user/${userId}`, {
         params: { page, limit }
       });
 
+      // Handle both formats: raw array (current backend) or { videos: [...] }
+      const videosArray = Array.isArray(data) ? data : (data.videos || []);
+
       // Transform _id to id for consistency
-      const videos = (data.videos || []).map(v => ({
+      const videos = videosArray.map(v => ({
         ...v,
         id: v.id || v._id || '',
       }));
 
+      console.log(`[userApi.getUserVideos] Fetched ${videos.length} videos for user ${userId}`);
       return { videos };
     } catch (error) {
       console.error('Failed to fetch user videos:', error);
