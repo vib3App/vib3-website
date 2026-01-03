@@ -17,18 +17,19 @@ interface SubscriptionTier {
 
 export default function CreatorSubscriptionsPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/creator/subscriptions');
       return;
     }
     loadTiers();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const loadTiers = async () => {
     setIsLoading(true);

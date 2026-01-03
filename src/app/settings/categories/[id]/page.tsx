@@ -13,7 +13,7 @@ export default function CategorySettingsPage() {
   const params = useParams();
   const categoryId = params.id as string;
 
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const {
     getCategoryById,
     updateCategory,

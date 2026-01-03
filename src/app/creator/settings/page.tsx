@@ -17,7 +17,7 @@ interface CreatorSettings {
 
 export default function CreatorSettingsPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState<CreatorSettings>({
@@ -31,13 +31,14 @@ export default function CreatorSettingsPage() {
   });
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/creator/settings');
       return;
     }
     // Simulate loading settings
     setTimeout(() => setIsLoading(false), 500);
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const handleToggle = (key: keyof CreatorSettings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));

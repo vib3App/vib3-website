@@ -60,12 +60,13 @@ function ProfileCard({ user }: { user: { username: string; email: string; profil
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, isAuthVerified, logout } = useAuthStore();
   const [activeSection, setActiveSection] = useState<SettingsSection>('account');
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (!isAuthenticated) router.push('/login?redirect=/settings');
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const handleLogout = async () => {
     try { await authApi.logout(); } catch { /* ignore */ }

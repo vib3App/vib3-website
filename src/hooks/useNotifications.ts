@@ -12,7 +12,7 @@ export type NotificationTab = 'all' | 'mentions';
 
 export function useNotifications() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isAuthVerified } = useAuthStore();
   const [activeTab, setActiveTab] = useState<NotificationTab>('all');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +38,9 @@ export function useNotifications() {
   }, []);
 
   useEffect(() => {
+    // Wait for auth to be verified before checking authentication
+    if (!isAuthVerified) return;
+
     if (!isAuthenticated) {
       router.push('/login?redirect=/notifications');
       return;
@@ -64,7 +67,7 @@ export function useNotifications() {
         unsubNotification();
       };
     }
-  }, [isAuthenticated, user?.token, router, loadNotifications, permissionStatus]);
+  }, [isAuthVerified, isAuthenticated, user?.token, router, loadNotifications, permissionStatus]);
 
   const handleMarkRead = async (notificationId: string) => {
     try {
@@ -108,6 +111,7 @@ export function useNotifications() {
 
   return {
     isAuthenticated,
+    isAuthVerified,
     activeTab,
     setActiveTab,
     notifications: filteredNotifications,

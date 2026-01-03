@@ -27,7 +27,7 @@ interface PayoutHistory {
 
 export default function PayoutsPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [balance, setBalance] = useState(0);
   const [pendingBalance, setPendingBalance] = useState(0);
   const [payoutMethods, setPayoutMethods] = useState<PayoutMethod[]>([]);
@@ -39,12 +39,13 @@ export default function PayoutsPage() {
   const [showAddMethod, setShowAddMethod] = useState(false);
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/creator/payouts');
       return;
     }
     loadData();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const loadData = async () => {
     setIsLoading(true);

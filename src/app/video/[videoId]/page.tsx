@@ -19,7 +19,7 @@ export default function VideoPlayerPage() {
   const videoId = params.videoId as string;
   const userId = searchParams.get('user'); // Get userId from query param
 
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, isAuthVerified, user } = useAuthStore();
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);

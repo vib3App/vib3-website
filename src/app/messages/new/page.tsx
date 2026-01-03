@@ -16,17 +16,18 @@ interface UserResult {
 
 export default function NewMessagePage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/messages/new');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   useEffect(() => {
     const searchUsers = async () => {

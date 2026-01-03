@@ -11,7 +11,7 @@ import { RESERVED_NAMES, MAX_CUSTOM_CATEGORIES } from '@/types';
 
 export default function ManageCategoriesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const {
     categories,
     categoryCounts,

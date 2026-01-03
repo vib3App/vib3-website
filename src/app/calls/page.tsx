@@ -120,18 +120,19 @@ function CallItem({ call, currentUserId }: { call: Call; currentUserId: string }
 
 export default function CallsPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isAuthVerified } = useAuthStore();
   const [calls, setCalls] = useState<Call[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/calls');
       return;
     }
 
     loadCalls();
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const loadCalls = async () => {
     try {

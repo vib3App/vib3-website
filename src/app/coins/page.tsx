@@ -22,7 +22,7 @@ function formatDate(dateString: string): string {
 }
 
 export default function CoinsPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'buy' | 'earn' | 'history'>('buy');
 
   // Data states
@@ -63,12 +63,13 @@ export default function CoinsPage() {
   }, []);
 
   useEffect(() => {
+    if (!isAuthVerified) return;
     if (isAuthenticated) {
       fetchData();
     } else {
       setLoading(false);
     }
-  }, [isAuthenticated, fetchData]);
+  }, [isAuthenticated, isAuthVerified, fetchData]);
 
   // Search users for gifting
   const handleSearchUsers = async (query: string) => {

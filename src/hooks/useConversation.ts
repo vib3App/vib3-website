@@ -11,7 +11,7 @@ export function useConversation() {
   const params = useParams();
   const router = useRouter();
   const conversationId = params.conversationId as string;
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isAuthVerified } = useAuthStore();
 
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -46,6 +46,9 @@ export function useConversation() {
   }, [conversationId]);
 
   useEffect(() => {
+    // Wait for auth to be verified before checking authentication
+    if (!isAuthVerified) return;
+
     if (!isAuthenticated) {
       router.push('/login?redirect=/messages');
       return;
@@ -76,7 +79,7 @@ export function useConversation() {
 
       return () => { unsubMessage(); unsubTyping(); };
     }
-  }, [isAuthenticated, user?.token, conversationId, router, loadMessages]);
+  }, [isAuthVerified, isAuthenticated, user?.token, conversationId, router, loadMessages]);
 
   useEffect(() => {
     scrollToBottom();

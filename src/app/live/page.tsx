@@ -80,7 +80,7 @@ function LiveStreamCard({ stream }: { stream: LiveStream }) {
 
 export default function LivePage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [activeTab, setActiveTab] = useState<'discover' | 'following'>('discover');
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [followingStreams, setFollowingStreams] = useState<LiveStream[]>([]);

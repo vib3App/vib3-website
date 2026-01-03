@@ -9,7 +9,7 @@ import type { Collection, CollectionVideo } from '@/types';
 export function useCollectionDetail() {
   const params = useParams();
   const router = useRouter();
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, isAuthVerified, user } = useAuthStore();
   const collectionId = params.id as string;
 
   const [collection, setCollection] = useState<Collection | null>(null);
@@ -49,13 +49,16 @@ export function useCollectionDetail() {
   }, [collectionId]);
 
   useEffect(() => {
+    // Wait for auth to be verified before checking authentication
+    if (!isAuthVerified) return;
+
     if (!isAuthenticated) {
       router.push('/login?redirect=/collections');
       return;
     }
     loadCollection();
     loadVideos(1);
-  }, [isAuthenticated, router, loadCollection, loadVideos]);
+  }, [isAuthVerified, isAuthenticated, router, loadCollection, loadVideos]);
 
   const handleRemoveVideo = useCallback(async (videoId: string) => {
     try {
