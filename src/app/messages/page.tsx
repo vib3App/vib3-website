@@ -81,7 +81,7 @@ function ConversationItem({ conversation }: { conversation: Conversation }) {
 
 export default function MessagesPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isAuthVerified } = useAuthStore();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -99,6 +99,9 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
+    // Wait for auth to be verified before checking authentication
+    if (!isAuthVerified) return;
+
     if (!isAuthenticated) {
       router.push('/login?redirect=/messages');
       return;
@@ -150,7 +153,7 @@ export default function MessagesPage() {
         unsubPresence();
       };
     }
-  }, [isAuthenticated, user?.token, router, loadConversations]);
+  }, [isAuthVerified, isAuthenticated, user?.token, router, loadConversations]);
 
   const filteredConversations = searchQuery
     ? conversations.filter(c =>
@@ -161,6 +164,16 @@ export default function MessagesPage() {
       )
     : conversations;
 
+  // Show loading while checking auth
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
+
+  // Redirect handled in useEffect, show loading while redirecting
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen aurora-bg flex items-center justify-center">
