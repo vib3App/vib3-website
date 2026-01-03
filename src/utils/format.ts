@@ -1,19 +1,21 @@
-export function formatCount(count: number): string {
+export function formatCount(count: number | undefined | null): string {
+  if (count == null) return '0';
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
   if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
   return count.toString();
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | undefined | null): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-  }).format(amount / 100);
+  }).format((amount ?? 0) / 100);
 }
 
-export function formatDuration(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+export function formatDuration(seconds: number | undefined | null): string {
+  const s = seconds ?? 0;
+  const mins = Math.floor(s / 60);
+  const secs = s % 60;
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 

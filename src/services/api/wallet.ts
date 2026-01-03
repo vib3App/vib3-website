@@ -66,4 +66,51 @@ export const walletApi = {
       description: message || `Gift of ${amount} coins`,
     });
   },
+
+  /**
+   * Get creator balance (for payouts)
+   */
+  async getBalance(): Promise<{ balance: number; pendingBalance: number }> {
+    try {
+      const { data } = await apiClient.get<{ balance: number; pendingBalance: number }>('/wallet/balance');
+      return data;
+    } catch {
+      return { balance: 0, pendingBalance: 0 };
+    }
+  },
+
+  /**
+   * Get payout methods
+   */
+  async getPayoutMethods(): Promise<Array<{ id: string; type: string; name: string; lastFour?: string; isDefault: boolean }>> {
+    try {
+      const { data } = await apiClient.get<{ methods: Array<{ id: string; type: string; name: string; lastFour?: string; isDefault: boolean }> }>('/wallet/payout-methods');
+      return data.methods ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /**
+   * Get payout history
+   */
+  async getPayoutHistory(): Promise<Array<{ id: string; amount: number; status: string; method: string; createdAt: string; completedAt?: string }>> {
+    try {
+      const { data } = await apiClient.get<{ payouts: Array<{ id: string; amount: number; status: string; method: string; createdAt: string; completedAt?: string }> }>('/wallet/payouts');
+      return data.payouts ?? [];
+    } catch {
+      return [];
+    }
+  },
+
+  /**
+   * Request a payout
+   */
+  async requestPayout(amount: number, methodId: string): Promise<{ success: boolean; payoutId?: string }> {
+    const { data } = await apiClient.post<{ success: boolean; payoutId?: string }>('/wallet/payouts', {
+      amount,
+      methodId,
+    });
+    return data;
+  },
 };
