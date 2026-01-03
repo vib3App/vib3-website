@@ -92,13 +92,24 @@ export function VideoPlayer({
         className="w-full h-full object-contain"
       />
 
-      {player.isBuffering && (
+      {player.isBuffering && !player.hasError && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin" />
         </div>
       )}
 
-      {!player.isPlaying && !player.isBuffering && (
+      {player.hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+          <div className="text-center px-4">
+            <svg className="w-12 h-12 text-white/40 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p className="text-white/60 text-sm">{player.errorMessage || 'Video unavailable'}</p>
+          </div>
+        </div>
+      )}
+
+      {!player.isPlaying && !player.isBuffering && !player.hasError && (
         <button
           onClick={player.togglePlay}
           className="absolute inset-0 flex items-center justify-center bg-black/20"

@@ -281,7 +281,7 @@ export default function DiscoverPage() {
                     {sound.coverUrl ? (
                       <img
                         src={sound.coverUrl}
-                        alt={sound.title || sound.name || 'Sound'}
+                        alt={sound.title || 'Sound'}
                         className="w-10 h-10 rounded-lg object-cover"
                       />
                     ) : (
@@ -290,10 +290,10 @@ export default function DiscoverPage() {
                       </div>
                     )}
                     <div className="flex-1 text-left min-w-0">
-                      <p className="font-medium text-sm truncate">{sound.title || sound.name || 'Untitled'}</p>
+                      <p className="font-medium text-sm truncate">{sound.title || 'Untitled'}</p>
                       <p className="text-xs text-white/60 truncate">{sound.artist || 'Unknown Artist'}</p>
                     </div>
-                    <span className="text-xs text-white/40">{formatCount(sound.usageCount || 0)}</span>
+                    <span className="text-xs text-white/40">{formatCount(sound.plays || 0)}</span>
                   </button>
                 ))}
               </div>

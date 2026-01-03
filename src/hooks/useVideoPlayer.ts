@@ -42,6 +42,8 @@ export function useVideoPlayer({
   const [buffered, setBuffered] = useState(0);
   const [isBuffering, setIsBuffering] = useState(false);
   const [showControlsOverlay, setShowControlsOverlay] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Enhanced features state
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -93,7 +95,21 @@ export function useVideoPlayer({
 
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (data.fatal) {
-          onError?.(new Error(data.details));
+          // Check for 404/network errors (video doesn't exist on CDN)
+          const is404 = data.details === 'manifestLoadError' ||
+                        data.details === 'manifestParsingError' ||
+                        data.response?.code === 404;
+
+          const errorMsg = is404
+            ? 'Video not available'
+            : `Playback error: ${data.details}`;
+
+          setHasError(true);
+          setErrorMessage(errorMsg);
+          setIsBuffering(false);
+
+          console.warn(`Video playback error: ${data.details}`, { src, data });
+          onError?.(new Error(errorMsg));
         }
       });
     } else {
@@ -356,6 +372,9 @@ export function useVideoPlayer({
     showQualityMenu,
     showChapterMenu,
     showSettingsMenu,
+    // Error state
+    hasError,
+    errorMessage,
     // Setters
     setShowVolumeSlider,
     setShowSpeedMenu,
