@@ -13,7 +13,7 @@ export const echoApi = {
   // Get echoes (responses) for a video
   async getEchoes(videoId: string, page = 1, limit = 20): Promise<{ echoes: Echo[]; hasMore: boolean }> {
     try {
-      const response = await apiClient.get(`/api/videos/${videoId}/echoes`, {
+      const response = await apiClient.get(`/videos/${videoId}/echoes`, {
         params: { page, limit },
       });
       return {
@@ -29,7 +29,7 @@ export const echoApi = {
   // Create an echo response
   async createEcho(originalVideoId: string, responseVideoId: string): Promise<Echo | null> {
     try {
-      const response = await apiClient.post('/api/echoes', {
+      const response = await apiClient.post('/echoes', {
         originalVideoId,
         responseVideoId,
       });
@@ -43,7 +43,7 @@ export const echoApi = {
   // Get user's echo responses
   async getUserEchoes(userId?: string, page = 1, limit = 20): Promise<{ echoes: Echo[]; hasMore: boolean }> {
     try {
-      const endpoint = userId ? `/api/users/${userId}/echoes` : '/api/me/echoes';
+      const endpoint = userId ? `/users/${userId}/echoes` : '/me/echoes';
       const response = await apiClient.get(endpoint, { params: { page, limit } });
       return {
         echoes: response.data.echoes || [],
@@ -58,7 +58,7 @@ export const echoApi = {
   // Delete an echo
   async deleteEcho(echoId: string): Promise<boolean> {
     try {
-      await apiClient.delete(`/api/echoes/${echoId}`);
+      await apiClient.delete(`/echoes/${echoId}`);
       return true;
     } catch (error) {
       console.error('Failed to delete echo:', error);

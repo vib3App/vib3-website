@@ -24,7 +24,7 @@ export const soundsApi = {
   // Get trending music
   async getTrending(page = 1, limit = 20): Promise<PaginatedResponse<MusicTrack>> {
     try {
-      const response = await apiClient.get('/api/music/trending', { params: { page, limit } });
+      const response = await apiClient.get('/music/trending', { params: { page, limit } });
       return {
         data: response.data.tracks || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -39,7 +39,7 @@ export const soundsApi = {
   // Search music
   async searchMusic(query: string, page = 1, limit = 20): Promise<PaginatedResponse<MusicTrack>> {
     try {
-      const response = await apiClient.get('/api/music/search', { params: { q: query, page, limit } });
+      const response = await apiClient.get('/music/search', { params: { q: query, page, limit } });
       return {
         data: response.data.tracks || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -54,7 +54,7 @@ export const soundsApi = {
   // Get music by category
   async getByCategory(category: MusicCategory, page = 1, limit = 20): Promise<PaginatedResponse<MusicTrack>> {
     try {
-      const response = await apiClient.get(`/api/music/category/${encodeURIComponent(category)}`, {
+      const response = await apiClient.get(`/music/category/${encodeURIComponent(category)}`, {
         params: { page, limit },
       });
       return {
@@ -71,7 +71,7 @@ export const soundsApi = {
   // Get saved music
   async getSaved(): Promise<MusicTrack[]> {
     try {
-      const response = await apiClient.get('/api/music/saved');
+      const response = await apiClient.get('/music/saved');
       return response.data.tracks || response.data || [];
     } catch (error) {
       console.error('Failed to get saved music:', error);
@@ -82,7 +82,7 @@ export const soundsApi = {
   // Save/unsave music
   async saveTrack(trackId: string): Promise<boolean> {
     try {
-      await apiClient.post(`/api/music/save/${trackId}`);
+      await apiClient.post(`/music/save/${trackId}`);
       return true;
     } catch (error) {
       console.error('Failed to save track:', error);
@@ -93,7 +93,7 @@ export const soundsApi = {
   // Get track details
   async getTrack(trackId: string): Promise<MusicTrack | null> {
     try {
-      const response = await apiClient.get(`/api/music/track/${trackId}`);
+      const response = await apiClient.get(`/music/track/${trackId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to get track:', error);
@@ -104,7 +104,7 @@ export const soundsApi = {
   // Get videos using a sound
   async getVideosBySound(soundId: string, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
-      const response = await apiClient.get(`/api/sounds/${soundId}/videos`, { params: { page, limit } });
+      const response = await apiClient.get(`/sounds/${soundId}/videos`, { params: { page, limit } });
       return {
         data: response.data.videos || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -119,7 +119,7 @@ export const soundsApi = {
   // Favorite/unfavorite sound
   async favoriteSound(soundId: string): Promise<boolean> {
     try {
-      await apiClient.post(`/api/sounds/${soundId}/favorite`);
+      await apiClient.post(`/sounds/${soundId}/favorite`);
       return true;
     } catch (error) {
       console.error('Failed to favorite sound:', error);
@@ -129,7 +129,7 @@ export const soundsApi = {
 
   async unfavoriteSound(soundId: string): Promise<boolean> {
     try {
-      await apiClient.delete(`/api/sounds/${soundId}/favorite`);
+      await apiClient.delete(`/sounds/${soundId}/favorite`);
       return true;
     } catch (error) {
       console.error('Failed to unfavorite sound:', error);
@@ -140,7 +140,7 @@ export const soundsApi = {
   // Original sounds
   async getTrendingOriginalSounds(page = 1, limit = 20): Promise<PaginatedResponse<OriginalSound>> {
     try {
-      const response = await apiClient.get('/api/music/sounds/trending', { params: { page, limit } });
+      const response = await apiClient.get('/music/sounds/trending', { params: { page, limit } });
       return {
         data: response.data.sounds || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -154,7 +154,7 @@ export const soundsApi = {
 
   async searchOriginalSounds(query: string, page = 1, limit = 20): Promise<PaginatedResponse<OriginalSound>> {
     try {
-      const response = await apiClient.get('/api/music/sounds/search', { params: { q: query, page, limit } });
+      const response = await apiClient.get('/music/sounds/search', { params: { q: query, page, limit } });
       return {
         data: response.data.sounds || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -168,7 +168,7 @@ export const soundsApi = {
 
   async getOriginalSound(soundId: string): Promise<OriginalSound | null> {
     try {
-      const response = await apiClient.get(`/api/music/sounds/${soundId}`);
+      const response = await apiClient.get(`/music/sounds/${soundId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to get original sound:', error);
@@ -178,7 +178,7 @@ export const soundsApi = {
 
   async saveOriginalSound(soundId: string): Promise<boolean> {
     try {
-      await apiClient.post(`/api/music/sounds/${soundId}/save`);
+      await apiClient.post(`/music/sounds/${soundId}/save`);
       return true;
     } catch (error) {
       console.error('Failed to save original sound:', error);
@@ -188,7 +188,7 @@ export const soundsApi = {
 
   async useSound(soundId: string): Promise<boolean> {
     try {
-      await apiClient.post(`/api/music/sounds/${soundId}/use`);
+      await apiClient.post(`/music/sounds/${soundId}/use`);
       return true;
     } catch (error) {
       console.error('Failed to mark sound as used:', error);
@@ -198,7 +198,7 @@ export const soundsApi = {
 
   async getMySounds(page = 1, limit = 20): Promise<PaginatedResponse<OriginalSound>> {
     try {
-      const response = await apiClient.get('/api/music/sounds/my', { params: { page, limit } });
+      const response = await apiClient.get('/music/sounds/my', { params: { page, limit } });
       return {
         data: response.data.sounds || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -212,7 +212,7 @@ export const soundsApi = {
 
   async getSavedSounds(page = 1, limit = 20): Promise<PaginatedResponse<OriginalSound>> {
     try {
-      const response = await apiClient.get('/api/music/sounds/saved', { params: { page, limit } });
+      const response = await apiClient.get('/music/sounds/saved', { params: { page, limit } });
       return {
         data: response.data.sounds || response.data || [],
         hasMore: response.data.hasMore ?? false,
@@ -227,7 +227,7 @@ export const soundsApi = {
   // Report music
   async reportTrack(trackId: string, reason: string, details?: string): Promise<boolean> {
     try {
-      await apiClient.post('/api/music/report', { trackId, reason, details });
+      await apiClient.post('/music/report', { trackId, reason, details });
       return true;
     } catch (error) {
       console.error('Failed to report track:', error);

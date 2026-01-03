@@ -10,7 +10,7 @@ export const achievementsApi = {
   // Get all achievement definitions
   async getAllAchievements(): Promise<Achievement[]> {
     try {
-      const response = await apiClient.get('/api/achievements');
+      const response = await apiClient.get('/achievements');
       return response.data.achievements || response.data || [];
     } catch (error) {
       console.error('Failed to get achievements:', error);
@@ -21,7 +21,7 @@ export const achievementsApi = {
   // Get current user's achievements
   async getUserAchievements(): Promise<UserAchievementsResponse> {
     try {
-      const response = await apiClient.get('/api/achievements/user');
+      const response = await apiClient.get('/achievements/user');
       return {
         achievements: response.data.achievements || [],
         stats: response.data.stats,
@@ -35,7 +35,7 @@ export const achievementsApi = {
   // Get another user's achievements (public)
   async getOtherUserAchievements(userId: string): Promise<UserAchievementsResponse> {
     try {
-      const response = await apiClient.get(`/api/achievements/user/${userId}`);
+      const response = await apiClient.get(`/achievements/user/${userId}`);
       return {
         achievements: response.data.achievements || [],
         stats: response.data.stats,
@@ -49,7 +49,7 @@ export const achievementsApi = {
   // Check for newly unlocked achievements
   async checkAchievements(): Promise<Achievement[]> {
     try {
-      const response = await apiClient.post('/api/achievements/check');
+      const response = await apiClient.post('/achievements/check');
       return response.data.newlyUnlocked || [];
     } catch (error) {
       console.error('Failed to check achievements:', error);
@@ -60,7 +60,7 @@ export const achievementsApi = {
   // Get XP leaderboard
   async getLeaderboard(limit = 50, offset = 0): Promise<LeaderboardEntry[]> {
     try {
-      const response = await apiClient.get('/api/achievements/leaderboard', {
+      const response = await apiClient.get('/achievements/leaderboard', {
         params: { limit, offset },
       });
       return response.data.entries || response.data || [];
