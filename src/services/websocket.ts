@@ -1,7 +1,8 @@
 /**
  * WebSocket Service for real-time communication
- * Handles DMs, typing indicators, presence, and notifications
+ * Uses Socket.IO client to match the backend's Socket.IO server
  */
+import { io, Socket } from 'socket.io-client';
 import type { Message, TypingIndicator } from '@/types';
 import type { IncomingCall, CallEndedEvent } from '@/types/call';
 
@@ -22,19 +23,10 @@ interface Notification {
   createdAt: string;
 }
 
-interface WebSocketMessage {
-  type: string;
-  payload: unknown;
-}
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.vib3app.net/ws';
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
 
 class WebSocketService {
-  private socket: WebSocket | null = null;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
-  private heartbeatInterval: NodeJS.Timeout | null = null;
+  private socket: Socket | null = null;
   private messageHandlers: Set<MessageHandler> = new Set();
   private typingHandlers: Set<TypingHandler> = new Set();
   private presenceHandlers: Set<PresenceHandler> = new Set();
@@ -42,83 +34,117 @@ class WebSocketService {
   private connectionHandlers: Set<ConnectionHandler> = new Set();
   private incomingCallHandlers: Set<IncomingCallHandler> = new Set();
   private callEndedHandlers: Set<CallEndedHandler> = new Set();
-  private pendingMessages: WebSocketMessage[] = [];
-  private isConnecting = false;
+  private currentToken: string | null = null;
 
   /**
-   * Connect to WebSocket server
+   * Connect to Socket.IO server
    */
   connect(token: string): void {
-    if (this.socket?.readyState === WebSocket.OPEN || this.isConnecting) {
+    // Don't reconnect if already connected with same token
+    if (this.socket?.connected && this.currentToken === token) {
       return;
     }
 
-    this.isConnecting = true;
+    // Disconnect existing connection
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+
+    this.currentToken = token;
 
     try {
-      this.socket = new WebSocket(`${WS_URL}?token=${token}`);
+      this.socket = io(SOCKET_URL, {
+        auth: { token },
+        query: { token },
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+      });
 
-      this.socket.onopen = () => {
-        console.log('WebSocket connected');
-        this.isConnecting = false;
-        this.reconnectAttempts = 0;
+      this.socket.on('connect', () => {
+        console.log('Socket.IO connected');
         this.notifyConnectionHandlers(true);
-        this.startHeartbeat();
-        this.flushPendingMessages();
-      };
+      });
 
-      this.socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data) as WebSocketMessage;
-          this.handleMessage(data);
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
-        }
-      };
-
-      this.socket.onclose = (event) => {
-        console.log('WebSocket closed:', event.code, event.reason);
-        this.isConnecting = false;
-        this.stopHeartbeat();
+      this.socket.on('disconnect', (reason) => {
+        console.log('Socket.IO disconnected:', reason);
         this.notifyConnectionHandlers(false);
+      });
 
-        if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
-          this.scheduleReconnect(token);
-        }
-      };
+      this.socket.on('connect_error', (error) => {
+        console.error('Socket.IO connection error:', error.message);
+      });
 
-      this.socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        this.isConnecting = false;
-      };
+      // Message events
+      this.socket.on('message', (data: Message) => {
+        this.messageHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('new_message', (data: Message) => {
+        this.messageHandlers.forEach((handler) => handler(data));
+      });
+
+      // Typing events
+      this.socket.on('typing', (data: TypingIndicator) => {
+        this.typingHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('user:typing', (data: TypingIndicator) => {
+        this.typingHandlers.forEach((handler) => handler(data));
+      });
+
+      // Presence events
+      this.socket.on('presence', (data: { userId: string; isOnline: boolean }) => {
+        this.presenceHandlers.forEach((handler) => handler(data.userId, data.isOnline));
+      });
+
+      this.socket.on('user:status', (data: { userId: string; status: string }) => {
+        this.presenceHandlers.forEach((handler) => handler(data.userId, data.status === 'online'));
+      });
+
+      // Notification events
+      this.socket.on('notification', (data: Notification) => {
+        this.notificationHandlers.forEach((handler) => handler(data));
+      });
+
+      // Call events
+      this.socket.on('incoming_call', (data: IncomingCall) => {
+        this.incomingCallHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('call_ended', (data: CallEndedEvent) => {
+        this.callEndedHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('call_declined', (data: CallEndedEvent) => {
+        this.callEndedHandlers.forEach((handler) => handler({ ...data, reason: 'declined' }));
+      });
+
     } catch (error) {
-      console.error('Failed to create WebSocket:', error);
-      this.isConnecting = false;
+      console.error('Failed to create Socket.IO connection:', error);
     }
   }
 
   /**
-   * Disconnect from WebSocket server
+   * Disconnect from Socket.IO server
    */
   disconnect(): void {
-    this.stopHeartbeat();
     if (this.socket) {
-      this.socket.close(1000, 'Client disconnect');
+      this.socket.disconnect();
       this.socket = null;
     }
-    this.reconnectAttempts = this.maxReconnectAttempts; // Prevent reconnection
+    this.currentToken = null;
   }
 
   /**
-   * Send a message through WebSocket
+   * Emit an event through Socket.IO
    */
   send(type: string, payload: unknown): void {
-    const message: WebSocketMessage = { type, payload };
-
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify(message));
-    } else {
-      this.pendingMessages.push(message);
+    if (this.socket?.connected) {
+      this.socket.emit(type, payload);
     }
   }
 
@@ -133,7 +159,21 @@ class WebSocketService {
    * Mark conversation as read
    */
   sendRead(conversationId: string, messageId: string): void {
-    this.send('read', { conversationId, messageId });
+    this.send('mark_read', { conversationId, messageId });
+  }
+
+  /**
+   * Join a chat room
+   */
+  joinChat(chatId: string): void {
+    this.send('join_chat', { chatId });
+  }
+
+  /**
+   * Leave a chat room
+   */
+  leaveChat(chatId: string): void {
+    this.send('leave_chat', { chatId });
   }
 
   /**
@@ -196,103 +236,7 @@ class WebSocketService {
    * Check if connected
    */
   isConnected(): boolean {
-    return this.socket?.readyState === WebSocket.OPEN;
-  }
-
-  private handleMessage(data: WebSocketMessage): void {
-    switch (data.type) {
-      case 'message':
-        this.messageHandlers.forEach((handler) =>
-          handler(data.payload as Message)
-        );
-        break;
-
-      case 'typing':
-        this.typingHandlers.forEach((handler) =>
-          handler(data.payload as TypingIndicator)
-        );
-        break;
-
-      case 'presence':
-        const { userId, isOnline } = data.payload as {
-          userId: string;
-          isOnline: boolean;
-        };
-        this.presenceHandlers.forEach((handler) => handler(userId, isOnline));
-        break;
-
-      case 'notification':
-        this.notificationHandlers.forEach((handler) =>
-          handler(data.payload as Notification)
-        );
-        break;
-
-      case 'pong':
-        // Heartbeat response
-        break;
-
-      case 'incoming_call':
-        this.incomingCallHandlers.forEach((handler) =>
-          handler(data.payload as IncomingCall)
-        );
-        break;
-
-      case 'call_ended':
-        this.callEndedHandlers.forEach((handler) =>
-          handler(data.payload as CallEndedEvent)
-        );
-        break;
-
-      case 'call_answered':
-        // Call was answered by recipient, handled via call state update
-        break;
-
-      case 'call_declined':
-        this.callEndedHandlers.forEach((handler) =>
-          handler({ ...(data.payload as CallEndedEvent), reason: 'declined' })
-        );
-        break;
-
-      default:
-        console.log('Unknown WebSocket message type:', data.type);
-    }
-  }
-
-  private startHeartbeat(): void {
-    this.heartbeatInterval = setInterval(() => {
-      if (this.socket?.readyState === WebSocket.OPEN) {
-        this.send('ping', {});
-      }
-    }, 30000);
-  }
-
-  private stopHeartbeat(): void {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-    }
-  }
-
-  private scheduleReconnect(token: string): void {
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts);
-    this.reconnectAttempts++;
-
-    console.log(
-      `Scheduling WebSocket reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`
-    );
-
-    setTimeout(() => {
-      this.connect(token);
-    }, delay);
-  }
-
-  private flushPendingMessages(): void {
-    while (this.pendingMessages.length > 0) {
-      const message = this.pendingMessages.shift();
-      if (message && this.socket?.readyState === WebSocket.OPEN) {
-        this.socket.send(JSON.stringify(message));
-      }
-    }
+    return this.socket?.connected ?? false;
   }
 
   private notifyConnectionHandlers(connected: boolean): void {
