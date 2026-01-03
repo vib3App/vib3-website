@@ -261,6 +261,56 @@ export const messagesApi = {
     );
     return data.unreadCount;
   },
+
+  /**
+   * Get message requests (messages from non-followers)
+   */
+  async getMessageRequests(page = 1, limit = 20): Promise<PaginatedResponse<Conversation>> {
+    try {
+      const { data } = await apiClient.get<{
+        requests: ConversationResponse[];
+        total: number;
+        page: number;
+        hasMore: boolean;
+      }>('/messages/requests', { params: { page, limit } });
+
+      return {
+        items: data.requests.map(transformConversation),
+        total: data.total,
+        page: data.page,
+        hasMore: data.hasMore,
+      };
+    } catch (error) {
+      console.warn('Message requests endpoint not available:', error);
+      return { items: [], total: 0, page, hasMore: false };
+    }
+  },
+
+  /**
+   * Accept a message request
+   */
+  async acceptRequest(conversationId: string): Promise<void> {
+    await apiClient.post(`/messages/requests/${conversationId}/accept`);
+  },
+
+  /**
+   * Decline a message request
+   */
+  async declineRequest(conversationId: string): Promise<void> {
+    await apiClient.post(`/messages/requests/${conversationId}/decline`);
+  },
+
+  /**
+   * Get message request count
+   */
+  async getRequestCount(): Promise<number> {
+    try {
+      const { data } = await apiClient.get<{ count: number }>('/messages/requests/count');
+      return data.count;
+    } catch {
+      return 0;
+    }
+  },
 };
 
 function transformMessage(data: MessageResponse): Message {

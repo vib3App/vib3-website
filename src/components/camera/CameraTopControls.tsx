@@ -2,6 +2,7 @@
 
 interface CameraTopControlsProps {
   flashOn: boolean;
+  torchSupported?: boolean;
   timerMode: 0 | 3 | 10;
   recordingState: 'idle' | 'recording' | 'paused' | 'preview';
   recordingDuration: number;
@@ -15,6 +16,7 @@ interface CameraTopControlsProps {
 
 export function CameraTopControls({
   flashOn,
+  torchSupported = false,
   timerMode,
   recordingState,
   recordingDuration,
@@ -37,7 +39,15 @@ export function CameraTopControls({
         <div className="flex items-center gap-3">
           <button
             onClick={onFlashToggle}
-            className={`w-10 h-10 rounded-full flex items-center justify-center ${flashOn ? 'bg-yellow-500' : 'bg-black/30'}`}
+            disabled={!torchSupported}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              !torchSupported
+                ? 'bg-black/20 opacity-50 cursor-not-allowed'
+                : flashOn
+                  ? 'bg-yellow-500'
+                  : 'bg-black/30'
+            }`}
+            title={torchSupported ? (flashOn ? 'Turn off flash' : 'Turn on flash') : 'Flash not available on this device'}
           >
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M7 2v11h3v9l7-12h-4l4-8z" />

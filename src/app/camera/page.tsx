@@ -72,12 +72,13 @@ export default function CameraPage() {
       {camera.recordingState !== 'preview' && (
         <CameraTopControls
           flashOn={camera.flashOn}
+          torchSupported={camera.torchSupported}
           timerMode={camera.timerMode}
           recordingState={camera.recordingState}
           recordingDuration={camera.recordingDuration}
           maxDuration={camera.maxDuration}
           onClose={camera.goBack}
-          onFlashToggle={() => camera.setFlashOn(!camera.flashOn)}
+          onFlashToggle={camera.toggleFlash}
           onTimerCycle={camera.cycleTimer}
           onFlipCamera={camera.flipCamera}
           formatTime={camera.formatTime}

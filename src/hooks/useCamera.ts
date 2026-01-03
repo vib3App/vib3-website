@@ -49,6 +49,7 @@ export function useCamera() {
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [maxDuration] = useState(180);
   const [flashOn, setFlashOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
   const [timerMode, setTimerMode] = useState<0 | 3 | 10>(0);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -80,6 +81,17 @@ export function useCamera() {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+
+      // Check if torch/flash is supported on this device
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        const capabilities = videoTrack.getCapabilities?.();
+        const hasTorch = capabilities && 'torch' in capabilities;
+        setTorchSupported(!!hasTorch);
+        // Reset flash state when switching cameras
+        setFlashOn(false);
+      }
+
       setError(null);
     } catch (err) {
       console.error('Failed to access camera:', err);
@@ -107,6 +119,23 @@ export function useCamera() {
   const flipCamera = useCallback(() => {
     setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
   }, []);
+
+  const toggleFlash = useCallback(async () => {
+    if (!streamRef.current || !torchSupported) return;
+
+    const videoTrack = streamRef.current.getVideoTracks()[0];
+    if (!videoTrack) return;
+
+    try {
+      const newFlashState = !flashOn;
+      await videoTrack.applyConstraints({
+        advanced: [{ torch: newFlashState } as MediaTrackConstraintSet],
+      });
+      setFlashOn(newFlashState);
+    } catch (err) {
+      console.error('Failed to toggle flash:', err);
+    }
+  }, [flashOn, torchSupported]);
 
   const startRecording = useCallback(() => {
     if (!streamRef.current) return;
@@ -247,7 +276,8 @@ export function useCamera() {
     recordingDuration,
     maxDuration,
     flashOn,
-    setFlashOn,
+    torchSupported,
+    toggleFlash,
     timerMode,
     countdown,
     showFilters,

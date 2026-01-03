@@ -302,4 +302,34 @@ export const userApi = {
   async reportUser(userId: string, reason: string): Promise<void> {
     await apiClient.post(`/users/${userId}/report`, { reason });
   },
+
+  /**
+   * Get videos where user is tagged
+   */
+  async getTaggedVideos(page = 1, limit = 20): Promise<UserVideosResponse> {
+    try {
+      const { data } = await apiClient.get<UserVideosResponse>('/user/tagged-videos', {
+        params: { page, limit },
+      });
+      return data;
+    } catch (error) {
+      console.warn('Tagged videos endpoint not available:', error);
+      return { videos: [] };
+    }
+  },
+
+  /**
+   * Get blocked users list
+   */
+  async getBlockedUsers(page = 1, limit = 50): Promise<{ users: Array<{ id: string; username: string; displayName?: string; avatar?: string; blockedAt: string }>; hasMore: boolean }> {
+    try {
+      const { data } = await apiClient.get<{ users: Array<{ id: string; username: string; displayName?: string; avatar?: string; blockedAt: string }>; hasMore: boolean }>('/user/blocked', {
+        params: { page, limit },
+      });
+      return data;
+    } catch (error) {
+      console.warn('Blocked users endpoint not available:', error);
+      return { users: [], hasMore: false };
+    }
+  },
 };

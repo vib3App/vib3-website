@@ -107,42 +107,128 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification handler
 self.addEventListener('push', (event) => {
-  const data = event.data?.json() || {};
+  console.log('[SW] Push received:', event);
+
+  let data = {
+    title: 'VIB3',
+    body: 'You have a new notification',
+    type: 'general',
+  };
+
+  if (event.data) {
+    try {
+      data = { ...data, ...event.data.json() };
+    } catch (e) {
+      console.error('[SW] Error parsing push data:', e);
+    }
+  }
+
+  // Determine icon based on notification type
+  let icon = '/vib3-logo.png';
+  let actions = [];
+
+  switch (data.type) {
+    case 'like':
+      actions = [{ action: 'view', title: 'View Video' }];
+      break;
+    case 'comment':
+      actions = [
+        { action: 'view', title: 'View' },
+        { action: 'reply', title: 'Reply' },
+      ];
+      break;
+    case 'follow':
+      actions = [{ action: 'view', title: 'View Profile' }];
+      break;
+    case 'message':
+      actions = [
+        { action: 'view', title: 'Open' },
+        { action: 'reply', title: 'Reply' },
+      ];
+      break;
+    case 'live':
+      actions = [{ action: 'view', title: 'Watch Live' }];
+      break;
+    case 'mention':
+      actions = [{ action: 'view', title: 'View' }];
+      break;
+  }
 
   const options = {
-    body: data.body || 'New notification',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/badge-72.png',
-    vibrate: [100, 50, 100],
+    body: data.body,
+    icon: icon,
+    badge: '/vib3-logo.png',
+    vibrate: [200, 100, 200],
+    tag: data.tag || `vib3-${data.type}-${Date.now()}`,
+    requireInteraction: data.type === 'live' || data.type === 'message',
     data: {
+      type: data.type,
       url: data.url || '/',
+      videoId: data.videoId,
+      userId: data.userId,
+      conversationId: data.conversationId,
+      streamId: data.streamId,
     },
-    actions: data.actions || [],
+    actions,
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || 'VIB3', options)
+    self.registration.showNotification(data.title, options)
   );
 });
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.action, event.notification.data);
   event.notification.close();
 
-  const url = event.notification.data?.url || '/';
+  const data = event.notification.data || {};
+  let url = data.url || '/';
+
+  // Route based on notification type
+  if (data.type === 'like' || data.type === 'comment' || data.type === 'mention') {
+    url = data.videoId ? `/video/${data.videoId}` : '/';
+    if (data.type === 'comment' && event.action === 'reply') {
+      url += '?showComments=true';
+    }
+  } else if (data.type === 'follow') {
+    url = data.userId ? `/profile/${data.userId}` : '/';
+  } else if (data.type === 'message') {
+    url = data.conversationId ? `/messages/${data.conversationId}` : '/messages';
+  } else if (data.type === 'live') {
+    url = data.streamId ? `/live/${data.streamId}` : '/live';
+  }
+
+  // Handle action-specific behavior
+  if (event.action === 'dismiss') {
+    return;
+  }
 
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((clientList) => {
-      // Focus existing window if open
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Try to focus an existing window
       for (const client of clientList) {
-        if (client.url === url && 'focus' in client) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          // Send message to client
+          client.postMessage({
+            type: 'NOTIFICATION_CLICK',
+            data: data,
+          });
+          client.navigate(url);
           return client.focus();
         }
       }
-      // Open new window
-      return clients.openWindow(url);
+      // Open new window if none exists
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
     })
   );
+});
+
+// Handle notification close
+self.addEventListener('notificationclose', (event) => {
+  console.log('[SW] Notification closed');
 });
 
 // Background sync for offline actions

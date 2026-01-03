@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
 import { videoApi } from '@/services/api';
+import { videoDownloadService } from '@/services/videoDownload';
 import type { Video } from '@/types';
 
 interface VideoActionsProps {
@@ -31,6 +32,8 @@ export function VideoActions({
   const [likesCount, setLikesCount] = useState(video.likesCount || 0);
   const [isSaved, setIsSaved] = useState(false);
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const handleLike = async () => {
     if (!isAuthenticated) {
@@ -72,6 +75,37 @@ export function VideoActions({
       });
     } else {
       onShareClick?.();
+    }
+  };
+
+  const handleDownload = async () => {
+    if (isDownloading) return;
+
+    setIsDownloading(true);
+    setDownloadProgress(0);
+
+    try {
+      await videoDownloadService.downloadVideo(
+        video.videoUrl,
+        video.id,
+        {
+          onProgress: (progress) => {
+            setDownloadProgress(progress.percent);
+          },
+          filename: `vib3-${video.username}-${video.id}.mp4`,
+        }
+      );
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Try quick download as fallback
+      try {
+        await videoDownloadService.quickDownload(video.videoUrl, video.id);
+      } catch {
+        alert('Download failed. Please try again.');
+      }
+    } finally {
+      setIsDownloading(false);
+      setDownloadProgress(0);
     }
   };
 
@@ -156,6 +190,27 @@ export function VideoActions({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
         </svg>
         <span className="text-white text-xs font-medium">{formatCount(video.sharesCount || 0)}</span>
+      </button>
+
+      {/* Download */}
+      <button onClick={handleDownload} disabled={isDownloading} className={buttonClass}>
+        <div className="relative">
+          {isDownloading ? (
+            <div className="w-8 h-8 flex items-center justify-center">
+              <svg className="w-6 h-6 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            </div>
+          ) : (
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          )}
+        </div>
+        <span className="text-white text-xs font-medium">
+          {isDownloading ? `${downloadProgress}%` : 'Save'}
+        </span>
       </button>
 
       {/* More options */}

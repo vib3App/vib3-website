@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.1",
     "@heroicons/react": "^2.2.0",
     "@livekit/components-react": "^2.9.17",
     "@react-three/drei": "^10.7.7",

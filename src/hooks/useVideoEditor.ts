@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { videoProcessor, type ProcessingProgress } from '@/services/videoProcessor';
 
 export const EDITOR_FILTERS = [
   { name: 'Normal', filter: 'none' },
@@ -43,14 +44,31 @@ export function useVideoEditor() {
   const [texts, setTexts] = useState<TextOverlay[]>([]);
   const [showTextInput, setShowTextInput] = useState(false);
   const [newText, setNewText] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const originalFileRef = useRef<File | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const thumbnailsRef = useRef<string[]>([]);
 
   useEffect(() => {
     if (!videoUrl) router.push('/upload');
   }, [videoUrl, router]);
+
+  // Store original file reference from session storage
+  useEffect(() => {
+    const storedFile = sessionStorage.getItem('editVideoFile');
+    if (storedFile) {
+      // File was stored as data URL, convert back to blob
+      fetch(storedFile)
+        .then(res => res.blob())
+        .then(blob => {
+          originalFileRef.current = new File([blob], 'video.mp4', { type: 'video/mp4' });
+        })
+        .catch(console.error);
+    }
+  }, []);
 
   const generateThumbnails = useCallback(async () => {
     if (!videoRef.current || thumbnailsRef.current.length > 0) return;
@@ -150,12 +168,80 @@ export function useVideoEditor() {
     setTexts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const handleDone = useCallback(() => {
-    sessionStorage.setItem('editSettings', JSON.stringify({
-      trimStart, trimEnd, filter: EDITOR_FILTERS[selectedFilter].filter, volume, texts,
-    }));
-    router.push('/upload?from=edit');
-  }, [trimStart, trimEnd, selectedFilter, volume, texts, router]);
+  const handleDone = useCallback(async () => {
+    // Check if any edits were made
+    const hasEdits = trimStart > 0 || trimEnd < duration || selectedFilter !== 0 || volume !== 1;
+
+    if (!hasEdits) {
+      // No edits, just pass through
+      sessionStorage.setItem('editSettings', JSON.stringify({
+        trimStart, trimEnd, filter: EDITOR_FILTERS[selectedFilter].filter, volume, texts,
+      }));
+      router.push('/upload?from=edit');
+      return;
+    }
+
+    // Process video with FFmpeg
+    setIsProcessing(true);
+    setProcessingProgress({ stage: 'loading', percent: 0, message: 'Initializing...' });
+
+    try {
+      // Load FFmpeg if not loaded
+      await videoProcessor.load(setProcessingProgress);
+
+      // Get source - use original file or fetch from URL
+      let source: File | Blob | string = videoUrl || '';
+      if (originalFileRef.current) {
+        source = originalFileRef.current;
+      }
+
+      // Process video
+      const processedBlob = await videoProcessor.processVideo(
+        source,
+        {
+          trimStart: trimStart > 0 ? trimStart : undefined,
+          trimEnd: trimEnd < duration ? trimEnd : undefined,
+          filter: selectedFilter !== 0 ? EDITOR_FILTERS[selectedFilter].filter : undefined,
+          volume: volume !== 1 ? volume : undefined,
+        },
+        setProcessingProgress
+      );
+
+      if (processedBlob) {
+        // Store processed video
+        const processedUrl = URL.createObjectURL(processedBlob);
+        sessionStorage.setItem('processedVideoUrl', processedUrl);
+        sessionStorage.setItem('processedVideoBlob', 'true');
+        sessionStorage.setItem('editSettings', JSON.stringify({
+          trimStart: 0, // Already applied
+          trimEnd: processedBlob ? undefined : trimEnd,
+          filter: 'none', // Already applied
+          volume: 1, // Already applied
+          texts,
+        }));
+        router.push('/upload?from=edit&processed=true');
+      } else {
+        // Processing failed, fall back to original
+        console.warn('Processing failed, using original video');
+        sessionStorage.setItem('editSettings', JSON.stringify({
+          trimStart, trimEnd, filter: EDITOR_FILTERS[selectedFilter].filter, volume, texts,
+        }));
+        router.push('/upload?from=edit');
+      }
+    } catch (error) {
+      console.error('Processing error:', error);
+      setProcessingProgress({ stage: 'error', percent: 0, message: 'Processing failed' });
+      // Fall back to original
+      setTimeout(() => {
+        sessionStorage.setItem('editSettings', JSON.stringify({
+          trimStart, trimEnd, filter: EDITOR_FILTERS[selectedFilter].filter, volume, texts,
+        }));
+        router.push('/upload?from=edit');
+      }, 2000);
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [trimStart, trimEnd, duration, selectedFilter, volume, texts, videoUrl, router]);
 
   const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -188,6 +274,8 @@ export function useVideoEditor() {
     setShowTextInput,
     newText,
     setNewText,
+    isProcessing,
+    processingProgress,
     videoRef,
     timelineRef,
     thumbnails: thumbnailsRef.current,

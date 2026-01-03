@@ -42,16 +42,8 @@ class WebSocketService {
 
   /**
    * Connect to WebSocket server
-   * DISABLED: Backend WebSocket endpoint doesn't work for web
    */
-  connect(_token: string): void {
-    // Backend WebSocket is not available for web - skip connection
-    // This prevents connection errors and potential re-render loops
-    console.log('WebSocket disabled for web');
-    return;
-
-    // Original code commented out:
-    /*
+  connect(token: string): void {
     if (this.socket?.readyState === WebSocket.OPEN || this.isConnecting) {
       return;
     }
@@ -98,7 +90,6 @@ class WebSocketService {
       console.error('Failed to create WebSocket:', error);
       this.isConnecting = false;
     }
-    */
   }
 
   /**
