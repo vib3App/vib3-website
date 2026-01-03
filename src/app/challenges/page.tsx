@@ -192,7 +192,7 @@ export default function ChallengesPage() {
                 <span>➕</span> Create Challenge
               </button>
               <Link
-                href="/profile?tab=challenges"
+                href="/challenges/my"
                 className="bg-white/20 backdrop-blur-sm text-white font-semibold px-6 py-3 rounded-full border-2 border-white/30 hover:bg-white/30 transition-colors flex items-center gap-2"
               >
                 <span>🎵</span> My Participations

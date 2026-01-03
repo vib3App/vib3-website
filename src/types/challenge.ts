@@ -48,6 +48,7 @@ export interface Challenge {
   stats: ChallengeStats;
   rules?: string;
   hasJoined?: boolean;
+  isCreator?: boolean; // True if current user created this challenge
   createdAt: string;
   updatedAt: string;
 }
