@@ -40,3 +40,5 @@ export type {
 } from './admin';
 export { callsApi } from './calls';
 export { soundsApi } from './sounds';
+export { creatorSettingsApi } from './creatorSettings';
+export type { CreatorMonetizationSettings, StripeConnectStatus } from './creatorSettings';
