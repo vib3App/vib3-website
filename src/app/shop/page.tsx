@@ -91,16 +91,15 @@ export default function ShopPage() {
       });
       if (response.success) {
         if (response.requiresPayment) {
-          alert('Stripe payment integration coming soon!');
+          setError('Stripe payment integration coming soon. Please use VIB3 coins for now.');
         } else {
-          alert(`Order placed successfully! Order #: ${response.order.orderNumber}`);
           setCart([]);
           setShowCart(false);
         }
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      alert('Failed to complete checkout. Please try again.');
+      setError('Failed to complete checkout. Please try again.');
     } finally {
       setCheckingOut(false);
     }
