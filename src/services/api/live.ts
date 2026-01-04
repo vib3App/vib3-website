@@ -20,12 +20,14 @@ export const liveApi = {
    */
   async getLiveStreams(page = 1, limit = 20): Promise<{ streams: LiveStream[]; hasMore: boolean }> {
     try {
-      const { data } = await apiClient.get<{ streams: LiveStream[]; hasMore: boolean }>('/live/streams', {
+      const { data } = await apiClient.get<{ streams?: LiveStream[]; hasMore?: boolean }>('/live/streams', {
         params: { page, limit },
       });
-      return data;
+      return {
+        streams: data?.streams || [],
+        hasMore: data?.hasMore ?? false,
+      };
     } catch {
-      // Return empty if endpoint not available
       return { streams: [], hasMore: false };
     }
   },
@@ -35,10 +37,9 @@ export const liveApi = {
    */
   async getFollowingLive(): Promise<LiveStream[]> {
     try {
-      const { data } = await apiClient.get<{ streams: LiveStream[] }>('/live/following');
-      return data.streams;
+      const { data } = await apiClient.get<{ streams?: LiveStream[] }>('/live/following');
+      return data?.streams || [];
     } catch {
-      // Return empty if endpoint not available (expected for web)
       return [];
     }
   },
