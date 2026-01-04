@@ -98,7 +98,6 @@ const createApiClient = (): AxiosInstance => {
         const skipRefreshPatterns = ['/auth/me', '/videos/user/', '/users/', '/videos/friends', '/user/videos'];
         const shouldSkipRefresh = skipRefreshPatterns.some(pattern => originalRequest.url?.includes(pattern));
         if (shouldSkipRefresh) {
-          console.log('[API Client] Skipping token refresh for:', originalRequest.url);
           return Promise.reject(formatApiError(error));
         }
 

@@ -124,7 +124,6 @@ export function useFeed() {
   useEffect(() => {
     // For "self" category, wait for auth to be verified since it needs authentication
     if (selectedCategory?.id === 'self' && !isAuthVerified) {
-      console.log('[useFeed] Waiting for auth verification for self category');
       return;
     }
 
@@ -133,19 +132,16 @@ export function useFeed() {
 
     // Skip if we're already loading or just loaded this same combination
     if (isLoadingRef.current) {
-      console.log('[useFeed] Skipping load - already loading');
       return;
     }
 
     // Skip if this is the same category we just loaded (prevents duplicate loads)
     if (lastLoadedCategoryRef.current === currentKey && hasInitialLoadRef.current) {
-      console.log('[useFeed] Skipping load - same category already loaded:', currentKey);
       return;
     }
 
     // Skip if this category previously errored (prevents retry loops)
     if (erroredCategoriesRef.current.has(currentKey)) {
-      console.log('[useFeed] Skipping load - category previously errored:', currentKey);
       return;
     }
 
