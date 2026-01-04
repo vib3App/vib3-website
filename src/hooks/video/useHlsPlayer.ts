@@ -40,9 +40,31 @@ export function useHlsPlayer({ src, onError }: UseHlsPlayerOptions) {
     if (isHls && Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 90,
+        // Optimized for fast startup - NOT low latency live streaming
+        lowLatencyMode: false,
+        // Start at lowest quality for fast initial load, then adapt up
+        startLevel: 0,
+        // Faster ABR adaptation
+        abrEwmaDefaultEstimate: 500000, // 500kbps initial estimate
+        abrEwmaFastLive: 3,
+        abrEwmaSlowLive: 9,
+        abrEwmaFastVoD: 3,
+        abrEwmaSlowVoD: 9,
+        // Buffer settings for quick playback start
+        maxBufferLength: 30,
+        maxMaxBufferLength: 60,
+        maxBufferSize: 60 * 1000 * 1000, // 60MB
+        maxBufferHole: 0.5,
+        // Start loading next segment before current finishes
+        startFragPrefetch: true,
+        // Keep less back buffer to save memory
+        backBufferLength: 30,
+        // Match quality to player size
         capLevelToPlayerSize: true,
+        // Faster fragment loading
+        fragLoadingTimeOut: 20000,
+        fragLoadingMaxRetry: 3,
+        fragLoadingRetryDelay: 1000,
       });
       hlsRef.current = hls;
       hls.loadSource(src);

@@ -81,6 +81,7 @@ export function VideoPlayer({
         muted={muted}
         loop={loop}
         playsInline
+        preload="auto"
         onClick={player.togglePlay}
         onDoubleClick={player.toggleFullscreen}
         onPlay={player.handlePlay}
