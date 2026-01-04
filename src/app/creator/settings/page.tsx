@@ -5,6 +5,28 @@ import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { useAuthStore } from '@/stores/authStore';
 
+function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onToggle();
+      }}
+      className={`w-12 h-7 rounded-full relative transition-colors cursor-pointer ${
+        enabled ? 'bg-purple-500' : 'bg-white/20'
+      }`}
+    >
+      <div
+        className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all duration-200 pointer-events-none ${
+          enabled ? 'right-1' : 'left-1'
+        }`}
+      />
+    </button>
+  );
+}
+
 interface CreatorSettings {
   tipsEnabled: boolean;
   tipsMinimum: number;
@@ -74,22 +96,6 @@ export default function CreatorSettingsPage() {
       </div>
     );
   }
-
-  const Toggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`w-12 h-7 rounded-full relative transition-colors ${
-        enabled ? 'bg-purple-500' : 'bg-white/20'
-      }`}
-    >
-      <div
-        className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all duration-200 ${
-          enabled ? 'right-1' : 'left-1'
-        }`}
-      />
-    </button>
-  );
 
   return (
     <div className="min-h-screen aurora-bg pb-20">
