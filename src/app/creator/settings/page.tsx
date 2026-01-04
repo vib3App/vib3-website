@@ -177,13 +177,13 @@ export default function CreatorSettingsPage() {
                   </div>
                   <button
                     onClick={() => handleToggle('tipsEnabled')}
-                    className={`w-12 h-6 rounded-full transition-colors ${
+                    className={`w-12 h-7 rounded-full relative transition-colors ${
                       settings.tipsEnabled ? 'bg-purple-500' : 'bg-white/20'
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        settings.tipsEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
+                        settings.tipsEnabled ? 'right-1' : 'left-1'
                       }`}
                     />
                   </button>
@@ -214,13 +214,13 @@ export default function CreatorSettingsPage() {
                 </div>
                 <button
                   onClick={() => handleToggle('subscriptionsEnabled')}
-                  className={`w-12 h-6 rounded-full transition-colors ${
+                  className={`w-12 h-7 rounded-full relative transition-colors ${
                     settings.subscriptionsEnabled ? 'bg-purple-500' : 'bg-white/20'
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                      settings.subscriptionsEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                    className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
+                      settings.subscriptionsEnabled ? 'right-1' : 'left-1'
                     }`}
                   />
                 </button>
@@ -237,13 +237,13 @@ export default function CreatorSettingsPage() {
                 </div>
                 <button
                   onClick={() => handleToggle('giftingEnabled')}
-                  className={`w-12 h-6 rounded-full transition-colors ${
+                  className={`w-12 h-7 rounded-full relative transition-colors ${
                     settings.giftingEnabled ? 'bg-purple-500' : 'bg-white/20'
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                      settings.giftingEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                    className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
+                      settings.giftingEnabled ? 'right-1' : 'left-1'
                     }`}
                   />
                 </button>
@@ -258,13 +258,13 @@ export default function CreatorSettingsPage() {
                   <div className="text-white">Notify on gift received</div>
                   <button
                     onClick={() => handleLocalToggle('notifyOnGift')}
-                    className={`w-12 h-6 rounded-full transition-colors ${
+                    className={`w-12 h-7 rounded-full relative transition-colors ${
                       localSettings.notifyOnGift ? 'bg-purple-500' : 'bg-white/20'
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        localSettings.notifyOnGift ? 'translate-x-6' : 'translate-x-0.5'
+                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
+                        localSettings.notifyOnGift ? 'right-1' : 'left-1'
                       }`}
                     />
                   </button>
@@ -274,13 +274,13 @@ export default function CreatorSettingsPage() {
                   <div className="text-white">Notify on new subscriber</div>
                   <button
                     onClick={() => handleLocalToggle('notifyOnSubscription')}
-                    className={`w-12 h-6 rounded-full transition-colors ${
+                    className={`w-12 h-7 rounded-full relative transition-colors ${
                       localSettings.notifyOnSubscription ? 'bg-purple-500' : 'bg-white/20'
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        localSettings.notifyOnSubscription ? 'translate-x-6' : 'translate-x-0.5'
+                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
+                        localSettings.notifyOnSubscription ? 'right-1' : 'left-1'
                       }`}
                     />
                   </button>
@@ -290,13 +290,13 @@ export default function CreatorSettingsPage() {
                   <div className="text-white">Notify on tip received</div>
                   <button
                     onClick={() => handleLocalToggle('notifyOnTip')}
-                    className={`w-12 h-6 rounded-full transition-colors ${
+                    className={`w-12 h-7 rounded-full relative transition-colors ${
                       localSettings.notifyOnTip ? 'bg-purple-500' : 'bg-white/20'
                     }`}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                        localSettings.notifyOnTip ? 'translate-x-6' : 'translate-x-0.5'
+                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
+                        localSettings.notifyOnTip ? 'right-1' : 'left-1'
                       }`}
                     />
                   </button>
