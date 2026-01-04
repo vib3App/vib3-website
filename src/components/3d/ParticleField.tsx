@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo, useState, useCallback } from 'react';
+import { useRef, useMemo, useState, useCallback, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -86,25 +86,44 @@ export function ParticleField({
 }) {
   const [contextLost, setContextLost] = useState(false);
   const [key, setKey] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const handleContextLost = useCallback(() => {
-    console.warn('WebGL context lost, will attempt recovery...');
+  const handleContextLost = useCallback((event: Event) => {
+    // Prevent default to tell browser we're handling recovery
+    event.preventDefault();
+    // Silent handling - no console warning needed
     setContextLost(true);
   }, []);
 
   const handleContextRestored = useCallback(() => {
-    console.log('WebGL context restored');
     setContextLost(false);
     setKey(k => k + 1); // Force re-mount of Canvas
   }, []);
 
-  // Don't render anything if context is lost
-  if (contextLost) {
-    // Try to recover after a short delay
-    setTimeout(() => {
+  // Recovery effect when context is lost
+  useEffect(() => {
+    if (!contextLost) return;
+
+    const timer = setTimeout(() => {
       setContextLost(false);
       setKey(k => k + 1);
     }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [contextLost]);
+
+  // Cleanup event listeners on unmount
+  useEffect(() => {
+    return () => {
+      if (canvasRef.current) {
+        canvasRef.current.removeEventListener('webglcontextlost', handleContextLost as EventListener);
+        canvasRef.current.removeEventListener('webglcontextrestored', handleContextRestored);
+      }
+    };
+  }, [handleContextLost, handleContextRestored]);
+
+  // Don't render Canvas if context is lost
+  if (contextLost) {
     return <div className={`fixed inset-0 -z-10 ${className}`} />;
   }
 
@@ -115,7 +134,8 @@ export function ParticleField({
         camera={{ position: [0, 0, 5], fov: 60 }}
         onCreated={({ gl }) => {
           const canvas = gl.domElement;
-          canvas.addEventListener('webglcontextlost', handleContextLost);
+          canvasRef.current = canvas;
+          canvas.addEventListener('webglcontextlost', handleContextLost as EventListener);
           canvas.addEventListener('webglcontextrestored', handleContextRestored);
         }}
         gl={{
