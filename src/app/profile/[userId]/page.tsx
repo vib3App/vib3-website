@@ -7,6 +7,12 @@ import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { ProfileQRModal } from '@/components/profile/ProfileQRModal';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import {
+  FloatingProfilePicture,
+  FloatingStatBubble,
+  FloatingActionPill,
+  FloatingCircleButton,
+} from '@/components/ui/FloatingPillButton';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
 
@@ -122,46 +128,132 @@ function ProfileHeader({ profile, onBack, onQRClick, showMoreMenu, onToggleMenu,
 
 function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFollow, onEditClick }: { profile: UserProfile; isOwnProfile: boolean; isFollowing: boolean; isFollowLoading: boolean; onFollow: () => void; onEditClick: () => void }) {
   return (
-    <div className="flex flex-col items-center text-center mb-6">
-      <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-teal-400 p-0.5 mb-4">
-        <div className="w-full h-full rounded-full overflow-hidden glass-card">
-          {profile.profilePicture ? (
-            <Image src={profile.profilePicture} alt={profile.username} fill className="object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/70">{(profile.username || 'U').charAt(0).toUpperCase()}</div>
-          )}
-        </div>
+    <div className="flex flex-col items-center text-center mb-8">
+      {/* Floating Profile Picture */}
+      <div className="mb-6">
+        <FloatingProfilePicture
+          src={profile.profilePicture}
+          fallback={(profile.username || 'U').charAt(0).toUpperCase()}
+          size={120}
+        />
         {profile.isVerified && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div className="flex justify-center -mt-3">
+            <div className="w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center border-2 border-black">
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
           </div>
         )}
       </div>
-      <h2 className="text-xl font-bold text-white mb-1">{profile.displayName || profile.username}</h2>
-      <p className="text-white/50 text-sm mb-3">@{profile.username}</p>
-      {profile.bio && <p className="text-white/70 text-sm max-w-md mb-4">{profile.bio}</p>}
-      {!isOwnProfile ? (
-        <button onClick={onFollow} disabled={isFollowLoading} className={`px-8 py-2 rounded-full font-semibold text-sm transition-all ${isFollowing ? 'glass-card text-white' : 'bg-gradient-to-r from-purple-500 to-teal-400 text-white'} disabled:opacity-50`}>
-          {isFollowLoading ? <span className="flex items-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg></span> : isFollowing ? 'Following' : 'Follow'}
-        </button>
-      ) : (
-        <button onClick={onEditClick} className="px-8 py-2 rounded-full font-semibold text-sm glass-card text-white">Edit Profile</button>
-      )}
+
+      {/* Name and Username */}
+      <h2 className="text-2xl font-bold text-white mb-1">{profile.displayName || profile.username}</h2>
+      <p className="text-white/50 text-sm mb-4">@{profile.username}</p>
+      {profile.bio && <p className="text-white/70 text-sm max-w-md mb-6">{profile.bio}</p>}
+
+      {/* Floating Action Buttons */}
+      <div className="flex items-center gap-4">
+        {isOwnProfile ? (
+          <>
+            <FloatingActionPill
+              icon={
+                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              }
+              label="Edit VIB3"
+              onClick={onEditClick}
+            />
+            <FloatingCircleButton
+              icon={
+                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              }
+              onClick={() => {}}
+            />
+            <FloatingCircleButton
+              icon={
+                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              }
+              gradientFrom="#14B8A6"
+              gradientTo="#8B5CF6"
+              onClick={() => {}}
+            />
+          </>
+        ) : (
+          <>
+            <FloatingActionPill
+              icon={
+                isFollowing ? (
+                  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                )
+              }
+              label={isFollowLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+              gradientFrom={isFollowing ? '#10B981' : '#8B5CF6'}
+              gradientTo={isFollowing ? '#34D399' : '#14B8A6'}
+              onClick={onFollow}
+            />
+            <FloatingCircleButton
+              icon={
+                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              }
+              gradientFrom="#14B8A6"
+              gradientTo="#8B5CF6"
+              onClick={() => {}}
+            />
+            <FloatingCircleButton
+              icon={
+                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              }
+              onClick={() => {}}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
 function ProfileStats({ stats }: { stats?: UserProfile['stats'] }) {
-  // Handle undefined stats gracefully
   const following = stats?.following ?? 0;
   const followers = stats?.followers ?? 0;
   const likes = stats?.likes ?? 0;
 
   return (
-    <div className="flex justify-center gap-8 mb-8 py-4 border-y border-white/5">
-      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(following)}</div><div className="text-white/50 text-sm">Following</div></div>
-      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(followers)}</div><div className="text-white/50 text-sm">Followers</div></div>
-      <div className="text-center"><div className="text-xl font-bold text-white">{formatCount(likes)}</div><div className="text-white/50 text-sm">Likes</div></div>
+    <div className="flex justify-center gap-4 mb-8 py-4">
+      <FloatingStatBubble
+        count={following}
+        label="Following"
+        gradientFrom="#8B5CF6"
+        gradientTo="#14B8A6"
+        delay={0}
+      />
+      <FloatingStatBubble
+        count={followers}
+        label="Followers"
+        gradientFrom="#14B8A6"
+        gradientTo="#8B5CF6"
+        delay={0.5}
+      />
+      <FloatingStatBubble
+        count={likes}
+        label="Likes"
+        gradientFrom="#8B5CF6"
+        gradientTo="#14B8A6"
+        delay={1}
+      />
     </div>
   );
 }
