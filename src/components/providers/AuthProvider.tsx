@@ -6,6 +6,8 @@ import { authApi } from '@/services/api';
 
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes (assuming 15min token expiry)
 const TOKEN_REFRESH_MARGIN = 60 * 1000; // 1 minute before expiry
+const MAX_REFRESH_RETRIES = 3;
+const REFRESH_RETRY_DELAY = 2000; // 2 seconds between retries
 
 // Module-level flag to prevent auth verification loops across component remounts
 let hasAttemptedAuthVerification = false;
@@ -26,8 +28,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRefreshingRef = useRef(false);
   const isInitializedRef = useRef(false);
-  const isLoggingOutRef = useRef(false); // Prevent duplicate logout calls
-  const isVerifyingRef = useRef(false); // Prevent duplicate getMe calls
+  const isLoggingOutRef = useRef(false);
+  const isVerifyingRef = useRef(false);
 
   // Parse JWT to get expiration time
   const getTokenExpiry = useCallback((token: string): number | null => {
@@ -35,20 +37,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const parts = token.split('.');
       if (parts.length !== 3) return null;
       const payload = JSON.parse(atob(parts[1]));
-      return payload.exp ? payload.exp * 1000 : null; // Convert to milliseconds
+      return payload.exp ? payload.exp * 1000 : null;
     } catch {
       return null;
     }
   }, []);
 
-  // Refresh the access token
-  const refreshToken = useCallback(async () => {
-    if (isRefreshingRef.current) return;
+  // Refresh the access token with retry logic
+  const refreshToken = useCallback(async (retryCount = 0): Promise<boolean> => {
+    if (isRefreshingRef.current && retryCount === 0) return false;
 
     const storedRefreshToken = localStorage.getItem('refresh_token');
     if (!storedRefreshToken) {
-      logout();
-      return;
+      // No refresh token - but don't logout, just mark as not refreshable
+      // User might still have valid access token
+      return false;
     }
 
     isRefreshingRef.current = true;
@@ -71,13 +74,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // Schedule next refresh
       scheduleTokenRefresh(response.token);
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      logout();
-    } finally {
       isRefreshingRef.current = false;
+      return true;
+    } catch (error: unknown) {
+      isRefreshingRef.current = false;
+
+      // Check if it's a definitive rejection (401/403) vs temporary error
+      const isDefinitiveRejection = error &&
+        typeof error === 'object' &&
+        'status' in error &&
+        (error.status === 401 || error.status === 403);
+
+      if (isDefinitiveRejection) {
+        // Refresh token is invalid - but still don't logout immediately
+        // Just clear the refresh token, keep the session until access token expires
+        localStorage.removeItem('refresh_token');
+        return false;
+      }
+
+      // Network or temporary error - retry
+      if (retryCount < MAX_REFRESH_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, REFRESH_RETRY_DELAY));
+        return refreshToken(retryCount + 1);
+      }
+
+      // Max retries reached - don't logout, just fail silently
+      // User can still use the app until their access token expires
+      return false;
     }
-  }, [user, setUser, logout]);
+  }, [user, setUser]);
 
   // Schedule token refresh before expiry
   const scheduleTokenRefresh = useCallback((token: string) => {
@@ -88,7 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const expiry = getTokenExpiry(token);
     if (!expiry) {
       // If can't parse expiry, refresh at fixed interval
-      refreshTimeoutRef.current = setTimeout(refreshToken, TOKEN_REFRESH_INTERVAL);
+      refreshTimeoutRef.current = setTimeout(() => refreshToken(), TOKEN_REFRESH_INTERVAL);
       return;
     }
 
@@ -96,20 +121,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const timeUntilExpiry = expiry - now;
     const refreshTime = Math.max(timeUntilExpiry - TOKEN_REFRESH_MARGIN, 1000);
 
-    refreshTimeoutRef.current = setTimeout(refreshToken, refreshTime);
+    refreshTimeoutRef.current = setTimeout(() => refreshToken(), refreshTime);
   }, [getTokenExpiry, refreshToken]);
 
-  // Initialize auth state on mount - only if there's a stored token
+  // Initialize auth state on mount
   useEffect(() => {
-    // Prevent duplicate initialization
     if (isInitializedRef.current) return;
     isInitializedRef.current = true;
 
     const initializeAuth = async () => {
-      // Module-level check: if we've already attempted verification in this session,
-      // don't repeat it (prevents loops across component remounts)
+      // Module-level check to prevent loops
       if (hasAttemptedAuthVerification) {
-        console.log('[AuthProvider] Skipping auth verification (already attempted this session)');
         setAuthVerified(true);
         return;
       }
@@ -117,39 +139,52 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const token = localStorage.getItem('auth_token');
 
-      // No token = not authenticated
-      // If Zustand has stale isAuthenticated, clear it
+      // No token = not authenticated, but check if we have persisted user state
       if (!token) {
+        // Check if Zustand has persisted user - if so, try to refresh
         if (isAuthenticated) {
-          logout(); // This sets isAuthVerified: true
+          const refreshed = await refreshToken();
+          if (!refreshed) {
+            // No valid session, clear state
+            logout();
+          }
         } else {
-          setAuthVerified(true); // Mark as verified (no auth)
+          setAuthVerified(true);
         }
         return;
       }
 
       // Check if token is expired
       const expiry = getTokenExpiry(token);
-      if (expiry && expiry < Date.now()) {
+      const isExpired = expiry && expiry < Date.now();
+
+      if (isExpired) {
         // Token expired, try to refresh
-        const refreshTokenValue = localStorage.getItem('refresh_token');
-        if (refreshTokenValue) {
-          await refreshToken();
+        const refreshed = await refreshToken();
+        if (refreshed) {
+          // Successfully refreshed, now verify with backend
+          await verifyWithBackend();
         } else {
-          // No refresh token, clear everything and logout
-          localStorage.removeItem('auth_token');
-          logout();
+          // Couldn't refresh, but don't logout yet
+          // Just mark as verified with current state
+          setAuthVerified(true);
         }
         return;
       }
 
-      // Token valid, verify with backend
-      // Use ref to prevent duplicate getMe calls
-      if (isVerifyingRef.current) {
-        console.log('[AuthProvider] Skipping duplicate getMe call');
+      // Token not expired, verify with backend
+      await verifyWithBackend();
+    };
+
+    const verifyWithBackend = async () => {
+      if (isVerifyingRef.current) return;
+      isVerifyingRef.current = true;
+
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setAuthVerified(true);
         return;
       }
-      isVerifyingRef.current = true;
 
       try {
         const userData = await authApi.getMe();
@@ -161,8 +196,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
           });
           scheduleTokenRefresh(token);
         } else {
-          // API returned null - clear tokens and reset state
-          // Use direct store setState to batch the update and avoid cascade
+          // API returned null - try refresh before giving up
+          const refreshed = await refreshToken();
+          if (!refreshed) {
+            // Keep the persisted state if we have it, just mark as verified
+            setAuthVerified(true);
+          }
+        }
+      } catch {
+        // Verification failed - try refresh before giving up
+        const refreshed = await refreshToken();
+        if (!refreshed) {
+          // Network issue or invalid token
+          // Don't clear everything - if we have persisted state, keep it
+          // User can still try to use the app
+          setAuthVerified(true);
+        }
+      }
+    };
+
+    // Listen for explicit logout events (user clicked logout, not automatic)
+    const handleLogoutEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<{ reason?: string }>;
+      // Only logout if it's an explicit request, not automatic token expiry
+      if (customEvent.detail?.reason === 'user_requested') {
+        if (!isLoggingOutRef.current) {
+          isLoggingOutRef.current = true;
           localStorage.removeItem('auth_token');
           localStorage.removeItem('refresh_token');
           useAuthStore.setState({
@@ -171,32 +230,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             isAuthVerified: true
           });
         }
-      } catch {
-        // Verification failed (401/network error) - clear tokens and reset state
-        // Use direct store setState to batch the update and avoid cascade
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        useAuthStore.setState({
-          user: null,
-          isAuthenticated: false,
-          isAuthVerified: true
-        });
-      }
-    };
-
-    // Listen for logout event from API client (401 responses from other endpoints)
-    const handleLogoutEvent = () => {
-      if (!isLoggingOutRef.current) {
-        isLoggingOutRef.current = true;
-        console.log('[AuthProvider] Received logout event');
-        // Use direct store setState to avoid cascade
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
-        useAuthStore.setState({
-          user: null,
-          isAuthenticated: false,
-          isAuthVerified: true
-        });
       }
     };
     window.addEventListener('auth:logout', handleLogoutEvent);
@@ -230,19 +263,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'auth_token') {
-        if (!e.newValue) {
-          // Token removed in another tab
+        if (!e.newValue && e.oldValue) {
+          // Token removed in another tab - user logged out explicitly
           logout();
-        } else if (e.newValue !== userToken) {
-          // Token changed in another tab - reload to get new state
-          window.location.reload();
+        } else if (e.newValue && e.newValue !== userToken) {
+          // Token changed in another tab - sync the new token
+          // Don't reload, just update state
+          const newRefreshToken = localStorage.getItem('refresh_token');
+          if (user) {
+            setUser({
+              ...user,
+              token: e.newValue,
+              refreshToken: newRefreshToken || '',
+            });
+          }
         }
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [userToken, logout]);
+  }, [userToken, user, setUser, logout]);
 
   return <>{children}</>;
 }

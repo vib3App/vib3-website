@@ -129,22 +129,10 @@ const createApiClient = (): AxiosInstance => {
             }
             return client(originalRequest);
           } else {
-            // Token refresh failed - user needs to re-login
+            // Token refresh failed - but don't auto-logout
+            // Let the user continue with degraded experience
+            // They can manually logout if needed
             onTokenRefreshed('');
-            // Dispatch logout event for the app to handle
-            // Skip for endpoints that shouldn't trigger full logout:
-            // - /auth/me: AuthProvider handles that directly
-            // - /videos/user/: Public profile videos, just fail gracefully
-            // - /users/: Public user profiles, just fail gracefully
-            // - /user/: Current user endpoints handled by profile page
-            // Use setTimeout to defer event to avoid triggering during React render
-            const skipLogoutPatterns = ['/auth/me', '/videos/user/', '/users/', '/user/'];
-            const shouldSkipLogout = skipLogoutPatterns.some(pattern => originalRequest.url?.includes(pattern));
-            if (typeof window !== 'undefined' && !shouldSkipLogout) {
-              setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('auth:logout', { detail: { reason: 'token_expired' } }));
-              }, 0);
-            }
             return Promise.reject(formatApiError(error));
           }
         } catch (refreshError) {
