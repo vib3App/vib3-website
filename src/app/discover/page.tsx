@@ -3,36 +3,25 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { feedApi, soundsApi, challengesApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
-import { AuroraContainer, GlassButton, GlassCard, GlassPill, GradientText, SoundVisualizer } from '@/components/ui/Glass';
+import { AuroraContainer, GlassButton } from '@/components/ui/Glass';
+import {
+  DiscoverHeader,
+  TrendingHeroCard,
+  LivePulseCard,
+  ForYouSection,
+  VibeSelector,
+  TrendingSoundsCard,
+  ChallengeBanner,
+  VideoGridItem,
+  CategoriesSection,
+  WatchPartyCard,
+  TimeCapsuleCard,
+} from '@/components/discover';
 import type { Video } from '@/types';
 import type { Challenge } from '@/types/challenge';
 import type { MusicTrack } from '@/types/sound';
-
-// ═══════════════════════════════════════════════════════════
-// VIBE DATA
-// ═══════════════════════════════════════════════════════════
-
-const VIBES = [
-  { id: 'chill', name: 'Chill', emoji: '😌', color: 'from-blue-500 to-purple-500' },
-  { id: 'hype', name: 'Hype', emoji: '🔥', color: 'from-orange-500 to-pink-500' },
-  { id: 'dark', name: 'Dark', emoji: '🌙', color: 'from-gray-800 to-purple-900' },
-  { id: 'funny', name: 'Funny', emoji: '😂', color: 'from-yellow-400 to-orange-500' },
-  { id: 'aesthetic', name: 'Aesthetic', emoji: '✨', color: 'from-pink-400 to-purple-400' },
-  { id: 'learn', name: 'Learn', emoji: '🧠', color: 'from-green-400 to-teal-500' },
-];
-
-const CATEGORIES = [
-  'Music', 'Dance', 'Comedy', 'Sports', 'Food', 'Gaming', 'Fashion', 'Art'
-];
-
-function formatCount(count: number): string {
-  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-  if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-  return count.toString();
-}
 
 export default function DiscoverPage() {
   const router = useRouter();
@@ -76,374 +65,46 @@ export default function DiscoverPage() {
     }
   };
 
-  // Get first trending video for hero
-  const heroVideo = trendingVideos[0];
+  const handleSoundSelect = (index: number) => {
+    setActiveSound(index);
+    setIsPlaying(true);
+  };
 
   return (
     <AuroraContainer className="min-h-screen bg-[#030014]">
       <TopNav />
 
       <main className="pt-20 md:pt-16 pb-8 overflow-x-hidden">
-        {/* Hero Header */}
-        <header className="px-4 md:px-8 pt-6 pb-4">
-          <div className="flex items-center gap-3 mb-2">
-            <Link href="/feed" className="p-2 hover:bg-white/10 rounded-full transition">
-              <ArrowLeftIcon className="w-5 h-5" />
-            </Link>
-            <h1 className="text-4xl md:text-5xl font-black">
-              <GradientText animate>Discover</GradientText>
-            </h1>
-          </div>
-          <p className="text-white/60 text-lg">Find your next obsession</p>
+        <DiscoverHeader
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onSearchSubmit={handleSearch}
+        />
 
-          {/* Search */}
-          <form onSubmit={handleSearch} className="mt-4 relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search videos, creators, sounds..."
-              className="w-full glass rounded-2xl px-12 py-4 outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50 transition-all"
-            />
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </form>
-        </header>
-
-        {/* Bento Grid */}
         <div className="px-4 md:px-8">
           <div className="bento-grid stagger-children">
+            <TrendingHeroCard video={trendingVideos[0]} />
+            <LivePulseCard />
+            <ForYouSection videos={trendingVideos} isLoading={isLoading} />
+            <VibeSelector activeVibe={activeVibe} onVibeChange={setActiveVibe} />
+            <TrendingSoundsCard
+              sounds={trendingSounds}
+              activeSound={activeSound}
+              isPlaying={isPlaying}
+              onSoundSelect={handleSoundSelect}
+            />
+            <ChallengeBanner challenge={featuredChallenge} />
 
-            {/* ═══ TRENDING HERO ═══ */}
-            <div className="bento-xl glass-card p-0 overflow-hidden group cursor-pointer">
-              <Link href={heroVideo ? `/feed?video=${heroVideo.id}` : '/trending'}>
-                <div className="relative w-full h-full">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-                    style={{
-                      backgroundImage: heroVideo?.thumbnailUrl
-                        ? `url(${heroVideo.thumbnailUrl})`
-                        : 'linear-gradient(135deg, #8B5CF6 0%, #06B6D4 100%)',
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-                  {/* Badge */}
-                  <div className="absolute top-4 left-4">
-                    <GlassPill color="orange">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.17 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10 4.87 12.3 5 14.47C5.06 14.97 5.12 15.47 5.29 15.97C5.43 16.57 5.7 17.17 6 17.7C7.08 19.43 8.95 20.67 10.96 20.92C13.1 21.19 15.39 20.8 17.03 19.32C18.86 17.66 19.5 15 18.56 12.72L18.43 12.46C18.22 12 17.66 11.2 17.66 11.2Z" />
-                      </svg>
-                      TRENDING
-                    </GlassPill>
-                  </div>
-
-                  {/* Content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h2 className="text-2xl font-bold mb-2 line-clamp-2">
-                      {heroVideo?.caption || 'Discover trending content'}
-                    </h2>
-                    <div className="flex items-center gap-3">
-                      {heroVideo?.userAvatar ? (
-                        <img src={heroVideo.userAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500" />
-                      )}
-                      <div>
-                        <p className="font-medium">{heroVideo?.username || 'VIB3 Creator'}</p>
-                        <p className="text-sm text-white/60">{heroVideo ? formatCount(heroVideo.viewsCount || 0) : '0'} views</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-20 h-20 rounded-full glass-heavy flex items-center justify-center glow-pulse">
-                      <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            {/* ═══ LIVE PULSE ═══ */}
-            <div className="bento-md glass-card p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <GlassPill color="pink" pulse>
-                  <span className="w-2 h-2 bg-red-500 rounded-full" />
-                  LIVE NOW
-                </GlassPill>
-              </div>
-
-              <Link href="/live" className="flex-1 relative rounded-xl overflow-hidden mb-3 group">
-                <div
-                  className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                  style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400)' }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-2 left-2 right-2">
-                  <p className="font-medium text-sm truncate">Live streams happening now</p>
-                  <p className="text-xs text-white/60">Tap to explore</p>
-                </div>
-              </Link>
-
-              <GlassButton size="sm" className="w-full">
-                Go Live
-              </GlassButton>
-            </div>
-
-            {/* ═══ FOR YOU TALL ═══ */}
-            <div className="bento-tall glass-card p-4 flex flex-col">
-              <h3 className="font-bold mb-3 flex items-center gap-2">
-                <span className="text-purple-400">✦</span>
-                For You
-              </h3>
-              <div className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
-                {(isLoading ? Array(3).fill(null) : trendingVideos.slice(1, 4)).map((video, i) => (
-                  <Link
-                    key={video?.id || i}
-                    href={video ? `/feed?video=${video.id}` : '#'}
-                    className="block relative aspect-[9/16] rounded-xl overflow-hidden bg-white/5 group"
-                  >
-                    {video?.thumbnailUrl ? (
-                      <>
-                        <div
-                          className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
-                          style={{ backgroundImage: `url(${video.thumbnailUrl})` }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                        <div className="absolute bottom-2 left-2 right-2 flex justify-between text-xs">
-                          <span>{formatCount(video.viewsCount || 0)}</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 animate-pulse bg-white/10" />
-                    )}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* ═══ VIBE SELECTOR ═══ */}
-            <div className="bento-wide glass-card p-4">
-              <h3 className="text-lg font-bold mb-3 gradient-text">Pick Your Vibe</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {VIBES.map((vibe) => (
-                  <button
-                    key={vibe.id}
-                    onClick={() => setActiveVibe(vibe.id === activeVibe ? null : vibe.id)}
-                    className={`
-                      relative rounded-xl p-2 transition-all duration-300
-                      flex flex-col items-center justify-center gap-1
-                      ${activeVibe === vibe.id
-                        ? `bg-gradient-to-br ${vibe.color} scale-105 shadow-lg`
-                        : 'bg-white/5 hover:bg-white/10'
-                      }
-                    `}
-                  >
-                    <span className="text-xl">{vibe.emoji}</span>
-                    <span className="text-xs font-medium">{vibe.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ═══ TRENDING SOUNDS ═══ */}
-            <div className="bento-md glass-card p-4 flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold">Trending Sounds</h3>
-                <SoundVisualizer isPlaying={isPlaying} />
-              </div>
-
-              <div className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
-                {trendingSounds.length === 0 ? (
-                  <p className="text-white/40 text-center py-4 text-sm">No sounds available</p>
-                ) : trendingSounds.map((sound, i) => (
-                  <button
-                    key={sound._id || sound.id || i}
-                    onClick={() => {
-                      setActiveSound(i);
-                      setIsPlaying(true);
-                    }}
-                    className={`
-                      w-full flex items-center gap-3 p-2 rounded-xl transition-all
-                      ${activeSound === i ? 'bg-white/10' : 'hover:bg-white/5'}
-                    `}
-                  >
-                    {sound.coverUrl ? (
-                      <img
-                        src={sound.coverUrl}
-                        alt={sound.title || 'Sound'}
-                        className="w-10 h-10 rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg">
-                        🎵
-                      </div>
-                    )}
-                    <div className="flex-1 text-left min-w-0">
-                      <p className="font-medium text-sm truncate">{sound.title || 'Untitled'}</p>
-                      <p className="text-xs text-white/60 truncate">{sound.artist || 'Unknown Artist'}</p>
-                    </div>
-                    <span className="text-xs text-white/40">{formatCount(sound.plays || 0)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ═══ CHALLENGE BANNER ═══ */}
-            {featuredChallenge ? (
-              <div className="bento-wide glass-card p-0 overflow-hidden">
-                <Link href={`/hashtag/${featuredChallenge.hashtag}`} prefetch={false}>
-                  <div className="relative w-full h-full">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{
-                        backgroundImage: featuredChallenge.coverImage
-                          ? `url(${featuredChallenge.coverImage})`
-                          : 'linear-gradient(135deg, #8B5CF6 0%, #F97316 100%)'
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-900/90 via-purple-900/70 to-transparent" />
-
-                    <div className="relative h-full flex items-center justify-between p-4">
-                      <div>
-                        <GlassPill color="purple" className="mb-2">
-                          #{featuredChallenge.hashtag}
-                        </GlassPill>
-                        <h3 className="text-lg font-bold mb-1">{featuredChallenge.title}</h3>
-                        <div className="flex items-center gap-4 text-sm">
-                          <span className="text-white/60">
-                            {formatCount(featuredChallenge.stats?.participantCount || 0)} joined
-                          </span>
-                          {featuredChallenge.endDate && (
-                            <span className="text-orange-400">
-                              Ends {new Date(featuredChallenge.endDate).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {featuredChallenge.prize && (
-                        <div className="text-right">
-                          <p className="text-xs text-white/60 mb-1">Prize</p>
-                          <p className="text-xl font-bold gradient-text">{featuredChallenge.prize}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            ) : (
-              <div className="bento-wide glass-card p-6 flex items-center justify-center">
-                <Link href="/challenges" className="text-center">
-                  <h3 className="text-lg font-bold mb-2">Explore Challenges</h3>
-                  <p className="text-white/60 text-sm">Join trending challenges and go viral</p>
-                </Link>
-              </div>
-            )}
-
-            {/* ═══ VIDEO GRID ═══ */}
             {trendingVideos.slice(4, 8).map((video, i) => (
-              <div
-                key={video.id}
-                className={`${i === 0 ? 'bento-md' : 'bento-sm'} glass-card p-0 overflow-hidden group cursor-pointer`}
-              >
-                <Link href={`/feed?video=${video.id}`}>
-                  <div className="relative w-full h-full">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                      style={{ backgroundImage: `url(${video.thumbnailUrl})` }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-
-                    <div className="absolute bottom-2 left-2 right-2 flex justify-between text-xs">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z" />
-                        </svg>
-                        {formatCount(video.viewsCount || 0)}
-                      </span>
-                    </div>
-
-                    {/* Hover Play */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
-                        <svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
+              <VideoGridItem key={video.id} video={video} size={i === 0 ? 'md' : 'sm'} />
             ))}
 
-            {/* ═══ CATEGORIES ═══ */}
-            <div className="bento-wide glass-card p-4">
-              <h3 className="font-bold mb-3">Quick Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((cat) => (
-                  <Link key={cat} href={`/category/${cat.toLowerCase()}`} prefetch={false}>
-                    <GlassButton size="sm" variant="ghost" className="text-sm hover:scale-105 transition-transform">
-                      {cat}
-                    </GlassButton>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* ═══ WATCH PARTY PROMO ═══ */}
-            <div className="bento-lg glass-card p-0 overflow-hidden group">
-              <Link href="/watch-party">
-                <div className="relative w-full h-full">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-700"
-                    style={{
-                      backgroundImage: 'url(https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800)',
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-900/90 via-purple-900/70 to-teal-900/50" />
-                  <div className="relative h-full flex flex-col items-center justify-center text-center p-6">
-                    <h3 className="text-2xl font-black mb-2">Watch Party</h3>
-                    <p className="text-white/70 mb-4">Watch together with friends in real-time</p>
-                    <GlassButton variant="brutal">
-                      Start Party
-                    </GlassButton>
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            {/* ═══ TIME CAPSULE ═══ */}
-            <div className="bento-wide glass-card p-6 text-center">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <span className="text-3xl">⏳</span>
-                <h3 className="text-xl font-bold">Time Capsules</h3>
-              </div>
-              <p className="text-white/60 mb-4">Save moments that unlock on a special date</p>
-              <Link href="/capsule/create">
-                <GlassButton variant="glass" glow>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Create Capsule
-                </GlassButton>
-              </Link>
-            </div>
-
+            <CategoriesSection />
+            <WatchPartyCard />
+            <TimeCapsuleCard />
           </div>
         </div>
 
-        {/* Floating Create Button */}
         <div className="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 z-40">
           <Link href="/upload">
             <GlassButton variant="brutal" size="lg" className="shadow-2xl">

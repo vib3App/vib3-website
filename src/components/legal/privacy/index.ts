@@ -1,0 +1,11 @@
+export { IntroSection } from './IntroSection';
+export { InformationCollectedSection } from './InformationCollectedSection';
+export { HowWeUseSection } from './HowWeUseSection';
+export { HowWeShareSection } from './HowWeShareSection';
+export { ChildrensPrivacySection } from './ChildrensPrivacySection';
+export { YourRightsSection } from './YourRightsSection';
+export { DataSecuritySection } from './DataSecuritySection';
+export { InternationalTransfersSection } from './InternationalTransfersSection';
+export { ChangesSection } from './ChangesSection';
+export { ContactSection } from './ContactSection';
+export { SummarySection } from './SummarySection';

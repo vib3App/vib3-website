@@ -5,3 +5,5 @@ export { GiftsModal, GuestRequestsModal } from './LiveStreamModals';
 export { LiveFloatingReactions } from './LiveFloatingReactions';
 export { LiveSetupStep } from './LiveSetupStep';
 export { LivePreviewStep } from './LivePreviewStep';
+export { LiveStreamCard } from './LiveStreamCard';
+export { WhyGoLiveSection } from './WhyGoLiveSection';

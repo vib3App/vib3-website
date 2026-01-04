@@ -5,4 +5,5 @@ export { ThemeCustomizer, ThemeToggle } from './ThemeCustomizer';
 export { ProfileCustomizer } from './ProfileCustomizer';
 
 // Sync
-export { PreferenceSyncPanel, usePreferenceSync } from './PreferenceSync';
+export { PreferenceSyncPanel } from './PreferenceSyncPanel';
+export { usePreferenceSync } from './usePreferenceSync';

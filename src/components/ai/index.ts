@@ -8,4 +8,6 @@ export { VideoInsights, AISummaryBadge } from './VideoInsights';
 export { ContentRecommendations, WhyThisVideo } from './ContentRecommendation';
 
 // Smart Suggestions
-export { BestTimeToPost, TrendingSounds, HashtagSuggestions } from './SmartSuggestions';
+export { BestTimeToPost } from './BestTimeToPost';
+export { TrendingSounds } from './TrendingSounds';
+export { HashtagSuggestions } from './HashtagSuggestions';
