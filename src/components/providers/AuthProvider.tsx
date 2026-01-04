@@ -199,18 +199,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // API returned null - try refresh before giving up
           const refreshed = await refreshToken();
           if (!refreshed) {
-            // Keep the persisted state if we have it, just mark as verified
-            setAuthVerified(true);
+            // Token is invalid - clear auth state
+            console.log('Auth returned null, clearing auth state');
+            logout();
           }
         }
       } catch {
         // Verification failed - try refresh before giving up
         const refreshed = await refreshToken();
         if (!refreshed) {
-          // Network issue or invalid token
-          // Don't clear everything - if we have persisted state, keep it
-          // User can still try to use the app
-          setAuthVerified(true);
+          // Token is invalid and refresh failed - clear auth state
+          // This prevents the "logged in but can't do anything" state
+          console.log('Auth verification failed, clearing auth state');
+          logout();
         }
       }
     };
