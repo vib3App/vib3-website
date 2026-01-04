@@ -24,9 +24,8 @@ export const liveApi = {
         params: { page, limit },
       });
       return data;
-    } catch (error) {
-      // Return empty if endpoint not available
-      console.warn('Live streams endpoint not available:', error);
+    } catch {
+      // Return empty if endpoint not available (expected for web)
       return { streams: [], hasMore: false };
     }
   },
@@ -38,9 +37,8 @@ export const liveApi = {
     try {
       const { data } = await apiClient.get<{ streams: LiveStream[] }>('/live/following');
       return data.streams;
-    } catch (error) {
-      // Return empty if endpoint not available
-      console.warn('Following live streams endpoint not available:', error);
+    } catch {
+      // Return empty if endpoint not available (expected for web)
       return [];
     }
   },
