@@ -8,12 +8,16 @@ interface LiveStreamCardProps {
   stream: LiveStream;
 }
 
-function formatViewers(count: number): string {
+function formatViewers(count?: number): string {
+  if (!count) return '0';
   if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
   return count.toString();
 }
 
 export function LiveStreamCard({ stream }: LiveStreamCardProps) {
+  const hostUsername = stream.hostUsername || 'Unknown';
+  const title = stream.title || 'Untitled Stream';
+
   return (
     <Link href={`/live/${stream.id}`} className="block group">
       <div className="glass-card p-2 hover:border-red-500/30">
@@ -21,7 +25,7 @@ export function LiveStreamCard({ stream }: LiveStreamCardProps) {
           {stream.thumbnailUrl ? (
             <Image
               src={stream.thumbnailUrl}
-              alt={stream.title}
+              alt={title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
@@ -56,17 +60,17 @@ export function LiveStreamCard({ stream }: LiveStreamCardProps) {
             <div className="absolute inset-0 bg-red-500 rounded-full blur-sm opacity-50 animate-pulse" />
             <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-red-500">
               {stream.hostAvatar ? (
-                <Image src={stream.hostAvatar} alt={stream.hostUsername} width={40} height={40} className="object-cover" />
+                <Image src={stream.hostAvatar} alt={hostUsername} width={40} height={40} className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-purple-500 to-red-500 flex items-center justify-center text-white font-bold">
-                  {stream.hostUsername.charAt(0).toUpperCase()}
+                  {hostUsername.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-white font-medium truncate group-hover:text-white/90">{stream.title}</h3>
-            <p className="text-white/50 text-sm">@{stream.hostUsername}</p>
+            <h3 className="text-white font-medium truncate group-hover:text-white/90">{title}</h3>
+            <p className="text-white/50 text-sm">@{hostUsername}</p>
           </div>
         </div>
       </div>
