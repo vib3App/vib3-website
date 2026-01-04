@@ -28,7 +28,7 @@ const features = [
   },
   {
     icon: '💰',
-    title: 'Creator Fund',
+    title: 'Creator Fund (Coming Soon)',
     description: 'Monetize your content through tips, subscriptions, and the VIB3 Creator Fund.',
     gradient: 'from-[#10B981] to-[#34D399]',
   },

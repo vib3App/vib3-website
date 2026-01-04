@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { Card3D, CardFloating } from '@/components/ui/Card3D';
+import { Card3D } from '@/components/ui/Card3D';
 
 export function Creators() {
   return (
@@ -60,55 +60,32 @@ export function Creators() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold mb-1">Creator Fund</h3>
+                  <h3 className="text-white font-semibold mb-1">Creator Fund <span className="text-xs text-purple-400">(Coming Soon)</span></h3>
                   <p className="text-white/50 text-sm">Get paid based on your video performance. No minimum follower count to start.</p>
                 </div>
               </div>
             </div>
-
-            <button className="mt-10 px-8 py-4 bg-gradient-to-r from-purple-500 to-teal-400 rounded-xl font-semibold transition-all hover:shadow-lg hover:shadow-purple-500/30">
-              Start Earning Today
-            </button>
           </div>
 
           {/* Right: Visual */}
           <div className="relative">
             <Card3D intensity={12} glowColor="purple" className="aspect-square max-w-md mx-auto">
-              <div className="p-8 relative overflow-hidden h-full">
+              <div className="p-8 relative overflow-hidden h-full flex flex-col items-center justify-center">
                 {/* Decorative elements */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl" />
 
-                {/* Mock earnings card */}
-                <CardFloating delay={0} className="relative bg-[#252B3B]/80 p-6 mb-6">
-                  <div className="text-white/50 text-sm mb-2">This Month&apos;s Earnings</div>
-                  <div className="text-4xl font-bold text-white mb-1 breathe-glow">$12,847</div>
-                  <div className="flex items-center gap-2 text-teal-400 text-sm">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                {/* Creator-focused visual */}
+                <div className="text-center relative z-10">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center">
+                    <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                    +23% from last month
                   </div>
-                </CardFloating>
-
-                {/* Mock stats */}
-                <div className="grid grid-cols-2 gap-4">
-                  <CardFloating delay={0.1} className="bg-[#252B3B]/80 p-4">
-                    <div className="text-2xl font-bold text-white">2.4M</div>
-                    <div className="text-white/50 text-xs">Video Views</div>
-                  </CardFloating>
-                  <CardFloating delay={0.2} className="bg-[#252B3B]/80 p-4">
-                    <div className="text-2xl font-bold text-white">847K</div>
-                    <div className="text-white/50 text-xs">Followers</div>
-                  </CardFloating>
-                  <CardFloating delay={0.3} className="bg-[#252B3B]/80 p-4">
-                    <div className="text-2xl font-bold text-white">12.4K</div>
-                    <div className="text-white/50 text-xs">Gifts Received</div>
-                  </CardFloating>
-                  <CardFloating delay={0.4} className="bg-[#252B3B]/80 p-4">
-                    <div className="text-2xl font-bold text-white">3.2K</div>
-                    <div className="text-white/50 text-xs">Subscribers</div>
-                  </CardFloating>
+                  <h3 className="text-2xl font-bold text-white mb-2">Create & Share</h3>
+                  <p className="text-white/60 text-sm max-w-xs">
+                    Build your audience with powerful creation tools and reach fans worldwide
+                  </p>
                 </div>
               </div>
             </Card3D>

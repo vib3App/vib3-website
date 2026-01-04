@@ -46,7 +46,7 @@ export function Footer() {
                 <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">Download App</a>
               </li>
               <li>
-                <a href="#" className="text-white/40 hover:text-white text-sm transition-colors">Creator Fund</a>
+                <span className="text-white/40 text-sm">Creator Fund <span className="text-purple-400 text-xs">(Coming Soon)</span></span>
               </li>
             </ul>
           </div>
