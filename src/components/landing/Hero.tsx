@@ -22,8 +22,8 @@ export function Hero() {
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* Animated Logo */}
         <ScaleUp>
-          <div className="w-[149px] h-[149px] mx-auto mb-8">
-            <AnimatedLogo size={149} />
+          <div className="w-[194px] h-[194px] mx-auto mb-8">
+            <AnimatedLogo size={194} />
           </div>
         </ScaleUp>
 
