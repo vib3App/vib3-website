@@ -4,8 +4,9 @@
  */
 'use client';
 
+import Link from 'next/link';
 import { AppStoreButtons } from './AppStoreButtons';
-import { FadeUp, AnimatedButton, AnimatedStat, ScaleUp, StaggerContainer } from '@/components/motion';
+import { FadeUp, AnimatedStat, ScaleUp } from '@/components/motion';
 import { ParticleField } from '@/components/3d';
 import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { MoodIndicator } from '@/components/ai';
@@ -53,9 +54,12 @@ export function Hero() {
         {/* CTA Button */}
         <FadeUp delay={0.2}>
           <div className="flex items-center justify-center mb-12">
-            <AnimatedButton variant="primary" className="px-10 py-4 text-lg glow-pulse">
+            <Link
+              href="/login"
+              className="px-10 py-4 text-lg font-semibold rounded-xl bg-gradient-to-r from-purple-500 to-teal-400 text-white glow-pulse hover:scale-105 transition-transform"
+            >
               Start Creating
-            </AnimatedButton>
+            </Link>
           </div>
         </FadeUp>
 
