@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -75,6 +75,7 @@ function Particles({ count = 500, color = '#8B5CF6', size = 0.02, speed = 0.2 }:
 
 /**
  * Ambient particle field background
+ * Handles WebGL context loss gracefully
  */
 export function ParticleField({
   count = 500,
@@ -83,9 +84,47 @@ export function ParticleField({
   count?: number;
   className?: string;
 }) {
+  const [contextLost, setContextLost] = useState(false);
+  const [key, setKey] = useState(0);
+
+  const handleContextLost = useCallback(() => {
+    console.warn('WebGL context lost, will attempt recovery...');
+    setContextLost(true);
+  }, []);
+
+  const handleContextRestored = useCallback(() => {
+    console.log('WebGL context restored');
+    setContextLost(false);
+    setKey(k => k + 1); // Force re-mount of Canvas
+  }, []);
+
+  // Don't render anything if context is lost
+  if (contextLost) {
+    // Try to recover after a short delay
+    setTimeout(() => {
+      setContextLost(false);
+      setKey(k => k + 1);
+    }, 1000);
+    return <div className={`fixed inset-0 -z-10 ${className}`} />;
+  }
+
   return (
     <div className={`fixed inset-0 -z-10 ${className}`}>
-      <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+      <Canvas
+        key={key}
+        camera={{ position: [0, 0, 5], fov: 60 }}
+        onCreated={({ gl }) => {
+          const canvas = gl.domElement;
+          canvas.addEventListener('webglcontextlost', handleContextLost);
+          canvas.addEventListener('webglcontextrestored', handleContextRestored);
+        }}
+        gl={{
+          powerPreference: 'low-power',
+          antialias: false,
+          alpha: true,
+          failIfMajorPerformanceCaveat: false,
+        }}
+      >
         <Particles count={count} color="#8B5CF6" size={0.015} />
         <Particles count={count / 2} color="#14B8A6" size={0.01} speed={0.3} />
       </Canvas>
