@@ -28,7 +28,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-white/40 text-sm leading-relaxed">
-              The next-generation social video platform where creators thrive.
+              Built for creators, by a creator. Where your voice matters.
             </p>
           </div>
 

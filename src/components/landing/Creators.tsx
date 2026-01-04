@@ -25,7 +25,7 @@ export function Creators() {
             </h2>
 
             <p className="text-white/60 text-lg mb-8 leading-relaxed">
-              VIB3 isn't just another platform. We're built for creators who want to grow their audience and actually get paid for their work.
+              A platform of the people, by a creator, for everyone. Speak freely, create boldly, and be heard.
             </p>
 
             <div className="space-y-6">

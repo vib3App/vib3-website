@@ -38,17 +38,17 @@ export function Hero() {
 
         {/* Main headline */}
         <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-          <span className="text-white">Create. Share.</span>
+          <span className="text-white">Your Voice.</span>
           <br />
           <span className="bg-gradient-to-r from-purple-500 via-purple-400 to-teal-400 bg-clip-text text-transparent">
-            Go Viral.
+            Your Platform.
           </span>
         </h1>
 
         {/* Description */}
         <p className="text-xl md:text-2xl text-white/60 max-w-2xl mx-auto mb-10 leading-relaxed">
-          The next-generation platform where creators thrive.
-          Powerful tools, real monetization, and a community that celebrates authenticity.
+          Built for creators, by a creator. A community where free expression thrives
+          and authenticity wins.
         </p>
 
         {/* CTA Button */}

@@ -54,13 +54,13 @@ export function Features() {
         <FadeUp>
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-white">Everything you need to </span>
+              <span className="text-white">Tools that put </span>
               <span className="bg-gradient-to-r from-purple-500 to-teal-400 bg-clip-text text-transparent">
-                go viral
+                you first
               </span>
             </h2>
             <p className="text-white/50 text-lg max-w-2xl mx-auto">
-              From powerful creation tools to real monetization, VIB3 gives creators everything they need to succeed.
+              Create freely, earn fairly. No algorithms hiding your voice, no corporate agendas.
             </p>
           </div>
         </FadeUp>
