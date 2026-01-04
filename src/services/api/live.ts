@@ -20,12 +20,12 @@ export const liveApi = {
    */
   async getLiveStreams(page = 1, limit = 20): Promise<{ streams: LiveStream[]; hasMore: boolean }> {
     try {
-      const { data } = await apiClient.get<{ streams: LiveStream[]; hasMore: boolean }>('/live', {
+      const { data } = await apiClient.get<{ streams: LiveStream[]; hasMore: boolean }>('/live/streams', {
         params: { page, limit },
       });
       return data;
     } catch {
-      // Return empty if endpoint not available (expected for web)
+      // Return empty if endpoint not available
       return { streams: [], hasMore: false };
     }
   },
