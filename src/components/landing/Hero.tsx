@@ -6,7 +6,7 @@
 
 import Link from 'next/link';
 import { AppStoreButtons } from './AppStoreButtons';
-import { FadeUp, AnimatedStat, ScaleUp } from '@/components/motion';
+import { FadeUp, ScaleUp } from '@/components/motion';
 import { ParticleField } from '@/components/3d';
 import { AnimatedLogo } from '@/components/ui/AnimatedLogo';
 import { MoodIndicator } from '@/components/ai';
@@ -66,12 +66,6 @@ export function Hero() {
         {/* App Store Buttons */}
         <AppStoreButtons />
 
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-12 mt-16 pt-16 border-t border-white/5">
-          <AnimatedStat value={10000000} suffix="+" label="Active Creators" className="float-gentle" />
-          <AnimatedStat value={500000000} suffix="+" label="Videos Shared" className="float-gentle" />
-          <AnimatedStat value={50000000} prefix="$" suffix="+" label="Paid to Creators" className="float-gentle" />
-        </div>
       </div>
     </section>
   );
