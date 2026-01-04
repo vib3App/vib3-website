@@ -50,14 +50,11 @@ export function Hero() {
           Powerful tools, real monetization, and a community that celebrates authenticity.
         </p>
 
-        {/* CTA Buttons */}
+        {/* CTA Button */}
         <FadeUp delay={0.2}>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <AnimatedButton variant="primary" className="px-8 py-4 text-lg glow-pulse">
+          <div className="flex items-center justify-center mb-12">
+            <AnimatedButton variant="primary" className="px-10 py-4 text-lg glow-pulse">
               Start Creating
-            </AnimatedButton>
-            <AnimatedButton variant="secondary" className="px-8 py-4 text-lg">
-              Watch Demo
             </AnimatedButton>
           </div>
         </FadeUp>
