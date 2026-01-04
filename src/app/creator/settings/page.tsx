@@ -4,42 +4,34 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { useAuthStore } from '@/stores/authStore';
-import { creatorApi } from '@/services/api/creator';
-import type { CreatorSettings } from '@/types/creator';
 
-interface LocalSettings {
+interface CreatorSettings {
+  tipsEnabled: boolean;
   tipsMinimum: number;
+  subscriptionsEnabled: boolean;
+  giftingEnabled: boolean;
   notifyOnGift: boolean;
   notifyOnSubscription: boolean;
   notifyOnTip: boolean;
 }
 
-const defaultLocalSettings: LocalSettings = {
+const defaultSettings: CreatorSettings = {
+  tipsEnabled: true,
   tipsMinimum: 100,
+  subscriptionsEnabled: false,
+  giftingEnabled: true,
   notifyOnGift: true,
   notifyOnSubscription: true,
   notifyOnTip: true,
 };
 
-const LOCAL_STORAGE_KEY = 'vib3_creator_local_settings';
+const STORAGE_KEY = 'vib3_creator_settings';
 
 export default function CreatorSettingsPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  // API-backed settings
-  const [settings, setSettings] = useState<Partial<CreatorSettings>>({
-    tipsEnabled: true,
-    subscriptionsEnabled: false,
-    giftingEnabled: true,
-  });
-
-  // Local settings (not in API)
-  const [localSettings, setLocalSettings] = useState<LocalSettings>(defaultLocalSettings);
+  const [settings, setSettings] = useState<CreatorSettings>(defaultSettings);
 
   useEffect(() => {
     if (!isAuthVerified) return;
@@ -47,83 +39,32 @@ export default function CreatorSettingsPage() {
       router.push('/login?redirect=/creator/settings');
       return;
     }
-    loadSettings();
+
+    // Load from localStorage
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        setSettings({ ...defaultSettings, ...JSON.parse(stored) });
+      } catch {
+        // Use defaults
+      }
+    }
+    setIsLoading(false);
   }, [isAuthenticated, isAuthVerified, router]);
 
-  const loadSettings = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Load API settings
-      const apiSettings = await creatorApi.getCreatorSettings();
-      setSettings(apiSettings);
-
-      // Load local settings from localStorage
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (stored) {
-        try {
-          setLocalSettings({ ...defaultLocalSettings, ...JSON.parse(stored) });
-        } catch {
-          // Use defaults
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load creator settings:', err);
-      // Use defaults if API fails
-    } finally {
-      setIsLoading(false);
+  const toggleSetting = (key: keyof CreatorSettings) => {
+    const current = settings[key];
+    if (typeof current === 'boolean') {
+      const newSettings = { ...settings, [key]: !current };
+      setSettings(newSettings);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
     }
   };
 
-  const handleToggle = async (key: keyof CreatorSettings) => {
-    const newValue = !settings[key];
-    const oldSettings = { ...settings };
-
-    // Optimistic update
-    setSettings((prev) => ({ ...prev, [key]: newValue }));
-
-    try {
-      await creatorApi.updateCreatorSettings({ [key]: newValue });
-    } catch (err) {
-      // Revert on error
-      setSettings(oldSettings);
-      setError('Failed to update setting');
-      setTimeout(() => setError(null), 3000);
-    }
-  };
-
-  const handleLocalToggle = (key: keyof LocalSettings) => {
-    const newSettings = { ...localSettings, [key]: !localSettings[key] };
-    setLocalSettings(newSettings);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSettings));
-  };
-
-  const handleMinimumChange = (value: number) => {
-    const newSettings = { ...localSettings, tipsMinimum: value };
-    setLocalSettings(newSettings);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newSettings));
-  };
-
-  const handleSaveAll = async () => {
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      await creatorApi.updateCreatorSettings({
-        tipsEnabled: settings.tipsEnabled,
-        subscriptionsEnabled: settings.subscriptionsEnabled,
-        giftingEnabled: settings.giftingEnabled,
-      });
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(localSettings));
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err) {
-      console.error('Failed to save settings:', err);
-      setError('Failed to save settings. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
+  const updateMinimum = (value: number) => {
+    const newSettings = { ...settings, tipsMinimum: value };
+    setSettings(newSettings);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
   };
 
   if (!isAuthenticated) {
@@ -133,6 +74,22 @@ export default function CreatorSettingsPage() {
       </div>
     );
   }
+
+  const Toggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`w-12 h-7 rounded-full relative transition-colors ${
+        enabled ? 'bg-purple-500' : 'bg-white/20'
+      }`}
+    >
+      <div
+        className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all duration-200 ${
+          enabled ? 'right-1' : 'left-1'
+        }`}
+      />
+    </button>
+  );
 
   return (
     <div className="min-h-screen aurora-bg pb-20">
@@ -147,18 +104,6 @@ export default function CreatorSettingsPage() {
           </button>
           <h1 className="text-2xl font-bold text-white">Creator Settings</h1>
         </div>
-
-        {error && (
-          <div className="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-300 text-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-4 p-4 bg-green-500/20 border border-green-500/30 rounded-xl text-green-300 text-sm">
-            Settings saved successfully!
-          </div>
-        )}
 
         {isLoading ? (
           <div className="flex justify-center py-12">
@@ -175,18 +120,7 @@ export default function CreatorSettingsPage() {
                     <div className="text-white font-medium">Enable Tips</div>
                     <div className="text-sm text-white/50">Allow fans to send you one-time tips</div>
                   </div>
-                  <button
-                    onClick={() => handleToggle('tipsEnabled')}
-                    className={`w-12 h-7 rounded-full relative transition-colors ${
-                      settings.tipsEnabled ? 'bg-purple-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        settings.tipsEnabled ? 'right-1' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle enabled={settings.tipsEnabled} onToggle={() => toggleSetting('tipsEnabled')} />
                 </div>
 
                 {settings.tipsEnabled && (
@@ -194,8 +128,8 @@ export default function CreatorSettingsPage() {
                     <label className="block text-sm text-white/60 mb-2">Minimum Tip Amount (coins)</label>
                     <input
                       type="number"
-                      value={localSettings.tipsMinimum}
-                      onChange={(e) => handleMinimumChange(parseInt(e.target.value) || 0)}
+                      value={settings.tipsMinimum}
+                      onChange={(e) => updateMinimum(parseInt(e.target.value) || 0)}
                       min="1"
                       className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500"
                     />
@@ -212,18 +146,7 @@ export default function CreatorSettingsPage() {
                   <div className="text-white font-medium">Enable Subscriptions</div>
                   <div className="text-sm text-white/50">Allow fans to subscribe for exclusive content</div>
                 </div>
-                <button
-                  onClick={() => handleToggle('subscriptionsEnabled')}
-                  className={`w-12 h-7 rounded-full relative transition-colors ${
-                    settings.subscriptionsEnabled ? 'bg-purple-500' : 'bg-white/20'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                      settings.subscriptionsEnabled ? 'right-1' : 'left-1'
-                    }`}
-                  />
-                </button>
+                <Toggle enabled={settings.subscriptionsEnabled} onToggle={() => toggleSetting('subscriptionsEnabled')} />
               </div>
             </div>
 
@@ -235,18 +158,7 @@ export default function CreatorSettingsPage() {
                   <div className="text-white font-medium">Enable Gifts</div>
                   <div className="text-sm text-white/50">Receive virtual gifts during videos and lives</div>
                 </div>
-                <button
-                  onClick={() => handleToggle('giftingEnabled')}
-                  className={`w-12 h-7 rounded-full relative transition-colors ${
-                    settings.giftingEnabled ? 'bg-purple-500' : 'bg-white/20'
-                  }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                      settings.giftingEnabled ? 'right-1' : 'left-1'
-                    }`}
-                  />
-                </button>
+                <Toggle enabled={settings.giftingEnabled} onToggle={() => toggleSetting('giftingEnabled')} />
               </div>
             </div>
 
@@ -256,62 +168,20 @@ export default function CreatorSettingsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="text-white">Notify on gift received</div>
-                  <button
-                    onClick={() => handleLocalToggle('notifyOnGift')}
-                    className={`w-12 h-7 rounded-full relative transition-colors ${
-                      localSettings.notifyOnGift ? 'bg-purple-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        localSettings.notifyOnGift ? 'right-1' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle enabled={settings.notifyOnGift} onToggle={() => toggleSetting('notifyOnGift')} />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="text-white">Notify on new subscriber</div>
-                  <button
-                    onClick={() => handleLocalToggle('notifyOnSubscription')}
-                    className={`w-12 h-7 rounded-full relative transition-colors ${
-                      localSettings.notifyOnSubscription ? 'bg-purple-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        localSettings.notifyOnSubscription ? 'right-1' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle enabled={settings.notifyOnSubscription} onToggle={() => toggleSetting('notifyOnSubscription')} />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="text-white">Notify on tip received</div>
-                  <button
-                    onClick={() => handleLocalToggle('notifyOnTip')}
-                    className={`w-12 h-7 rounded-full relative transition-colors ${
-                      localSettings.notifyOnTip ? 'bg-purple-500' : 'bg-white/20'
-                    }`}
-                  >
-                    <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        localSettings.notifyOnTip ? 'right-1' : 'left-1'
-                      }`}
-                    />
-                  </button>
+                  <Toggle enabled={settings.notifyOnTip} onToggle={() => toggleSetting('notifyOnTip')} />
                 </div>
               </div>
             </div>
-
-            {/* Save Button */}
-            <button
-              onClick={handleSaveAll}
-              disabled={isSaving}
-              className="w-full py-3 bg-gradient-to-r from-purple-500 to-teal-500 text-white font-semibold rounded-xl disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Settings'}
-            </button>
           </div>
         )}
       </div>
