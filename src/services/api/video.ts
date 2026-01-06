@@ -113,7 +113,7 @@ export const videoApi = {
   async addComment(videoId: string, content: string): Promise<Comment> {
     const { data } = await apiClient.post<CommentResponse>(
       `/videos/${videoId}/comments`,
-      { content }
+      { text: content }
     );
     return transformComment(data);
   },
