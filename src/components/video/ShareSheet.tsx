@@ -132,7 +132,7 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose }: ShareSheetPro
       <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 aurora-bg rounded-t-3xl animate-slide-up">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-900 rounded-t-3xl animate-slide-up">
         {/* Handle */}
         <div className="flex justify-center py-3">
           <div className="w-10 h-1 bg-white/20 rounded-full" />

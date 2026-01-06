@@ -161,7 +161,7 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
       />
 
       {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 aurora-bg rounded-t-3xl max-h-[70vh] flex flex-col animate-slide-up">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-900 rounded-t-3xl max-h-[70vh] flex flex-col animate-slide-up">
         {/* Handle */}
         <div className="flex justify-center py-3">
           <div className="w-10 h-1 bg-white/20 rounded-full" />
@@ -201,7 +201,7 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
         </div>
 
         {/* Comment Input */}
-        <div className="p-4 border-t border-white/5 aurora-bg">
+        <div className="p-4 border-t border-white/10 bg-neutral-900">
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden glass flex-shrink-0">
