@@ -26,16 +26,22 @@ export interface ActionButtonPreferences {
   containerPosition: Position;             // For other layouts (single container position)
 }
 
+export interface VideoActionState {
+  id: string;
+  isLiked?: boolean;
+  isFavorited?: boolean;
+  hasCommented?: boolean;
+  hasShared?: boolean;
+  likesCount: number;
+  commentsCount: number;
+  sharesCount?: number;
+  savesCount?: number;
+  thumbnailUrl?: string;
+}
+
 export interface ActionButtonProps {
   id: ButtonId;
-  video: {
-    id: string;
-    isLiked?: boolean;
-    isFavorited?: boolean;
-    likesCount: number;
-    commentsCount: number;
-    thumbnailUrl?: string;
-  };
+  video: VideoActionState;
   size: ButtonSize;
   onLike: () => void;
   onComment: () => void;
@@ -44,14 +50,7 @@ export interface ActionButtonProps {
 }
 
 export interface LayoutProps {
-  video: {
-    id: string;
-    isLiked?: boolean;
-    isFavorited?: boolean;
-    likesCount: number;
-    commentsCount: number;
-    thumbnailUrl?: string;
-  };
+  video: VideoActionState;
   buttons: ButtonConfig[];
   size: ButtonSize;
   position: Position;

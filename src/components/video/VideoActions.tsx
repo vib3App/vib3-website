@@ -12,6 +12,7 @@ interface VideoActionsProps {
   video: Video;
   onCommentClick?: () => void;
   onShareClick?: () => void;
+  onCommentAdded?: () => void;
   orientation?: 'vertical' | 'horizontal';
 }
 
@@ -25,13 +26,32 @@ export function VideoActions({
   video,
   onCommentClick,
   onShareClick,
+  onCommentAdded,
   orientation = 'vertical',
 }: VideoActionsProps) {
   const { isAuthenticated } = useAuthStore();
+
+  // Like state
   const [isLiked, setIsLiked] = useState(video.isLiked || false);
   const [likesCount, setLikesCount] = useState(video.likesCount || 0);
-  const [isSaved, setIsSaved] = useState(false);
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
+
+  // Comment state
+  const [hasCommented, setHasCommented] = useState(video.hasCommented || false);
+  const [commentsCount, setCommentsCount] = useState(video.commentsCount || 0);
+  const [isCommentAnimating, setIsCommentAnimating] = useState(false);
+
+  // Save state
+  const [isSaved, setIsSaved] = useState(video.isFavorited || false);
+  const [savesCount, setSavesCount] = useState(video.savesCount || 0);
+  const [isSaveAnimating, setIsSaveAnimating] = useState(false);
+
+  // Share state
+  const [hasShared, setHasShared] = useState(video.hasShared || false);
+  const [sharesCount, setSharesCount] = useState(video.sharesCount || 0);
+  const [isShareAnimating, setIsShareAnimating] = useState(false);
+
+  // Download state
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
 
@@ -41,21 +61,31 @@ export function VideoActions({
       return;
     }
 
-    // Optimistic update with animation
     setIsLikeAnimating(true);
     setIsLiked(!isLiked);
     setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
-
     setTimeout(() => setIsLikeAnimating(false), 300);
 
     try {
       await videoApi.toggleLike(video.id);
     } catch (error) {
-      // Revert on error
       setIsLiked(isLiked);
       setLikesCount(prev => isLiked ? prev + 1 : prev - 1);
       console.error('Failed to toggle like:', error);
     }
+  };
+
+  const handleCommentClick = () => {
+    onCommentClick?.();
+  };
+
+  // Called when user successfully adds a comment
+  const handleCommentAdded = () => {
+    setIsCommentAnimating(true);
+    setHasCommented(true);
+    setCommentsCount(prev => prev + 1);
+    setTimeout(() => setIsCommentAnimating(false), 300);
+    onCommentAdded?.();
   };
 
   const handleSave = async () => {
@@ -63,16 +93,53 @@ export function VideoActions({
       window.location.href = '/login';
       return;
     }
+
+    setIsSaveAnimating(true);
+    const wasSaved = isSaved;
     setIsSaved(!isSaved);
-    // TODO: Implement save API
+    setSavesCount(prev => wasSaved ? prev - 1 : prev + 1);
+    setTimeout(() => setIsSaveAnimating(false), 300);
+
+    try {
+      await videoApi.toggleFavorite(video.id);
+    } catch (error) {
+      setIsSaved(wasSaved);
+      setSavesCount(prev => wasSaved ? prev + 1 : prev - 1);
+      console.error('Failed to toggle save:', error);
+    }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+
+    // Mark as shared with animation
+    if (!hasShared) {
+      setIsShareAnimating(true);
+      setHasShared(true);
+      setSharesCount(prev => prev + 1);
+      setTimeout(() => setIsShareAnimating(false), 300);
+    }
+
+    // Record share on backend
+    try {
+      await videoApi.shareVideo(video.id);
+    } catch (error) {
+      console.error('Failed to record share:', error);
+    }
+
+    // Show share UI
     if (navigator.share) {
-      navigator.share({
-        title: video.caption || 'Check out this video on VIB3',
-        url: `${window.location.origin}/video/${video.id}`,
-      });
+      try {
+        await navigator.share({
+          title: video.caption || 'Check out this video on VIB3',
+          url: `${window.location.origin}/video/${video.id}`,
+        });
+      } catch {
+        // User cancelled share
+      }
     } else {
       onShareClick?.();
     }
@@ -97,7 +164,6 @@ export function VideoActions({
       );
     } catch (error) {
       console.error('Download failed:', error);
-      // Try quick download as fallback
       try {
         await videoDownloadService.quickDownload(video.videoUrl, video.id);
       } catch {
@@ -120,10 +186,7 @@ export function VideoActions({
   return (
     <div className={containerClass}>
       {/* Profile */}
-      <Link
-        href={`/profile/${video.userId}`}
-        className="relative"
-      >
+      <Link href={`/profile/${video.userId}`} className="relative">
         <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/20 hover:ring-purple-400 transition-all">
           {video.userAvatar ? (
             <Image
@@ -163,33 +226,51 @@ export function VideoActions({
       </button>
 
       {/* Comments */}
-      <button onClick={onCommentClick} className={buttonClass}>
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-        </svg>
-        <span className="text-white text-xs font-medium">{formatCount(video.commentsCount || 0)}</span>
+      <button onClick={handleCommentClick} className={buttonClass}>
+        <div className={`transition-transform ${isCommentAnimating ? 'scale-125' : ''}`}>
+          {hasCommented ? (
+            <svg className="w-8 h-8 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          ) : (
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          )}
+        </div>
+        <span className="text-white text-xs font-medium">{formatCount(commentsCount)}</span>
       </button>
 
       {/* Save/Bookmark */}
       <button onClick={handleSave} className={buttonClass}>
-        {isSaved ? (
-          <svg className="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
-          </svg>
-        ) : (
-          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-          </svg>
-        )}
-        <span className="text-white text-xs font-medium">Save</span>
+        <div className={`transition-transform ${isSaveAnimating ? 'scale-125' : ''}`}>
+          {isSaved ? (
+            <svg className="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" />
+            </svg>
+          ) : (
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+            </svg>
+          )}
+        </div>
+        <span className="text-white text-xs font-medium">{formatCount(savesCount)}</span>
       </button>
 
       {/* Share */}
       <button onClick={handleShare} className={buttonClass}>
-        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-        </svg>
-        <span className="text-white text-xs font-medium">{formatCount(video.sharesCount || 0)}</span>
+        <div className={`transition-transform ${isShareAnimating ? 'scale-125' : ''}`}>
+          {hasShared ? (
+            <svg className="w-8 h-8 text-teal-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+            </svg>
+          ) : (
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+          )}
+        </div>
+        <span className="text-white text-xs font-medium">{formatCount(sharesCount)}</span>
       </button>
 
       {/* Download */}
@@ -209,7 +290,7 @@ export function VideoActions({
           )}
         </div>
         <span className="text-white text-xs font-medium">
-          {isDownloading ? `${downloadProgress}%` : 'Save'}
+          {isDownloading ? `${downloadProgress}%` : 'Download'}
         </span>
       </button>
 
@@ -222,3 +303,6 @@ export function VideoActions({
     </div>
   );
 }
+
+// Export function to trigger comment added animation from parent
+export type { VideoActionsProps };

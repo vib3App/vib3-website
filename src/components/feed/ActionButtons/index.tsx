@@ -15,8 +15,12 @@ interface ActionButtonsProps {
     id: string;
     isLiked?: boolean;
     isFavorited?: boolean;
+    hasCommented?: boolean;
+    hasShared?: boolean;
     likesCount: number;
     commentsCount: number;
+    sharesCount?: number;
+    savesCount?: number;
     thumbnailUrl?: string;
   };
   onLike: () => void;

@@ -107,8 +107,12 @@ export function FeedVideoItem({
           id: video.id,
           isLiked: video.isLiked,
           isFavorited: video.isFavorited,
+          hasCommented: video.hasCommented,
+          hasShared: video.hasShared,
           likesCount: video.likesCount,
           commentsCount: video.commentsCount,
+          sharesCount: video.sharesCount,
+          savesCount: video.savesCount,
           thumbnailUrl: video.thumbnailUrl,
         }}
         onLike={onLike}
