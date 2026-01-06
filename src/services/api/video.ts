@@ -45,9 +45,18 @@ interface VideoResponse {
 interface CommentResponse {
   _id: string;
   userId: string;
-  username: string;
+  // Backend may return user info in nested 'user' object OR flat fields
+  user?: {
+    _id?: string;
+    username?: string;
+    profilePicture?: string;
+    profileImage?: string;
+  };
+  // Legacy flat fields (for backwards compatibility)
+  username?: string;
   profilePicture?: string;
   content: string;
+  text?: string; // Backend may use 'text' instead of 'content'
   likesCount: number;
   replyCount?: number;
   createdAt: string;
@@ -249,12 +258,20 @@ function transformVideo(data: VideoResponse): Video {
 }
 
 function transformComment(data: CommentResponse): Comment {
+  // Extract user info from nested 'user' object or flat fields
+  const username = data.user?.username || data.username || 'Unknown';
+  const userAvatar = data.user?.profilePicture || data.user?.profileImage || data.profilePicture;
+  const userId = data.user?._id || data.userId;
+
+  // Content may be in 'content' or 'text' field
+  const content = data.content || data.text || '';
+
   return {
     id: data._id,
-    userId: data.userId,
-    username: data.username,
-    userAvatar: data.profilePicture,
-    content: data.content,
+    userId,
+    username,
+    userAvatar,
+    content,
     likesCount: data.likesCount || 0,
     replyCount: data.replyCount || 0,
     createdAt: data.createdAt,
