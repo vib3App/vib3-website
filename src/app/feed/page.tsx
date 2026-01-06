@@ -102,12 +102,14 @@ function FeedContent() {
             videoId={actions.selectedVideo.id}
             isOpen={actions.commentsOpen}
             onClose={actions.closeComments}
+            onCommentAdded={() => actions.handleCommentAdded(actions.selectedVideo!.id)}
           />
           <ShareSheet
             videoId={actions.selectedVideo.id}
             videoUrl={actions.selectedVideo.videoUrl}
             isOpen={actions.shareOpen}
             onClose={actions.closeShare}
+            onShareComplete={() => actions.handleShareComplete(actions.selectedVideo!.id)}
           />
         </>
       )}

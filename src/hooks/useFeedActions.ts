@@ -43,15 +43,28 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
     const video = videos[index];
     if (!video || !isAuthenticated) return;
 
+    const wasFavorited = video.isFavorited;
     setVideos(prev => prev.map((v, i) =>
-      i === index ? { ...v, isFavorited: !v.isFavorited } : v
+      i === index ? {
+        ...v,
+        isFavorited: !v.isFavorited,
+        savesCount: wasFavorited ? (v.savesCount || 1) - 1 : (v.savesCount || 0) + 1
+      } : v
     ));
 
     try {
-      await videoApi.toggleFavorite(video.id);
+      const result = await videoApi.toggleFavorite(video.id);
+      // Update with actual count from server
+      setVideos(prev => prev.map((v, i) =>
+        i === index ? { ...v, isFavorited: result.favorited, savesCount: result.favoriteCount } : v
+      ));
     } catch {
       setVideos(prev => prev.map((v, i) =>
-        i === index ? { ...v, isFavorited: !v.isFavorited } : v
+        i === index ? {
+          ...v,
+          isFavorited: wasFavorited,
+          savesCount: wasFavorited ? (v.savesCount || 0) + 1 : (v.savesCount || 1) - 1
+        } : v
       ));
     }
   }, [videos, isAuthenticated, setVideos]);
@@ -85,10 +98,41 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
     setCommentsOpen(true);
   }, []);
 
+  // Called when user successfully posts a comment
+  const handleCommentAdded = useCallback((videoId: string) => {
+    setVideos(prev => prev.map(v =>
+      v.id === videoId ? {
+        ...v,
+        hasCommented: true,
+        commentsCount: (v.commentsCount || 0) + 1
+      } : v
+    ));
+  }, [setVideos]);
+
   const handleShare = useCallback((videoId: string) => {
     setSelectedVideoId(videoId);
     setShareOpen(true);
   }, []);
+
+  // Called when user shares a video
+  const handleShareComplete = useCallback(async (videoId: string) => {
+    const video = videos.find(v => v.id === videoId);
+    if (!video || video.hasShared) return; // Only count first share
+
+    setVideos(prev => prev.map(v =>
+      v.id === videoId ? {
+        ...v,
+        hasShared: true,
+        sharesCount: (v.sharesCount || 0) + 1
+      } : v
+    ));
+
+    try {
+      await videoApi.shareVideo(videoId);
+    } catch {
+      // Silently fail - share was still shown to user
+    }
+  }, [videos, setVideos]);
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => !prev);
@@ -124,7 +168,9 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
     handleSave,
     handleFollow,
     handleComment,
+    handleCommentAdded,
     handleShare,
+    handleShareComplete,
     toggleMute,
     toggleQueue,
     closeQueue,

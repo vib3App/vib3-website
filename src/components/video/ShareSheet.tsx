@@ -7,6 +7,7 @@ interface ShareSheetProps {
   videoUrl: string;
   isOpen: boolean;
   onClose: () => void;
+  onShareComplete?: () => void;
 }
 
 const shareOptions = [
@@ -84,11 +85,25 @@ const shareOptions = [
   },
 ];
 
-export function ShareSheet({ videoId, videoUrl, isOpen, onClose }: ShareSheetProps) {
+export function ShareSheet({ videoId, videoUrl, isOpen, onClose, onShareComplete }: ShareSheetProps) {
   const [copied, setCopied] = useState(false);
+  const [hasShared, setHasShared] = useState(false);
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/video/${videoId}` : '';
 
+  // Track share and notify parent (only once per session)
+  const trackShare = () => {
+    if (!hasShared) {
+      setHasShared(true);
+      onShareComplete?.();
+    }
+  };
+
   const handleAction = async (action: string) => {
+    // Track share for meaningful actions (not report/download)
+    if (['copy', 'email', 'sms', 'messages', 'embed'].includes(action)) {
+      trackShare();
+    }
+
     switch (action) {
       case 'copy':
         await navigator.clipboard.writeText(shareUrl);

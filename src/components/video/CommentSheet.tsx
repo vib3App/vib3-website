@@ -22,6 +22,7 @@ interface CommentSheetProps {
   videoId: string;
   isOpen: boolean;
   onClose: () => void;
+  onCommentAdded?: () => void;
 }
 
 function timeAgo(dateString: string): string {
@@ -92,7 +93,7 @@ function CommentItem({ comment }: { comment: Comment }) {
   );
 }
 
-export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
+export function CommentSheet({ videoId, isOpen, onClose, onCommentAdded }: CommentSheetProps) {
   const { isAuthenticated, user } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -143,6 +144,8 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
         createdAt: new Date().toISOString(),
       }, ...prev]);
       setNewComment('');
+      // Notify parent that a comment was added
+      onCommentAdded?.();
     } catch (error) {
       console.error('Failed to post comment:', error);
     } finally {
