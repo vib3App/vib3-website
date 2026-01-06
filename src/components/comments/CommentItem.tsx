@@ -73,7 +73,7 @@ export function CommentItem({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white/50 text-sm font-bold">
-            {comment.username.charAt(0).toUpperCase()}
+            {(comment.username || 'U').charAt(0).toUpperCase()}
           </div>
         )}
       </div>
