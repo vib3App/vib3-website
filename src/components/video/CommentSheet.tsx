@@ -59,7 +59,7 @@ function CommentItem({ comment }: { comment: Comment }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white/50 font-medium">
-              {comment.username.charAt(0).toUpperCase()}
+              {(comment.username || 'U').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
@@ -215,7 +215,7 @@ export function CommentSheet({ videoId, isOpen, onClose }: CommentSheetProps) {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-white/50 font-medium">
-                    {user?.username.charAt(0).toUpperCase()}
+                    {(user?.username || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>

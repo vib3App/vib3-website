@@ -142,7 +142,7 @@ export function SideNav() {
                       {user.profilePicture ? (
                         <Image src={user.profilePicture} alt={user.username} width={40} height={40} className="object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{user.username.charAt(0).toUpperCase()}</div>
+                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{(user.username || 'U').charAt(0).toUpperCase()}</div>
                       )}
                     </div>
                   </div>

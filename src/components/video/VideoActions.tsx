@@ -135,7 +135,7 @@ export function VideoActions({
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center text-white font-bold">
-              {video.username.charAt(0).toUpperCase()}
+              {(video.username || 'U').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
