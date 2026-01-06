@@ -9,8 +9,12 @@ interface FloatingPillButtonProps {
   label?: string;
   count?: number;
   isActive?: boolean;
+  /** @deprecated Use CSS theme variables instead */
   gradientFrom?: string;
+  /** @deprecated Use CSS theme variables instead */
   gradientTo?: string;
+  /** Use theme colors from CSS variables (--color-primary, --color-secondary) */
+  useThemeColors?: boolean;
   onClick?: () => void;
   className?: string;
 }
@@ -24,6 +28,7 @@ function formatCount(count: number): string {
 /**
  * Floating pill-shaped action button matching Flutter app style
  * Features gradient background, glow shadows, and scale animation
+ * Uses theme colors by default (CSS variables --color-primary, --color-secondary)
  */
 export function FloatingPillButton({
   icon,
@@ -31,12 +36,17 @@ export function FloatingPillButton({
   label,
   count,
   isActive = false,
-  gradientFrom = '#8B5CF6',
-  gradientTo = '#14B8A6',
+  gradientFrom,
+  gradientTo,
+  useThemeColors = true,
   onClick,
   className = '',
 }: FloatingPillButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
+
+  // Use theme CSS variables or fallback to provided colors
+  const primaryColor = useThemeColors ? 'var(--color-primary, #8B5CF6)' : (gradientFrom || '#8B5CF6');
+  const secondaryColor = useThemeColors ? 'var(--color-secondary, #14B8A6)' : (gradientTo || '#14B8A6');
 
   const displayIcon = isActive && activeIcon ? activeIcon : icon;
   const displayLabel = count !== undefined ? formatCount(count) : label;
@@ -54,14 +64,13 @@ export function FloatingPillButton({
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       className={`relative flex flex-col items-center justify-center w-[50px] h-[70px] rounded-[25px] ${className}`}
       style={{
-        background: `linear-gradient(135deg, ${gradientFrom} 0%, ${gradientTo} 100%)`,
-        boxShadow: `
-          0 0 12px 1px ${gradientFrom}66,
-          2px 2px 16px 2px ${gradientTo}4D
-        `,
+        background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
+        boxShadow: useThemeColors
+          ? '0 0 12px 1px rgba(168, 85, 247, 0.4), 2px 2px 16px 2px rgba(20, 184, 166, 0.3)'
+          : `0 0 12px 1px ${gradientFrom}66, 2px 2px 16px 2px ${gradientTo}4D`,
       }}
     >
-      {/* Icon */}
+      {/* Icon - always white, filled when active */}
       <div className="w-6 h-6 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]">
         {displayIcon}
       </div>

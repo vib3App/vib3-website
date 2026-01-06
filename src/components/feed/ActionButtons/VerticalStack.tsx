@@ -17,7 +17,7 @@ export function VerticalStack({
   return (
     <div className="absolute right-3 bottom-32 md:bottom-24 z-20">
       <div className="flex flex-col items-center gap-3.5">
-        {/* Like Button */}
+        {/* Like Button - uses theme colors */}
         <FloatingPillButton
           icon={
             <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,12 +31,10 @@ export function VerticalStack({
           }
           count={video.likesCount}
           isActive={video.isLiked}
-          gradientFrom="#8B5CF6"
-          gradientTo="#14B8A6"
           onClick={onLike}
         />
 
-        {/* Comment Button */}
+        {/* Comment Button - uses theme colors */}
         <FloatingPillButton
           icon={
             <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,12 +48,10 @@ export function VerticalStack({
           }
           count={video.commentsCount}
           isActive={video.hasCommented}
-          gradientFrom="#14B8A6"
-          gradientTo="#8B5CF6"
           onClick={onComment}
         />
 
-        {/* Share Button */}
+        {/* Share Button - uses theme colors */}
         <FloatingPillButton
           icon={
             <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,12 +65,10 @@ export function VerticalStack({
           }
           count={video.sharesCount || 0}
           isActive={video.hasShared}
-          gradientFrom="#8B5CF6"
-          gradientTo="#14B8A6"
           onClick={onShare}
         />
 
-        {/* Save/Favorites Button */}
+        {/* Save/Favorites Button - uses theme colors */}
         <FloatingPillButton
           icon={
             <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,8 +82,6 @@ export function VerticalStack({
           }
           count={video.savesCount || 0}
           isActive={video.isFavorited}
-          gradientFrom="#14B8A6"
-          gradientTo="#8B5CF6"
           onClick={onSave}
         />
       </div>

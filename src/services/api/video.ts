@@ -38,8 +38,15 @@ interface VideoResponse {
   commentsCount?: number;
   viewsCount?: number;
   sharesCount?: number;
+  savesCount?: number;
   isPublic?: boolean;
   createdAt?: string;
+  // User interaction state - returned by backend for authenticated users
+  isLiked?: boolean;
+  isFavorited?: boolean;
+  hasCommented?: boolean;
+  hasShared?: boolean;
+  isFollowing?: boolean;
 }
 
 interface CommentResponse {
@@ -252,8 +259,15 @@ function transformVideo(data: VideoResponse): Video {
     commentsCount: data.commentsCount || 0,
     viewsCount: data.viewsCount || 0,
     sharesCount: data.sharesCount || 0,
+    savesCount: data.savesCount || 0,
     isPublic: data.isPublic !== false,
     createdAt: data.createdAt || new Date().toISOString(),
+    // User interaction state from backend
+    isLiked: data.isLiked,
+    isFavorited: data.isFavorited,
+    hasCommented: data.hasCommented,
+    hasShared: data.hasShared,
+    isFollowing: data.isFollowing,
   };
 }
 

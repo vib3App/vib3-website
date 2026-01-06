@@ -20,13 +20,20 @@ export interface FeedVideoResponse {
   commentsCount?: number;
   viewsCount?: number;
   sharesCount?: number;
+  savesCount?: number;
   likes?: number;
   comments?: number;
   views?: number;
   shares?: number;
+  saves?: number;
   isPublic?: boolean;
   createdAt: string;
+  // User interaction state - returned by backend for authenticated users
   isLiked?: boolean;
+  isFavorited?: boolean;
+  hasCommented?: boolean;
+  hasShared?: boolean;
+  isFollowing?: boolean;
   user?: {
     _id: string;
     username: string;
@@ -72,8 +79,14 @@ export function transformVideo(data: FeedVideoResponse): Video {
     commentsCount: data.commentsCount || data.comments || 0,
     viewsCount: data.viewsCount || data.views || 0,
     sharesCount: data.sharesCount || data.shares || 0,
+    savesCount: data.savesCount || data.saves || 0,
     isPublic: data.isPublic !== false,
     createdAt: data.createdAt,
+    // User interaction state from backend
     isLiked: data.isLiked,
+    isFavorited: data.isFavorited,
+    hasCommented: data.hasCommented,
+    hasShared: data.hasShared,
+    isFollowing: data.isFollowing,
   };
 }

@@ -53,13 +53,7 @@ export function FloatingPills({
     return undefined;
   };
 
-  const getGradient = (id: ButtonId, index: number) => {
-    // Alternate gradients for visual variety
-    if (index % 2 === 0) {
-      return { from: '#8B5CF6', to: '#14B8A6' };
-    }
-    return { from: '#14B8A6', to: '#8B5CF6' };
-  };
+  // No longer needed - FloatingPillButton uses theme colors by default
 
   const getIcon = (id: ButtonId) => {
     switch (id) {
@@ -141,8 +135,7 @@ export function FloatingPills({
     >
       {/* Container that holds all buttons together */}
       <div className="flex flex-col gap-3">
-        {supportedButtons.map((btn, index) => {
-          const gradient = getGradient(btn.id, index);
+        {supportedButtons.map((btn) => {
           const icon = getIcon(btn.id);
           if (!icon) return null;
 
@@ -154,8 +147,6 @@ export function FloatingPills({
               count={getCount(btn.id)}
               label={getLabel(btn.id)}
               isActive={getIsActive(btn.id)}
-              gradientFrom={gradient.from}
-              gradientTo={gradient.to}
               onClick={getOnClick(btn.id)}
             />
           );
