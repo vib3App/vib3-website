@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { AnimatedLogo } from './AnimatedLogo';
@@ -11,9 +11,10 @@ interface SplashScreenProps {
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthStore();
   const [phase, setPhase] = useState<'spin' | 'pulse' | 'fadeOut'>('spin');
+  const hasCompletedRef = useRef(false);
 
+  // Animation timers - run only once on mount
   useEffect(() => {
     // Phase 1: Spin for 1.5s
     const spinTimer = setTimeout(() => {
@@ -25,35 +26,32 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       setPhase('fadeOut');
     }, 3500);
 
-    // Phase 3: Fade out and redirect
-    const completeTimer = setTimeout(() => {
-      // Check auth after animation completes and loading is done
-      if (!isLoading) {
-        if (isAuthenticated) {
-          router.push('/feed');
-        } else {
-          onComplete();
-        }
-      }
-    }, 4000);
-
     return () => {
       clearTimeout(spinTimer);
       clearTimeout(pulseTimer);
-      clearTimeout(completeTimer);
     };
-  }, [isAuthenticated, isLoading, router, onComplete]);
+  }, []); // Empty deps - run only once
 
-  // If auth is still loading after animation, wait for it
+  // Handle completion after fadeOut phase
   useEffect(() => {
-    if (phase === 'fadeOut' && !isLoading) {
+    if (phase !== 'fadeOut' || hasCompletedRef.current) return;
+
+    // Small delay for fade animation
+    const timer = setTimeout(() => {
+      if (hasCompletedRef.current) return;
+      hasCompletedRef.current = true;
+
+      // Check auth state at completion time
+      const { isAuthenticated } = useAuthStore.getState();
       if (isAuthenticated) {
         router.push('/feed');
       } else {
         onComplete();
       }
-    }
-  }, [phase, isLoading, isAuthenticated, router, onComplete]);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [phase, router, onComplete]);
 
   return (
     <div
