@@ -16,12 +16,17 @@ export function InformationCollectedSection() {
         <p><strong>Usage Information:</strong></p>
         <BulletList items={['Video views and watch time', 'Search queries', 'Features used', 'Interaction with content', 'App crashes and errors', 'Performance metrics']} />
         <p><strong>Location Information:</strong></p>
-        <BulletList items={['General location based on IP address', 'We do NOT collect precise GPS location']} />
+        <BulletList items={[
+          'General location based on IP address',
+          'Precise GPS location when you enable location sharing features (e.g., sharing your location with friends on the map)',
+          'Background location when you opt in to continuous location sharing — you can disable this at any time in your device settings or in-app privacy settings',
+          'Location privacy settings (ghost mode, who can see your location, always/never share lists) are stored on our servers to sync across sessions',
+        ]} />
       </SubSection>
 
       <SubSection title="2.3 Information from Third Parties">
         <p><strong>Authentication Services:</strong></p>
-        <p>If you sign in with Google or Apple, we receive:</p>
+        <p>If you sign in with Google, Apple, or Snapchat, we receive:</p>
         <BulletList items={['Name', 'Email address', 'Profile picture', 'Unique identifier from the authentication provider']} />
       </SubSection>
 

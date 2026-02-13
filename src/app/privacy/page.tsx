@@ -16,7 +16,7 @@ export default function PrivacyPage() {
     <LegalPageLayout
       title="Privacy Policy"
       effectiveDate="December 12, 2025"
-      lastUpdated="December 26, 2025"
+      lastUpdated="February 12, 2026"
     >
       <IntroSection />
       <InformationCollectedSection />

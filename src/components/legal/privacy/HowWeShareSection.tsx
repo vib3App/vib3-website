@@ -20,6 +20,9 @@ export function HowWeShareSection() {
           'Apple Inc.: Authentication (United States)',
           'Stripe, Inc.: Payment processing (United States)',
           'xAI Corp.: AI content analysis (United States)',
+          'Agora, Inc.: Real-time video collaboration rooms and live streaming (United States)',
+          'Snap Inc.: Authentication and AR camera effects (United States)',
+          'Google AdMob: Advertising (United States)',
         ]} />
       </SubSection>
 
