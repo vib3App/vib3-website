@@ -31,17 +31,23 @@ export default function PrivacyPage() {
             <h3 className="text-lg font-medium text-white/90 mb-2">2.1 Information You Provide</h3>
             <ul className="list-disc list-inside space-y-1 mb-4">
               <li>Account information (name, email, username, birthdate)</li>
-              <li>Profile information (bio, profile picture)</li>
-              <li>Content you create (videos, comments, messages)</li>
+              <li>Profile information (display name, bio, profile picture)</li>
+              <li>Content you create (videos, photos, audio recordings, comments, messages)</li>
+              <li>Purchase and transaction information (in-app coin purchases, gifts, subscriptions)</li>
               <li>Communications with us</li>
             </ul>
             <h3 className="text-lg font-medium text-white/90 mb-2">2.2 Information Collected Automatically</h3>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Device information (model, OS, identifiers)</li>
-              <li>Usage data (videos watched, interactions, session duration)</li>
-              <li>Location data (approximate location from IP address)</li>
+            <ul className="list-disc list-inside space-y-1 mb-4">
+              <li>Device information (model, OS, device identifiers, advertising identifier)</li>
+              <li>Usage data (videos watched, likes, follows, app interactions, session duration)</li>
+              <li>Precise location data (GPS, when you use the Discover Nearby map feature)</li>
+              <li>Approximate location data (from IP address)</li>
+              <li>Advertising data (ad interactions, ad identifiers via Google AdMob)</li>
+              <li>Crash logs and diagnostic data</li>
               <li>Cookies and similar technologies</li>
             </ul>
+            <h3 className="text-lg font-medium text-white/90 mb-2">2.3 Location Data</h3>
+            <p>Our Discover Nearby feature uses your device&rsquo;s precise location (GPS) to show creators and content near you. Location access is optional and requires your explicit permission. You can disable location access at any time in your device settings.</p>
           </section>
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">3. How We Use Your Information</h2>
@@ -53,6 +59,30 @@ export default function PrivacyPage() {
               <li>Ensure safety and security</li>
               <li>Comply with legal obligations</li>
               <li>Detect and prevent fraud, abuse, and illegal activity</li>
+              <li>Serve and measure advertisements (via Google AdMob)</li>
+              <li>Process in-app purchases and transactions (via Stripe)</li>
+            </ul>
+          </section>
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-4">3.1 Advertising &amp; Tracking</h2>
+            <p className="mb-2">We use Google AdMob to serve advertisements within the app. AdMob may collect and use the following data for personalized advertising:</p>
+            <ul className="list-disc list-inside space-y-1 mb-3">
+              <li>Device advertising identifier (IDFA on iOS, GAID on Android)</li>
+              <li>Usage and interaction data</li>
+              <li>Approximate location</li>
+            </ul>
+            <p>On iOS, you will be prompted via Apple&rsquo;s App Tracking Transparency (ATT) framework before any tracking occurs. You may decline tracking at any time through your device settings. If you opt out, you will still see ads, but they will not be personalized.</p>
+          </section>
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-4">3.2 Third-Party Services</h2>
+            <p className="mb-2">We share data with the following third-party services:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><span className="text-white font-medium">Google AdMob:</span> Advertising identifiers and usage data for ad serving</li>
+              <li><span className="text-white font-medium">Stripe:</span> Payment processing (we do not store payment card details)</li>
+              <li><span className="text-white font-medium">Bunny CDN:</span> Video hosting and delivery</li>
+              <li><span className="text-white font-medium">Firebase:</span> Push notifications and crash reporting</li>
+              <li><span className="text-white font-medium">Google Cloud Vision:</span> Content safety (CSAM detection)</li>
+              <li><span className="text-white font-medium">MongoDB Atlas:</span> Database hosting</li>
             </ul>
           </section>
           <section>
