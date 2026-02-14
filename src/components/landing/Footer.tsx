@@ -56,16 +56,16 @@ export function Footer() {
             <h4 className="text-white font-semibold mb-4">Legal</h4>
             <ul className="space-y-3">
               <li>
-                <a href="https://vib3app.net/privacy.html" className="text-white/40 hover:text-white text-sm transition-colors">Privacy Policy</a>
+                <Link href="/privacy" className="text-white/40 hover:text-white text-sm transition-colors">Privacy Policy</Link>
               </li>
               <li>
-                <a href="https://vib3app.net/terms.html" className="text-white/40 hover:text-white text-sm transition-colors">Terms of Service</a>
+                <Link href="/terms" className="text-white/40 hover:text-white text-sm transition-colors">Terms of Service</Link>
               </li>
               <li>
-                <a href="https://vib3app.net/community-guidelines.html" className="text-white/40 hover:text-white text-sm transition-colors">Community Guidelines</a>
+                <Link href="/community-guidelines" className="text-white/40 hover:text-white text-sm transition-colors">Community Guidelines</Link>
               </li>
               <li>
-                <a href="https://vib3app.net/dmca.html" className="text-white/40 hover:text-white text-sm transition-colors">DMCA</a>
+                <Link href="/dmca" className="text-white/40 hover:text-white text-sm transition-colors">DMCA</Link>
               </li>
             </ul>
           </div>
@@ -75,16 +75,16 @@ export function Footer() {
             <h4 className="text-white font-semibold mb-4">Support</h4>
             <ul className="space-y-3">
               <li>
-                <a href="https://vib3app.net/contact.html" className="text-white/40 hover:text-white text-sm transition-colors">Contact Us</a>
+                <Link href="/contact" className="text-white/40 hover:text-white text-sm transition-colors">Contact Us</Link>
               </li>
               <li>
-                <a href="https://vib3app.net/parental-consent.html" className="text-white/40 hover:text-white text-sm transition-colors">For Parents</a>
+                <Link href="/help" className="text-white/40 hover:text-white text-sm transition-colors">Help Center</Link>
               </li>
               <li>
-                <a href="https://vib3app.net/data-deletion.html" className="text-white/40 hover:text-white text-sm transition-colors">Data Deletion</a>
+                <Link href="/safety" className="text-white/40 hover:text-white text-sm transition-colors">Safety Center</Link>
               </li>
               <li>
-                <a href="mailto:support@vib3app.net" className="text-white/40 hover:text-white text-sm transition-colors">support@vib3app.net</a>
+                <a href="mailto:vibe@docsmarketplacellc.com" className="text-white/40 hover:text-white text-sm transition-colors">vibe@docsmarketplacellc.com</a>
               </li>
             </ul>
           </div>
