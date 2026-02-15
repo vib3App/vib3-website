@@ -4,6 +4,7 @@
  */
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { config } from '@/config/env';
+import { useToastStore } from '@/stores/toastStore';
 
 // Track if we're currently refreshing to avoid multiple simultaneous refreshes
 let isRefreshing = false;
@@ -142,7 +143,28 @@ const createApiClient = (): AxiosInstance => {
         }
       }
 
-      return Promise.reject(formatApiError(error));
+      const apiError = formatApiError(error);
+
+      // Show user-facing toast for meaningful errors (skip background/auth/expected failures)
+      if (typeof window !== 'undefined') {
+        const url = originalRequest?.url || '';
+        const status = error.response?.status || 0;
+
+        // Don't toast for: auth checks, token refresh, 401s, 404s on optional resources, aborted requests
+        const silentPatterns = ['/auth/', '/feed/', '/collections/check/', '/watch-later/check/', '/saved/check/'];
+        const isSilent = silentPatterns.some(p => url.includes(p));
+        const isExpected = status === 401 || status === 404 || status === 0;
+
+        if (!isSilent && !isExpected && status >= 400) {
+          try {
+            useToastStore.getState().addToast(apiError.message);
+          } catch {
+            // Store may not be ready during SSR
+          }
+        }
+      }
+
+      return Promise.reject(apiError);
     }
   );
 

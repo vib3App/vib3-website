@@ -3,8 +3,11 @@ import type { Collection, CollectionVideo, CreatePlaylistInput, UpdatePlaylistIn
 import { VideoResponse, transformVideo } from './types';
 
 export const playlistsApi = {
-  async getCollections(_type?: CollectionType): Promise<Collection[]> {
-    return [];
+  async getCollections(type?: CollectionType): Promise<Collection[]> {
+    const params: Record<string, string> = {};
+    if (type) params.type = type;
+    const { data } = await apiClient.get<Collection[]>('/collections/playlists', { params });
+    return data;
   },
 
   async getCollection(collectionId: string): Promise<Collection> {

@@ -5,8 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { feedApi } from '@/services/api';
+import { soundsApi } from '@/services/api/sounds';
 import { TopNav } from '@/components/ui/TopNav';
 import type { Video } from '@/types';
+import type { MusicTrack } from '@/types/sound';
 
 function formatCount(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -23,7 +25,9 @@ interface TrendingHashtag {
 export default function TrendingPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [hashtags, setHashtags] = useState<TrendingHashtag[]>([]);
+  const [sounds, setSounds] = useState<MusicTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [soundsLoading, setSoundsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'videos' | 'hashtags' | 'sounds'>('videos');
 
   useEffect(() => {
@@ -197,17 +201,70 @@ export default function TrendingPage() {
 
               {/* Sounds Tab */}
               {activeTab === 'sounds' && (
-                <div className="text-center py-12">
-                  <svg className="w-16 h-16 text-white/20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                  </svg>
-                  <p className="text-white/50">Trending sounds coming soon</p>
-                </div>
+                <SoundsTab sounds={sounds} loading={soundsLoading} onLoad={async () => {
+                  if (sounds.length > 0) return;
+                  setSoundsLoading(true);
+                  const result = await soundsApi.getTrending(1, 20);
+                  setSounds(result.data);
+                  setSoundsLoading(false);
+                }} />
               )}
             </>
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function SoundsTab({ sounds, loading, onLoad }: { sounds: MusicTrack[]; loading: boolean; onLoad: () => void }) {
+  useEffect(() => { onLoad(); }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="h-16 glass rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (sounds.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-white/50">No trending sounds yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {sounds.map((track, index) => (
+        <div key={track.id || track._id} className="flex items-center gap-4 p-4 glass-card hover:bg-white/10 transition-colors rounded-xl">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+            index < 3 ? 'bg-gradient-to-br from-purple-500 to-teal-400' : 'bg-white/10'
+          }`}>
+            {index + 1}
+          </div>
+          {track.coverUrl ? (
+            <Image src={track.coverUrl} alt={track.title} width={48} height={48} className="w-12 h-12 rounded-lg object-cover" />
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center">
+              <svg className="w-5 h-5 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+              </svg>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-medium truncate">{track.title}</h3>
+            <p className="text-white/50 text-sm truncate">{track.artist}</p>
+          </div>
+          <div className="text-right">
+            {track.plays > 0 && <div className="text-white/70 text-sm">{formatCount(track.plays)} uses</div>}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

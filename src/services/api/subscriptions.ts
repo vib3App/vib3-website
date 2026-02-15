@@ -112,4 +112,46 @@ export const subscriptionsApi = {
       return [];
     }
   },
+
+  /**
+   * Enable subscriptions for the current creator with tiers
+   */
+  async enableSubscriptions(tiers: Array<{ name: string; price: number; benefits: string[] }>): Promise<boolean> {
+    try {
+      await apiClient.post('/subscriptions/enable', { tiers });
+      return true;
+    } catch (error) {
+      console.error('Failed to enable subscriptions:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Disable subscriptions for the current creator
+   */
+  async disableSubscriptions(): Promise<boolean> {
+    try {
+      await apiClient.post('/subscriptions/disable');
+      return true;
+    } catch (error) {
+      console.error('Failed to disable subscriptions:', error);
+      return false;
+    }
+  },
+
+  /**
+   * Get creator's subscribers
+   */
+  async getMySubscribers(offset = 0, limit = 20): Promise<{ subscriptions: unknown[]; total: number }> {
+    try {
+      const { data } = await apiClient.get<{ subscriptions: unknown[]; total: number }>(
+        '/subscriptions/my-subscribers',
+        { params: { offset, limit } }
+      );
+      return data;
+    } catch (error) {
+      console.warn('Failed to get subscribers:', error);
+      return { subscriptions: [], total: 0 };
+    }
+  },
 };
