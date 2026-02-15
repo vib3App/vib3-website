@@ -5,27 +5,29 @@ import { ConversationResponse, transformConversation } from './types';
 export const conversationsApi = {
   async getConversations(page = 1, limit = 20): Promise<PaginatedResponse<Conversation>> {
     try {
-      const { data } = await apiClient.get<{ chats: Array<{
-        _id: string;
-        isGroup: boolean;
-        participants: string[];
-        groupName?: string;
-        groupImage?: string;
-        lastMessage?: string;
-        lastMessageTime?: string;
-        lastMessageSender?: { username?: string };
-        unreadCount: number;
-        isMuted?: boolean;
-        otherUser?: { _id: string; username: string; profileImageUrl?: string };
-        createdAt: string;
-        updatedAt: string;
-      }> }>('/chats');
+      const { data } = await apiClient.get<{
+        chats: Array<{
+          _id: string;
+          isGroup: boolean;
+          participants: string[];
+          groupName?: string;
+          groupImage?: string;
+          lastMessage?: string;
+          lastMessageTime?: string;
+          lastMessageSender?: { username?: string };
+          unreadCount: number;
+          isMuted?: boolean;
+          otherUser?: { _id: string; username: string; profileImageUrl?: string };
+          createdAt: string;
+          updatedAt: string;
+        }>;
+        total?: number;
+        hasMore?: boolean;
+      }>('/chats', { params: { page, limit } });
 
       const chats = data.chats || [];
-      const start = (page - 1) * limit;
-      const paged = chats.slice(start, start + limit);
 
-      const items: Conversation[] = paged.map(chat => ({
+      const items: Conversation[] = chats.map(chat => ({
         id: chat._id,
         type: chat.isGroup ? 'group' : 'direct',
         name: chat.isGroup ? chat.groupName : chat.otherUser?.username,
@@ -49,7 +51,11 @@ export const conversationsApi = {
         updatedAt: chat.updatedAt,
       }));
 
-      return { items, total: chats.length, page, hasMore: start + limit < chats.length };
+      // Use server-provided pagination info when available, fall back to heuristic
+      const total = data.total ?? (chats.length < limit ? (page - 1) * limit + chats.length : undefined) ?? 0;
+      const hasMore = data.hasMore ?? chats.length >= limit;
+
+      return { items, total, page, hasMore };
     } catch {
       return { items: [], total: 0, page, hasMore: false };
     }

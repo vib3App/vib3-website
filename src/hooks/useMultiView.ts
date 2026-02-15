@@ -54,19 +54,31 @@ export function useMultiView() {
     loadInitialVideos();
   }, [initialVideoIds]);
 
-  const slotVideoIds = useMemo(() => slots.map(s => s.video?.id).join(','), [slots]);
+  // Track slot video URLs for HLS setup - only changes when videos are added/removed
+  const slotVideoUrls = useMemo(() => slots.map(s => s.video?.videoUrl || ''), [slots]);
+  const slotVideoUrlsKey = useMemo(() => slotVideoUrls.join(','), [slotVideoUrls]);
 
+  // Use a ref to hold the latest slots so the HLS setup effect can read current
+  // isPlaying/isMuted/volume without depending on the slots state directly
+  const slotsRef = useRef(slots);
+  slotsRef.current = slots;
+
+  // HLS setup effect - only runs when video URLs change (add/remove video),
+  // NOT on play/pause/mute changes
   useEffect(() => {
     const currentHlsInstances = hlsInstances.current;
+    const currentSlots = slotsRef.current;
 
-    slots.forEach((slot, index) => {
+    slotVideoUrls.forEach((videoUrl, index) => {
       const videoEl = videoRefs.current[index];
-      if (!videoEl || !slot.video?.videoUrl) return;
+      if (!videoEl || !videoUrl) return;
 
       if (currentHlsInstances[index]) {
         currentHlsInstances[index]?.destroy();
         currentHlsInstances[index] = null;
       }
+
+      const slot = currentSlots[index];
 
       // Apply volume and mute state
       videoEl.muted = slot.isMuted;
@@ -74,14 +86,14 @@ export function useMultiView() {
 
       if (Hls.isSupported()) {
         const hls = new Hls({ enableWorker: true });
-        hls.loadSource(slot.video.videoUrl);
+        hls.loadSource(videoUrl);
         hls.attachMedia(videoEl);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          if (slot.isPlaying) videoEl.play().catch(() => {});
+          if (slotsRef.current[index]?.isPlaying) videoEl.play().catch(() => {});
         });
         currentHlsInstances[index] = hls;
       } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-        videoEl.src = slot.video.videoUrl;
+        videoEl.src = videoUrl;
         if (slot.isPlaying) videoEl.play().catch(() => {});
       }
     });
@@ -89,7 +101,8 @@ export function useMultiView() {
     return () => {
       currentHlsInstances.forEach(hls => hls?.destroy());
     };
-  }, [slotVideoIds, slots]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slotVideoUrlsKey]);
 
   const handleSearch = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,14 +118,17 @@ export function useMultiView() {
     }
   }, [searchQuery]);
 
+  const masterMutedRef = useRef(masterMuted);
+  masterMutedRef.current = masterMuted;
+
   const addVideoToSlot = useCallback((video: Video, slotIndex: number) => {
     setSlots(prev => prev.map((slot, i) =>
-      i === slotIndex ? { ...slot, video, isPlaying: true, isMuted: masterMuted } : slot
+      i === slotIndex ? { ...slot, video, isPlaying: true, isMuted: masterMutedRef.current } : slot
     ));
     setShowAddModal(false);
     setSearchQuery('');
     setSearchResults([]);
-  }, [masterMuted]);
+  }, []);
 
   const removeVideoFromSlot = useCallback((slotIndex: number) => {
     setSlots(prev => prev.map((slot, i) =>
@@ -123,7 +139,8 @@ export function useMultiView() {
   const togglePlay = useCallback((slotIndex: number) => {
     const videoEl = videoRefs.current[slotIndex];
     if (!videoEl) return;
-    if (slots[slotIndex].isPlaying) {
+    const currentSlot = slotsRef.current[slotIndex];
+    if (currentSlot.isPlaying) {
       videoEl.pause();
     } else {
       videoEl.play();
@@ -131,43 +148,46 @@ export function useMultiView() {
     setSlots(prev => prev.map((slot, i) =>
       i === slotIndex ? { ...slot, isPlaying: !slot.isPlaying } : slot
     ));
-  }, [slots]);
+  }, []);
 
   const toggleMute = useCallback((slotIndex?: number) => {
     if (slotIndex === undefined) {
-      const newMuted = !masterMuted;
-      setMasterMuted(newMuted);
-      videoRefs.current.forEach(videoEl => { if (videoEl) videoEl.muted = newMuted; });
-      setSlots(prev => prev.map(slot => ({ ...slot, isMuted: newMuted })));
+      setMasterMuted(prev => {
+        const newMuted = !prev;
+        videoRefs.current.forEach(videoEl => { if (videoEl) videoEl.muted = newMuted; });
+        setSlots(prevSlots => prevSlots.map(slot => ({ ...slot, isMuted: newMuted })));
+        return newMuted;
+      });
     } else {
       const videoEl = videoRefs.current[slotIndex];
-      if (videoEl) videoEl.muted = !slots[slotIndex].isMuted;
+      const currentSlot = slotsRef.current[slotIndex];
+      if (videoEl) videoEl.muted = !currentSlot.isMuted;
       setSlots(prev => prev.map((slot, i) =>
         i === slotIndex ? { ...slot, isMuted: !slot.isMuted } : slot
       ));
     }
-  }, [masterMuted, slots]);
+  }, []);
 
   const playAll = useCallback(() => {
     videoRefs.current.forEach((videoEl, i) => {
-      if (videoEl && slots[i].video) videoEl.play();
+      if (videoEl && slotsRef.current[i].video) videoEl.play();
     });
     setSlots(prev => prev.map(slot => slot.video ? { ...slot, isPlaying: true } : slot));
-  }, [slots]);
+  }, []);
 
   const pauseAll = useCallback(() => {
     videoRefs.current.forEach(videoEl => { if (videoEl) videoEl.pause(); });
     setSlots(prev => prev.map(slot => ({ ...slot, isPlaying: false })));
   }, []);
 
-  const getEmptySlotIndex = useCallback(() => slots.findIndex(slot => !slot.video), [slots]);
+  const getEmptySlotIndex = useCallback(() => slotsRef.current.findIndex(slot => !slot.video), []);
 
   const getLayoutClasses = useCallback(() => {
     if (layoutMode === 'focus') return 'grid-cols-1';
-    const videoCount = slots.filter(s => s.video).length;
+    const videoCount = slotsRef.current.filter(s => s.video).length;
     if (videoCount <= 1) return 'grid-cols-1';
     return 'grid-cols-2';
-  }, [layoutMode, slots]);
+  }, [layoutMode]);
 
   const closeAddModal = useCallback(() => {
     setShowAddModal(false);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useCameraStream } from './useCameraStream';
@@ -33,18 +33,24 @@ export function useCamera() {
     activeFilter,
   });
 
+  // Stabilize stream and recording references to avoid infinite effect loop
+  const streamRef = useRef(stream);
+  useEffect(() => { streamRef.current = stream; }, [stream]);
+  const recordingRef = useRef(recording);
+  useEffect(() => { recordingRef.current = recording; }, [recording]);
+
   useEffect(() => {
     if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/camera');
       return;
     }
-    stream.initCamera();
+    streamRef.current.initCamera();
     return () => {
-      stream.cleanup();
-      recording.cleanupTimer();
+      streamRef.current.cleanup();
+      recordingRef.current.cleanupTimer();
     };
-  }, [isAuthenticated, isAuthVerified, router, stream, recording]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const togglePanel = useCallback((panel: 'filters' | 'effects' | 'speed') => {
     setShowFilters(panel === 'filters' ? !showFilters : false);

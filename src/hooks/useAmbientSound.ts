@@ -165,13 +165,31 @@ export function useAmbientSound() {
     }
   }, [setMode]);
 
-  // Cleanup on unmount
+  // Cleanup on unmount — stop all audio nodes and close the AudioContext.
+  // Uses [] deps with direct ref access to guarantee cleanup runs exactly once
+  // and always reads the latest node state, avoiding stale closure issues.
   useEffect(() => {
     return () => {
-      stopAmbient();
+      // Stop and disconnect all oscillators and gain nodes
+      nodesRef.current.oscillators.forEach((osc) => {
+        try {
+          osc.stop();
+          osc.disconnect();
+        } catch (_e) {
+          // Already stopped
+        }
+      });
+      nodesRef.current.gains.forEach((gain) => gain.disconnect());
+      nodesRef.current.lfo?.stop();
+      nodesRef.current.lfo?.disconnect();
+      nodesRef.current.masterGain?.disconnect();
+      nodesRef.current = { oscillators: [], gains: [], lfo: null, masterGain: null };
+
+      // Close the AudioContext to free system audio resources
       audioContextRef.current?.close();
+      audioContextRef.current = null;
     };
-  }, [stopAmbient]);
+  }, []);
 
   return {
     mode,

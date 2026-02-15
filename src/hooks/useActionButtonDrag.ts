@@ -45,6 +45,12 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const containerRef = useRef<HTMLElement | null>(null);
   const hasDraggedRef = useRef(false);
 
+  // Refs to avoid stale closures in pointer handlers
+  const positionRef = useRef<Position | null>(position);
+  useEffect(() => { positionRef.current = position; }, [position]);
+  const onDragEndRef = useRef(onDragEnd);
+  useEffect(() => { onDragEndRef.current = onDragEnd; }, [onDragEnd]);
+
   // Convert client coordinates to percentage position
   const clientToPercent = useCallback((clientX: number, clientY: number): Position => {
     const container = containerRef.current?.parentElement;
@@ -128,7 +134,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     }
   }, [clientToPercent, onDrag, clearLongPressTimer]);
 
-  // Handle pointer up - end drag
+  // Handle pointer up - end drag (reads from refs to avoid stale closure)
   const handlePointerUp = useCallback((_e: React.PointerEvent) => {
     clearLongPressTimer();
 
@@ -141,8 +147,8 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       }
     }
 
-    if (dragEnabledRef.current && position) {
-      onDragEnd?.(position);
+    if (dragEnabledRef.current && positionRef.current) {
+      onDragEndRef.current?.(positionRef.current);
     }
 
     dragEnabledRef.current = false;
@@ -150,7 +156,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     setIsLongPressing(false);
     startPosRef.current = null;
     pointerIdRef.current = null;
-  }, [position, onDragEnd, clearLongPressTimer]);
+  }, [clearLongPressTimer]);
 
   // Handle pointer cancel (e.g., touch interrupted)
   const handlePointerCancel = useCallback((e: React.PointerEvent) => {

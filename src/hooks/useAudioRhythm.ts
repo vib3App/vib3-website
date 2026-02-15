@@ -19,7 +19,9 @@ interface AudioAnalysis {
 }
 
 /**
- * Hook for real-time audio analysis and beat detection
+ * Hook for real-time audio analysis and beat detection.
+ * Stores analysis data in refs to avoid 60fps state updates.
+ * Only updates state on beats or significant energy changes.
  */
 export function useAudioRhythm() {
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -36,10 +38,18 @@ export function useAudioRhythm() {
   });
   const [analysis, setAnalysis] = useState<AudioAnalysis | null>(null);
 
+  // Refs for current values (accessible without re-renders)
+  const beatInfoRef = useRef<BeatInfo>(beatInfo);
+  const analysisRef = useRef<AudioAnalysis | null>(null);
+
   // Beat detection state
   const beatHistoryRef = useRef<number[]>([]);
   const lastBeatTimeRef = useRef(0);
   const energyHistoryRef = useRef<number[]>([]);
+
+  // Throttle state updates: only push to state every N ms
+  const lastStateUpdateRef = useRef(0);
+  const STATE_UPDATE_INTERVAL = 100; // ~10fps for state updates instead of 60fps
 
   // Start real-time analysis
   const startAnalysis = useCallback(() => {
@@ -82,8 +92,12 @@ export function useAudioRhythm() {
       const avgEnergy = energyHistoryRef.current.reduce((a, b) => a + b, 0) / energyHistoryRef.current.length;
       const isBeat = energy > avgEnergy * 1.3 && Date.now() - lastBeatTimeRef.current > 200;
 
+      // Always update refs (no re-render cost)
+      analysisRef.current = { frequencies: frequencyData, waveform: timeData, bass, mid, high, volume };
+
+      const now = Date.now();
+
       if (isBeat) {
-        const now = Date.now();
         const beatInterval = now - lastBeatTimeRef.current;
         beatHistoryRef.current.push(beatInterval);
         if (beatHistoryRef.current.length > 8) {
@@ -97,25 +111,28 @@ export function useAudioRhythm() {
           const bpm = Math.round(60000 / avgInterval);
           const confidence = 1 - (Math.max(...beatHistoryRef.current) - Math.min(...beatHistoryRef.current)) / avgInterval;
 
-          setBeatInfo({
+          const newBeatInfo: BeatInfo = {
             bpm: Math.max(60, Math.min(200, bpm)),
             confidence: Math.max(0, confidence),
             energy,
             isBeat: true,
-          });
+          };
+          beatInfoRef.current = newBeatInfo;
+          // Beats always trigger immediate state update
+          setBeatInfo(newBeatInfo);
+          setAnalysis(analysisRef.current);
+          lastStateUpdateRef.current = now;
         }
       } else {
-        setBeatInfo(prev => ({ ...prev, energy, isBeat: false }));
-      }
+        beatInfoRef.current = { ...beatInfoRef.current, energy, isBeat: false };
 
-      setAnalysis({
-        frequencies: frequencyData,
-        waveform: timeData,
-        bass,
-        mid,
-        high,
-        volume,
-      });
+        // Throttle non-beat state updates
+        if (now - lastStateUpdateRef.current >= STATE_UPDATE_INTERVAL) {
+          setBeatInfo(beatInfoRef.current);
+          setAnalysis(analysisRef.current);
+          lastStateUpdateRef.current = now;
+        }
+      }
 
       animationRef.current = requestAnimationFrame(analyze);
     };
@@ -161,13 +178,28 @@ export function useAudioRhythm() {
     setIsAnalyzing(false);
   }, []);
 
-  // Cleanup
+  // Cleanup — cancel animation loop, disconnect audio nodes, and close AudioContext
   useEffect(() => {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
+      try {
+        sourceRef.current?.disconnect();
+      } catch (_e) {
+        // Already disconnected
+      }
+      try {
+        analyserRef.current?.disconnect();
+      } catch (_e) {
+        // Already disconnected
+      }
+      sourceRef.current = null;
+      analyserRef.current = null;
+
       audioContextRef.current?.close();
+      audioContextRef.current = null;
     };
   }, []);
 
@@ -177,6 +209,9 @@ export function useAudioRhythm() {
     isAnalyzing,
     beatInfo,
     analysis,
+    /** Refs for consumers that need current values without triggering re-renders */
+    beatInfoRef,
+    analysisRef,
   };
 }
 

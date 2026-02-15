@@ -64,18 +64,33 @@ export const feedCategoryApi = {
 
     try {
       const { data } = await apiClient.get<{ categories: CategoryApiResponse[] }>('/feed-categories');
-      const categories = data.categories?.map(transformCategory) || [];
+      const backendCategories = data.categories?.map(transformCategory) || [];
 
-      // Merge with default categories if backend doesn't return them
+      // Build a lookup of backend categories by id for quick merging
+      const backendMap = new Map<string, FeedCategory>();
+      backendCategories.forEach(cat => backendMap.set(cat.id, cat));
+
+      // Start from defaults, but overlay any backend-provided settings
+      // so that server-side changes to settings/order/etc. are preserved.
       const defaults = getDefaultCategories();
-      const merged = [...defaults];
-
-      // Add any custom categories from backend
-      categories.forEach(cat => {
-        if (cat.type === 'custom') {
-          merged.push(cat);
+      const merged: FeedCategory[] = defaults.map(def => {
+        const backendVersion = backendMap.get(def.id);
+        if (backendVersion) {
+          // Merge backend settings onto the default, preserving backend values
+          backendMap.delete(def.id); // consumed
+          return {
+            ...def,
+            ...backendVersion,
+            // Keep the default icon/color if backend didn't set them
+            icon: backendVersion.icon || def.icon,
+            color: backendVersion.color || def.color,
+          };
         }
+        return def;
       });
+
+      // Add any remaining backend categories (custom + any new types not in defaults)
+      backendMap.forEach(cat => merged.push(cat));
 
       // Sort by order
       merged.sort((a, b) => a.order - b.order);

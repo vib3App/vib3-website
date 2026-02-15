@@ -77,17 +77,22 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
             // Stats failed (likely auth issue) - continue with empty counts
           }
 
-          // Check if selected category still exists before updating state
+          // Reconcile the locally-persisted selectedCategory with the fresh
+          // backend data.  We keep the user's *selection* (same id) but pick up
+          // any updated settings / metadata the backend returned.
           const currentSelected = get().selectedCategory;
-          const selectedStillExists = currentSelected && categories.find(c => c.id === currentSelected.id);
+          const freshSelected = currentSelected
+            ? categories.find(c => c.id === currentSelected.id)
+            : undefined;
 
           // Update all state in one call to minimize re-renders
           set({
             categories,
             categoryCounts: counts,
             isLoading: false,
-            // Only update selected if it was deleted
-            ...(selectedStillExists ? {} : { selectedCategory: categories[0] }),
+            // If the selected category still exists, update it with fresh data;
+            // otherwise fall back to the first category.
+            selectedCategory: freshSelected ?? categories[0],
           });
         } catch (error) {
           logger.error('Failed to load categories:', error);

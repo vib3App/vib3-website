@@ -71,14 +71,28 @@ export async function acquireCallMedia(
 }
 
 /**
- * Wait for a callId from the backend after initiating
+ * Wait for a callId from the backend after initiating.
+ * Rejects after timeoutMs (default 30s) if registration never completes.
  */
-export function waitForCallRegistered(): Promise<string> {
-  return new Promise<string>((resolve) => {
+const CALL_REGISTER_TIMEOUT = 30_000;
+
+export function waitForCallRegistered(timeoutMs = CALL_REGISTER_TIMEOUT): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    let settled = false;
     const unsub = websocketService.onCallRegistered(({ callId }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       unsub();
       resolve(callId);
     });
+
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      unsub();
+      reject(new Error('Call registration timed out'));
+    }, timeoutMs);
   });
 }
 

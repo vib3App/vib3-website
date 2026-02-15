@@ -2,7 +2,7 @@
  * Mobile detection hook
  * Detects device type, orientation, and touch capabilities
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface DeviceInfo {
   isMobile: boolean;
@@ -200,10 +200,20 @@ export function useNetworkStatus() {
 
 /**
  * Hook for handling pull-to-refresh gesture
+ * Uses refs for callback and state values to avoid stale closures
+ * and unnecessary re-registration of event listeners.
  */
 export function usePullToRefresh(onRefresh: () => Promise<void>) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+
+  // Refs to avoid stale closures in touch handlers
+  const onRefreshRef = useRef(onRefresh);
+  onRefreshRef.current = onRefresh;
+  const pullDistanceRef = useRef(pullDistance);
+  pullDistanceRef.current = pullDistance;
+  const isRefreshingRef = useRef(isRefreshing);
+  isRefreshingRef.current = isRefreshing;
 
   useEffect(() => {
     let startY = 0;
@@ -231,10 +241,10 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
     };
 
     const handleTouchEnd = async () => {
-      if (pullDistance >= threshold && !isRefreshing) {
+      if (pullDistanceRef.current >= threshold && !isRefreshingRef.current) {
         setIsRefreshing(true);
         try {
-          await onRefresh();
+          await onRefreshRef.current();
         } finally {
           setIsRefreshing(false);
         }
@@ -252,7 +262,7 @@ export function usePullToRefresh(onRefresh: () => Promise<void>) {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [onRefresh, isRefreshing, pullDistance]);
+  }, []);
 
   return { isRefreshing, pullDistance };
 }

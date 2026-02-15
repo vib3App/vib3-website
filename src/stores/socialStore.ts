@@ -149,19 +149,32 @@ export const useSocialStore = create<SocialStore>()(
         likedVideoIds: Array.from(state.likedVideoIds),
         lastFetched: state.lastFetched,
       }),
-      // Convert arrays back to Sets on rehydration
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          const followedArray = state.followedUserIds as unknown;
-          if (Array.isArray(followedArray)) {
-            state.followedUserIds = new Set(followedArray as string[]);
-          }
-          const likedArray = state.likedVideoIds as unknown;
-          if (Array.isArray(likedArray)) {
-            state.likedVideoIds = new Set(likedArray as string[]);
-          }
-          state.isLoaded = state.followedUserIds.size > 0 || state.likedVideoIds.size > 0;
-        }
+      // merge converts persisted arrays back to Sets before they enter the store.
+      // This replaces onRehydrateStorage which ran too late — components could
+      // see raw arrays (deserialized from JSON) before the mutation happened,
+      // causing .has() calls to throw.
+      merge: (persisted, current) => {
+        const p = persisted as Record<string, unknown> | undefined;
+        if (!p) return current;
+
+        const followedRaw = p.followedUserIds;
+        const likedRaw = p.likedVideoIds;
+
+        const followedUserIds = Array.isArray(followedRaw)
+          ? new Set<string>(followedRaw)
+          : current.followedUserIds;
+
+        const likedVideoIds = Array.isArray(likedRaw)
+          ? new Set<string>(likedRaw)
+          : current.likedVideoIds;
+
+        return {
+          ...current,
+          followedUserIds,
+          likedVideoIds,
+          lastFetched: (p.lastFetched as number | null) ?? current.lastFetched,
+          isLoaded: followedUserIds.size > 0 || likedVideoIds.size > 0,
+        };
       },
     }
   )

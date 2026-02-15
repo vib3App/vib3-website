@@ -44,6 +44,10 @@ export function useAR() {
     cameraStream: null,
   });
 
+  // Keep a ref to the latest session so callbacks never read stale closures
+  const sessionRef = useRef(session);
+  useEffect(() => { sessionRef.current = session; }, [session]);
+
   // Check device capabilities
   useEffect(() => {
     const checkCapabilities = async () => {
@@ -115,13 +119,13 @@ export function useAR() {
 
   // Stop camera
   const stopCamera = useCallback(() => {
-    session.cameraStream?.getTracks().forEach(track => track.stop());
+    sessionRef.current.cameraStream?.getTracks().forEach(track => track.stop());
     setSession({
       isActive: false,
       filter: null,
       cameraStream: null,
     });
-  }, [session.cameraStream]);
+  }, []);
 
   // Apply filter (placeholder for actual AR filter implementation)
   const applyFilter = useCallback((filter: FaceFilter) => {
@@ -147,22 +151,23 @@ export function useAR() {
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
 
-    // Apply filter overlay if active
-    if (session.filter) {
+    // Apply filter overlay if active — read from ref to avoid stale closure
+    const currentFilter = sessionRef.current.filter;
+    if (currentFilter) {
       // Basic color overlay — full AR filters require WebGL (beta)
-      ctx.fillStyle = `rgba(168, 85, 247, ${session.filter.intensity * 0.1})`;
+      ctx.fillStyle = `rgba(168, 85, 247, ${currentFilter.intensity * 0.1})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
     return canvas.toDataURL('image/jpeg', 0.9);
-  }, [session.filter]);
+  }, []);
 
-  // Cleanup
+  // Cleanup — read from ref to avoid stale closure in the unmount callback
   useEffect(() => {
     return () => {
-      session.cameraStream?.getTracks().forEach(track => track.stop());
+      sessionRef.current.cameraStream?.getTracks().forEach(track => track.stop());
     };
-  }, [session.cameraStream]);
+  }, []);
 
   return {
     capabilities,

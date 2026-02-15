@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
-import { collaborationApi, videoApi } from '@/services/api';
+import { collaborationApi, videoApi, TusUploadManager } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
 import type { RemixType } from '@/types/collaboration';
 import type { Video } from '@/types';
@@ -136,7 +136,16 @@ export function useRemix() {
 
     setUploading(true);
     try {
-      const remix = await collaborationApi.createRemix(remixType, videoId, 'uploaded-video-url', {
+      // Upload the recorded video blob first
+      const videoFile = new File([recordedBlob], 'remix.webm', { type: recordedBlob.type || 'video/webm' });
+      const uploadManager = new TusUploadManager();
+      const uploadedVideoUrl = await new Promise<string>((resolve, reject) => {
+        uploadManager.onComplete = (uploadId) => resolve(uploadId);
+        uploadManager.onError = (error) => reject(error);
+        uploadManager.start(videoFile);
+      });
+
+      const remix = await collaborationApi.createRemix(remixType, videoId, uploadedVideoUrl, {
         title: title || undefined,
         description: description || undefined,
         splitPosition: remixType === 'duet' ? splitPosition : undefined,
