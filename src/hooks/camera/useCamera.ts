@@ -44,7 +44,7 @@ export function useCamera() {
       stream.cleanup();
       recording.cleanupTimer();
     };
-  }, [isAuthenticated, isAuthVerified, router, stream.initCamera, stream.cleanup, recording.cleanupTimer]);
+  }, [isAuthenticated, isAuthVerified, router, stream, recording]);
 
   const togglePanel = useCallback((panel: 'filters' | 'effects' | 'speed') => {
     setShowFilters(panel === 'filters' ? !showFilters : false);

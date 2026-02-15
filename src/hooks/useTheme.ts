@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export type ThemeMode = 'dark' | 'light' | 'system' | 'oled';
 export type AccentColor = 'purple' | 'pink' | 'blue' | 'green' | 'orange' | 'red' | 'cyan' | 'custom';
@@ -50,23 +50,31 @@ const STORAGE_KEY = 'vib3-theme-config';
 /**
  * Comprehensive theme management hook
  */
-export function useTheme() {
-  const [config, setConfig] = useState<ThemeConfig>(defaultConfig);
-  const [colors, setColors] = useState<ThemeColors | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load config from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setConfig({ ...defaultConfig, ...JSON.parse(saved) });
-      }
-    } catch (_e) {
-      // Invalid saved data
+function loadConfigFromStorage(): { config: ThemeConfig; isLoaded: boolean } {
+  if (typeof window === 'undefined') return { config: defaultConfig, isLoaded: false };
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return { config: { ...defaultConfig, ...JSON.parse(saved) }, isLoaded: true };
     }
-    setIsLoaded(true);
-  }, []);
+  } catch (_e) {
+    // Invalid saved data
+  }
+  return { config: defaultConfig, isLoaded: true };
+}
+
+export function useTheme() {
+  const [{ config, isLoaded }, setConfigState] = useState(loadConfigFromStorage);
+
+  const setConfig: React.Dispatch<React.SetStateAction<ThemeConfig>> = useCallback(
+    (action) => {
+      setConfigState((prev) => ({
+        ...prev,
+        config: typeof action === 'function' ? action(prev.config) : action,
+      }));
+    },
+    []
+  );
 
   // Save config to localStorage
   useEffect(() => {
@@ -126,8 +134,22 @@ export function useTheme() {
       root.style.setProperty('--bg-surface', '#f5f5f5');
     }
 
-    // Generate full color palette
-    setColors({
+  }, [config, isLoaded]);
+
+  // Derive full color palette from config
+  const colors = useMemo<ThemeColors | null>(() => {
+    if (!isLoaded) return null;
+
+    let effectiveMode = config.mode;
+    if (config.mode === 'system') {
+      effectiveMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    const accent = config.accent === 'custom' && config.customAccent
+      ? { primary: config.customAccent, secondary: config.customAccent }
+      : accentColors[config.accent];
+
+    return {
       primary: accent.primary,
       secondary: accent.secondary,
       accent: accent.primary,
@@ -135,13 +157,13 @@ export function useTheme() {
       surface: effectiveMode === 'light' ? '#f5f5f5' : '#1a1a1a',
       text: effectiveMode === 'light' ? '#0f0f0f' : '#ffffff',
       textSecondary: effectiveMode === 'light' ? '#666666' : '#a0a0a0',
-    });
+    };
   }, [config, isLoaded]);
 
   // Update handlers
   const setMode = useCallback((mode: ThemeMode) => {
     setConfig(prev => ({ ...prev, mode }));
-  }, []);
+  }, [setConfig]);
 
   const setAccent = useCallback((accent: AccentColor, customColor?: string) => {
     setConfig(prev => ({
@@ -149,27 +171,27 @@ export function useTheme() {
       accent,
       customAccent: accent === 'custom' ? customColor : prev.customAccent,
     }));
-  }, []);
+  }, [setConfig]);
 
   const setGlassOpacity = useCallback((opacity: number) => {
     setConfig(prev => ({ ...prev, glassOpacity: Math.max(0, Math.min(1, opacity)) }));
-  }, []);
+  }, [setConfig]);
 
   const setBlurIntensity = useCallback((intensity: number) => {
     setConfig(prev => ({ ...prev, blurIntensity: Math.max(0, Math.min(50, intensity)) }));
-  }, []);
+  }, [setConfig]);
 
   const setAnimationSpeed = useCallback((speed: number) => {
     setConfig(prev => ({ ...prev, animationSpeed: Math.max(0, Math.min(2, speed)) }));
-  }, []);
+  }, [setConfig]);
 
   const setBorderRadius = useCallback((radius: ThemeConfig['borderRadius']) => {
     setConfig(prev => ({ ...prev, borderRadius: radius }));
-  }, []);
+  }, [setConfig]);
 
   const resetToDefaults = useCallback(() => {
     setConfig(defaultConfig);
-  }, []);
+  }, [setConfig]);
 
   return {
     config,

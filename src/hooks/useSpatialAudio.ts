@@ -164,9 +164,11 @@ export function useSpatialAudio(_options: SpatialAudioOptions = {}) {
 
   // Cleanup
   useEffect(() => {
+    const sources = sourcesRef.current;
+    const audioCtx = audioContextRef.current;
     return () => {
-      sourcesRef.current.forEach((_, id) => removeSource(id));
-      audioContextRef.current?.close();
+      sources.forEach((_, id) => removeSource(id));
+      audioCtx?.close();
     };
   }, [removeSource]);
 

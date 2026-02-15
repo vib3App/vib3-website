@@ -42,7 +42,6 @@ export default function ProfilePage() {
     isFetchingRef.current = true;
 
     // If user exists but no valid ID, fetch fresh profile from API
-    setStatus('Refreshing profile...');
     authApi.getMe().then((freshUser) => {
       if (hasRedirectedRef.current) return;
       if (freshUser?.id) {

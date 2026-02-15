@@ -186,7 +186,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
     } catch (err) {
       console.error('Failed to request to join:', err);
     }
-  }, [streamId]);
+  }, [streamId, addToast]);
 
   const handleAcceptGuest = useCallback(async (requestId: string) => {
     try {
@@ -215,7 +215,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
     } catch (err) {
       console.error('Failed to end stream:', err);
     }
-  }, [streamId, router]);
+  }, [streamId, router, confirmDialog]);
 
   return {
     // Refs

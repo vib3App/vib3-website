@@ -25,7 +25,7 @@ export default function ManageCategoriesPage() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => { loadCategories(true); }, []);
+  useEffect(() => { loadCategories(true); }, [loadCategories]);
 
   const handleCreate = async () => {
     const name = newCategoryName.trim();

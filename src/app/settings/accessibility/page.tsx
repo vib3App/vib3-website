@@ -71,16 +71,23 @@ export default function AccessibilitySettingsPage() {
       return;
     }
 
-    // Load from localStorage
-    try {
-      const saved = localStorage.getItem('vib3_accessibility_settings');
-      if (saved) {
-        setSettings(JSON.parse(saved));
+    // Load from localStorage asynchronously
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const saved = localStorage.getItem('vib3_accessibility_settings');
+        if (saved && !cancelled) {
+          setSettings(JSON.parse(saved));
+        }
+      } catch {
+        // Use defaults
       }
-    } catch {
-      // Use defaults
-    }
-    setIsLoading(false);
+      if (!cancelled) {
+        setIsLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [isAuthenticated, isAuthVerified, router]);
 
   // Save settings whenever they change

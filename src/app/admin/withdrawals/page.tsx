@@ -13,25 +13,38 @@ export default function WithdrawalsPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
-
-  const fetchWithdrawals = useCallback(async () => {
-    setLoading(true);
-    const res = statusFilter === 'pending'
-      ? await adminApi.getPendingWithdrawals()
-      : await adminApi.getAllWithdrawals();
-    setWithdrawals(res.withdrawals || []);
-    setLoading(false);
-  }, [statusFilter]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetchWithdrawals();
-  }, [fetchWithdrawals]);
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const res = statusFilter === 'pending'
+          ? await adminApi.getPendingWithdrawals()
+          : await adminApi.getAllWithdrawals();
+        if (!cancelled) {
+          setWithdrawals(res.withdrawals || []);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [statusFilter, refreshKey]);
+
+  const triggerRefresh = useCallback(() => {
+    setRefreshKey(k => k + 1);
+  }, []);
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);
     const result = await adminApi.approveWithdrawal(id);
     if (result.success) {
-      await fetchWithdrawals();
+      triggerRefresh();
     }
     setProcessingId(null);
   };
@@ -42,7 +55,7 @@ export default function WithdrawalsPage() {
     if (result.success) {
       setShowRejectModal(null);
       setRejectReason('');
-      await fetchWithdrawals();
+      triggerRefresh();
     }
     setProcessingId(null);
   };

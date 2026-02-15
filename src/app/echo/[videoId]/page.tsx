@@ -18,24 +18,29 @@ export default function EchoPage({ params }: { params: Promise<{ videoId: string
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const [videoData, echoData] = await Promise.all([
+          videoApi.getVideo(videoId),
+          echoApi.getEchoes(videoId),
+        ]);
+        if (!cancelled) {
+          setOriginalVideo(videoData);
+          setEchoes(echoData.echoes);
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
     loadData();
+    return () => { cancelled = true; };
   }, [videoId]);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const [videoData, echoData] = await Promise.all([
-        videoApi.getVideo(videoId),
-        echoApi.getEchoes(videoId),
-      ]);
-      setOriginalVideo(videoData);
-      setEchoes(echoData.echoes);
-    } catch (error) {
-      console.error('Failed to load data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCreateEcho = () => {
     // Store the original video ID for the camera/upload flow

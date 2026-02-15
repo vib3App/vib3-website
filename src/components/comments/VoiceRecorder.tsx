@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+
+// Pre-generate waveform heights for playback visualization
+function generateWaveformHeights(count: number): number[] {
+  return Array.from({ length: count }, () => Math.random() * 24 + 8);
+}
 
 interface VoiceRecorderProps {
   onComplete: (audioBlob: Blob) => void;
@@ -24,6 +29,17 @@ export function VoiceRecorder({
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  }, []);
 
   const startRecording = useCallback(async () => {
     try {
@@ -70,18 +86,7 @@ export function VoiceRecorder({
       console.error('Failed to start recording:', err);
       setError('Microphone access denied. Please allow microphone access to record voice comments.');
     }
-  }, [maxDuration]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    }
-  }, [isRecording]);
+  }, [maxDuration, stopRecording]);
 
   const handleSend = () => {
     if (audioBlob) {
@@ -125,6 +130,8 @@ export function VoiceRecorder({
     };
   }, [audioUrl]);
 
+  const waveformHeights = useMemo(() => generateWaveformHeights(40), []);
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -163,11 +170,11 @@ export function VoiceRecorder({
 
           <div className="flex-1 flex items-center gap-2">
             <div className="flex-1 h-8 flex items-center gap-0.5">
-              {Array.from({ length: 40 }).map((_, i) => (
+              {waveformHeights.map((h, i) => (
                 <div
                   key={i}
                   className="flex-1 bg-purple-500 rounded-full"
-                  style={{ height: `${Math.random() * 24 + 8}px` }}
+                  style={{ height: `${h}px` }}
                 />
               ))}
             </div>

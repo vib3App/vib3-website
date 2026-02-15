@@ -16,9 +16,48 @@ import {
 export default function WatchPartyRoom() {
   const params = useParams();
   const partyId = params.id as string;
-  const wp = useWatchParty(partyId);
+  const {
+    // Refs
+    videoRef,
+    chatContainerRef,
+    // Data
+    party,
+    messages,
+    loading,
+    error,
+    isHost,
+    // UI State
+    chatMessage,
+    setChatMessage,
+    showPlaylist,
+    setShowPlaylist,
+    showParticipants,
+    setShowParticipants,
+    showShareModal,
+    setShowShareModal,
+    showAddVideoModal,
+    setShowAddVideoModal,
+    copied,
+    // Search
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    searching,
+    // Actions
+    handleSendMessage,
+    handlePlayPause,
+    handleSkipNext,
+    handleSkipToVideo,
+    handleRemoveFromPlaylist,
+    handleAddVideo,
+    handleSearch,
+    handleLeave,
+    handleEndParty,
+    copyShareLink,
+    copyInviteCode,
+  } = useWatchParty(partyId);
 
-  if (wp.loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
@@ -26,11 +65,11 @@ export default function WatchPartyRoom() {
     );
   }
 
-  if (wp.error || !wp.party) {
+  if (error || !party) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-4">
         <UserGroupIcon className="w-16 h-16 text-gray-600 mb-4" />
-        <h1 className="text-xl font-semibold mb-2">{wp.error || 'Party not found'}</h1>
+        <h1 className="text-xl font-semibold mb-2">{error || 'Party not found'}</h1>
         <Link href="/watch-party" className="text-pink-400 hover:underline">
           Back to Watch Parties
         </Link>
@@ -38,79 +77,79 @@ export default function WatchPartyRoom() {
     );
   }
 
-  const currentVideo = wp.party.playlist[wp.party.currentVideoIndex];
+  const currentVideo = party.playlist[party.currentVideoIndex];
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <WatchPartyHeader
-        title={wp.party.title}
-        participantCount={wp.party.participants.length}
-        isHost={wp.isHost}
-        onShare={() => wp.setShowShareModal(true)}
-        onEndParty={wp.handleEndParty}
-        onLeave={wp.handleLeave}
+        title={party.title}
+        participantCount={party.participants.length}
+        isHost={isHost}
+        onShare={() => setShowShareModal(true)}
+        onEndParty={handleEndParty}
+        onLeave={handleLeave}
       />
 
       <div className="flex-1 flex">
         <div className="flex-1 flex flex-col">
           <WatchPartyPlayer
-            ref={wp.videoRef}
+            ref={videoRef}
             currentVideo={currentVideo}
-            isPlaying={wp.party.status === 'playing'}
-            isHost={wp.isHost}
-            currentVideoIndex={wp.party.currentVideoIndex}
-            playlistLength={wp.party.playlist.length}
-            onPlayPause={wp.handlePlayPause}
-            onSkipNext={wp.handleSkipNext}
-            onSkipPrevious={() => wp.handleSkipToVideo(Math.max(0, wp.party!.currentVideoIndex - 1))}
-            onAddVideo={() => wp.setShowAddVideoModal(true)}
+            isPlaying={party.status === 'playing'}
+            isHost={isHost}
+            currentVideoIndex={party.currentVideoIndex}
+            playlistLength={party.playlist.length}
+            onPlayPause={handlePlayPause}
+            onSkipNext={handleSkipNext}
+            onSkipPrevious={() => handleSkipToVideo(Math.max(0, party!.currentVideoIndex - 1))}
+            onAddVideo={() => setShowAddVideoModal(true)}
           />
 
           <WatchPartyPlaylist
-            playlist={wp.party.playlist}
-            currentVideoIndex={wp.party.currentVideoIndex}
-            isHost={wp.isHost}
-            isOpen={wp.showPlaylist}
-            onToggle={() => wp.setShowPlaylist(!wp.showPlaylist)}
-            onSkipToVideo={wp.handleSkipToVideo}
-            onRemoveVideo={wp.handleRemoveFromPlaylist}
-            onAddVideo={() => wp.setShowAddVideoModal(true)}
+            playlist={party.playlist}
+            currentVideoIndex={party.currentVideoIndex}
+            isHost={isHost}
+            isOpen={showPlaylist}
+            onToggle={() => setShowPlaylist(!showPlaylist)}
+            onSkipToVideo={handleSkipToVideo}
+            onRemoveVideo={handleRemoveFromPlaylist}
+            onAddVideo={() => setShowAddVideoModal(true)}
           />
         </div>
 
         <WatchPartyChatSidebar
-          ref={wp.chatContainerRef}
-          messages={wp.messages}
-          participants={wp.party.participants}
-          showParticipants={wp.showParticipants}
-          chatMessage={wp.chatMessage}
-          onToggleView={wp.setShowParticipants}
-          onChatMessageChange={wp.setChatMessage}
-          onSendMessage={wp.handleSendMessage}
+          ref={chatContainerRef}
+          messages={messages}
+          participants={party.participants}
+          showParticipants={showParticipants}
+          chatMessage={chatMessage}
+          onToggleView={setShowParticipants}
+          onChatMessageChange={setChatMessage}
+          onSendMessage={handleSendMessage}
         />
       </div>
 
       <ShareModal
-        isOpen={wp.showShareModal}
-        inviteCode={wp.party.inviteCode}
-        copied={wp.copied}
-        onClose={() => wp.setShowShareModal(false)}
-        onCopyCode={wp.copyInviteCode}
-        onCopyLink={wp.copyShareLink}
+        isOpen={showShareModal}
+        inviteCode={party.inviteCode}
+        copied={copied}
+        onClose={() => setShowShareModal(false)}
+        onCopyCode={copyInviteCode}
+        onCopyLink={copyShareLink}
       />
 
       <AddVideoModal
-        isOpen={wp.showAddVideoModal}
-        searchQuery={wp.searchQuery}
-        searchResults={wp.searchResults}
-        searching={wp.searching}
+        isOpen={showAddVideoModal}
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        searching={searching}
         onClose={() => {
-          wp.setShowAddVideoModal(false);
-          wp.setSearchQuery('');
+          setShowAddVideoModal(false);
+          setSearchQuery('');
         }}
-        onSearchChange={wp.setSearchQuery}
-        onSearch={wp.handleSearch}
-        onAddVideo={wp.handleAddVideo}
+        onSearchChange={setSearchQuery}
+        onSearch={handleSearch}
+        onAddVideo={handleAddVideo}
       />
     </div>
   );

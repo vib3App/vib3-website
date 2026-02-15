@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface FeatureUsage {
   id: string;
@@ -31,21 +31,19 @@ const defaultPatterns: UsagePatterns = {
  * Hook for tracking user behavior and adapting UI
  */
 export function useAdaptiveUI() {
-  const [patterns, setPatterns] = useState<UsagePatterns>(defaultPatterns);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load patterns from localStorage
-  useEffect(() => {
+  const [patterns, setPatterns] = useState<UsagePatterns>(() => {
+    if (typeof localStorage === 'undefined') return defaultPatterns;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        setPatterns(JSON.parse(saved));
+        return JSON.parse(saved);
       }
     } catch (_e) {
       // Invalid data
     }
-    setIsLoaded(true);
-  }, []);
+    return defaultPatterns;
+  });
+  const isLoaded = true;
 
   // Save patterns to localStorage
   useEffect(() => {
@@ -162,12 +160,7 @@ export function useAdaptiveUI() {
  */
 export function useSmartShortcuts() {
   const { getSuggestedFeatures, isPowerUser } = useAdaptiveUI();
-  const [shortcuts, setShortcuts] = useState<string[]>([]);
-
-  useEffect(() => {
-    const suggested = getSuggestedFeatures();
-    setShortcuts(suggested);
-  }, [getSuggestedFeatures]);
+  const shortcuts = useMemo(() => getSuggestedFeatures(), [getSuggestedFeatures]);
 
   return { shortcuts, isPowerUser };
 }

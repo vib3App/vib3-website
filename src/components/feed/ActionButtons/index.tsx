@@ -8,7 +8,7 @@ import { FloatingPills } from './FloatingPills';
 import { ArcMenu } from './ArcMenu';
 import { CornerCluster } from './CornerCluster';
 import { SettingsPopover } from './SettingsPopover';
-import type { LayoutType, Position } from '@/types/actionButtons';
+import type { LayoutType, LayoutProps, Position } from '@/types/actionButtons';
 
 interface ActionButtonsProps {
   video: {
@@ -87,11 +87,11 @@ export function ActionButtons({
     onOpenSettings: handleOpenSettings,
   };
 
-  const LayoutComponent = getLayoutComponent(currentPrefs.layout);
+  const layout = currentPrefs.layout;
 
   return (
     <>
-      <LayoutComponent {...layoutProps} />
+      {renderLayout(layout, layoutProps)}
 
       {/* Fixed settings button - Liquid Glass */}
       <button
@@ -115,20 +115,20 @@ export function ActionButtons({
   );
 }
 
-function getLayoutComponent(layout: LayoutType) {
+function renderLayout(layout: LayoutType, props: LayoutProps) {
   switch (layout) {
     case 'horizontal':
-      return HorizontalBar;
+      return <HorizontalBar {...props} />;
     case 'vertical':
-      return VerticalStack;
+      return <VerticalStack {...props} />;
     case 'floating':
-      return FloatingPills;
+      return <FloatingPills {...props} />;
     case 'arc':
-      return ArcMenu;
+      return <ArcMenu {...props} />;
     case 'corner':
-      return CornerCluster;
+      return <CornerCluster {...props} />;
     default:
-      return HorizontalBar;
+      return <HorizontalBar {...props} />;
   }
 }
 

@@ -21,10 +21,37 @@ import {
 
 function FeedContent() {
   const { isAuthenticated, user } = useAuthStore();
-  const feed = useFeed();
-  const actions = useFeedActions({
-    videos: feed.videos,
-    setVideos: feed.setVideos,
+  const {
+    activeTab,
+    videos,
+    setVideos,
+    currentIndex,
+    isLoading,
+    loadingMore,
+    scrollContainerRef,
+    scrollToVideo,
+  } = useFeed();
+  const {
+    isMuted,
+    showQueue,
+    commentsOpen,
+    shareOpen,
+    selectedVideo,
+    handleLike,
+    handleSave,
+    handleFollow,
+    handleComment,
+    handleCommentAdded,
+    handleShare,
+    handleShareComplete,
+    toggleMute,
+    toggleQueue,
+    closeQueue,
+    closeComments,
+    closeShare,
+  } = useFeedActions({
+    videos,
+    setVideos,
     isAuthenticated,
   });
 
@@ -39,77 +66,77 @@ function FeedContent() {
   };
 
   useFeedNavigation({
-    currentIndex: feed.currentIndex,
-    videos: feed.videos,
-    scrollToVideo: feed.scrollToVideo,
-    onLike: actions.handleLike,
-    onComment: actions.handleComment,
-    onShare: actions.handleShare,
-    toggleMute: actions.toggleMute,
-    disabled: actions.commentsOpen || actions.shareOpen,
+    currentIndex,
+    videos,
+    scrollToVideo,
+    onLike: handleLike,
+    onComment: handleComment,
+    onShare: handleShare,
+    toggleMute,
+    disabled: commentsOpen || shareOpen,
   });
 
   return (
     <>
       <FeedTopActions
-        showQueue={actions.showQueue}
-        onToggleQueue={actions.toggleQueue}
+        showQueue={showQueue}
+        onToggleQueue={toggleQueue}
       />
 
       <FeedQueuePanel
-        videos={feed.videos}
-        currentIndex={feed.currentIndex}
-        isOpen={actions.showQueue}
-        onClose={actions.closeQueue}
-        onScrollToVideo={feed.scrollToVideo}
+        videos={videos}
+        currentIndex={currentIndex}
+        isOpen={showQueue}
+        onClose={closeQueue}
+        onScrollToVideo={scrollToVideo}
       />
 
       <div
-        ref={feed.scrollContainerRef}
+        ref={scrollContainerRef}
         className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
         style={{ scrollSnapType: 'y mandatory' }}
       >
-        {feed.isLoading && feed.videos.length === 0 ? (
+        {isLoading && videos.length === 0 ? (
           <FeedLoadingState />
-        ) : feed.videos.length === 0 ? (
-          <FeedEmptyState activeTab={feed.activeTab} />
+        ) : videos.length === 0 ? (
+          <FeedEmptyState activeTab={activeTab} />
         ) : (
           <>
-            {feed.videos.map((video, index) => (
+            {videos.map((video, index) => (
               <div key={`${video.id}-${index}`} data-index={index} className="h-full w-full">
                 <FeedVideoItem
                   video={video}
-                  isActive={index === feed.currentIndex}
-                  isMuted={actions.isMuted}
-                  onMuteToggle={actions.toggleMute}
-                  onLike={() => actions.handleLike(index)}
-                  onSave={() => actions.handleSave(index)}
-                  onFollow={() => actions.handleFollow(index)}
-                  onComment={() => actions.handleComment(video.id)}
-                  onShare={() => actions.handleShare(video.id)}
+                  isActive={index === currentIndex}
+                  isMuted={isMuted}
+                  onMuteToggle={toggleMute}
+                  onLike={() => handleLike(index)}
+                  onSave={() => handleSave(index)}
+                  onFollow={() => handleFollow(index)}
+                  onComment={() => handleComment(video.id)}
+                  onShare={() => handleShare(video.id)}
                   userId={user?.id}
                 />
               </div>
             ))}
-            {feed.loadingMore && <FeedLoadingMore />}
+            {loadingMore && <FeedLoadingMore />}
           </>
         )}
       </div>
 
-      {actions.selectedVideo && (
+      {selectedVideo && (
         <>
           <CommentSheet
-            videoId={actions.selectedVideo.id}
-            isOpen={actions.commentsOpen}
-            onClose={actions.closeComments}
-            onCommentAdded={() => actions.handleCommentAdded(actions.selectedVideo!.id)}
+            videoId={selectedVideo.id}
+            isOpen={commentsOpen}
+            onClose={closeComments}
+            onCommentAdded={() => handleCommentAdded(selectedVideo!.id)}
           />
           <ShareSheet
-            videoId={actions.selectedVideo.id}
-            videoUrl={actions.selectedVideo.videoUrl}
-            isOpen={actions.shareOpen}
-            onClose={actions.closeShare}
-            onShareComplete={() => actions.handleShareComplete(actions.selectedVideo!.id)}
+            videoId={selectedVideo.id}
+            videoUrl={selectedVideo.videoUrl}
+            isOpen={shareOpen}
+            onClose={closeShare}
+            onShareComplete={() => handleShareComplete(selectedVideo!.id)}
           />
         </>
       )}

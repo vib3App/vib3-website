@@ -117,8 +117,7 @@ export function useFeed() {
       setLoadingMore(false);
       isLoadingRef.current = false;
     }
-    // Use specific properties instead of full object to prevent unnecessary recreations
-  }, [activeTab, page, selectedVibe, selectedCategory?.id, selectedCategory?.settings?.feedOrder, user?.id, preloadVideo]);
+  }, [activeTab, page, selectedVibe, selectedCategory, user?.id, preloadVideo]);
 
   // Reload when category, tab, or vibe changes
   useEffect(() => {
@@ -220,7 +219,7 @@ export function useFeed() {
         setSelectedVibe(matched);
       }
     }
-  }, [searchParams, videos]);
+  }, [searchParams, videos, selectedVibe]);
 
   // Intersection observer for detecting current video
   useEffect(() => {

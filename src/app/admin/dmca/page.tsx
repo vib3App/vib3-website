@@ -12,27 +12,40 @@ export default function DMCAPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('pending');
   const [stats, setStats] = useState({ pending: 0, processed: 0, rejected: 0 });
   const [processingId, setProcessingId] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    const [noticesRes, statsRes] = await Promise.all([
-      adminApi.getDMCANotices(),
-      adminApi.getDMCAStats(),
-    ]);
-    setNotices(noticesRes.notices || []);
-    setStats(statsRes);
-    setLoading(false);
-  }, []);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [noticesRes, statsRes] = await Promise.all([
+          adminApi.getDMCANotices(),
+          adminApi.getDMCAStats(),
+        ]);
+        if (!cancelled) {
+          setNotices(noticesRes.notices || []);
+          setStats(statsRes);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [refreshKey]);
+
+  const triggerRefresh = useCallback(() => {
+    setRefreshKey(k => k + 1);
+  }, []);
 
   const handleProcess = async (noticeId: string, action: 'approve' | 'reject') => {
     setProcessingId(noticeId);
     const result = await adminApi.processDMCA(noticeId, action);
     if (result.success) {
-      await fetchData();
+      triggerRefresh();
     }
     setProcessingId(null);
   };

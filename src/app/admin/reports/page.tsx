@@ -18,40 +18,50 @@ export default function ReportsPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('pending');
 
-  useEffect(() => { loadReports(); }, [statusFilter]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const loadReports = async () => {
-    try {
-      setLoading(true);
-      const { reports: reportsList } = await adminApi.getReports({ status: statusFilter });
-      const reportsWithUsers = await Promise.all(
-        reportsList.map(async (report) => {
-          const [reporter, reportedUser] = await Promise.all([
-            loadUserDetails(report.reporterId),
-            loadUserDetails(report.contentId),
-          ]);
-          return { ...report, reporter, reportedUser };
-        })
-      );
-      setReports(reportsWithUsers);
-    } catch (err) {
-      setError('Failed to load reports');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadUserDetails = async (userId: string) => {
-    const result = await adminApi.getUser(userId);
-    return result?.user;
-  };
+  useEffect(() => {
+    let cancelled = false;
+    const loadUserDetails = async (userId: string) => {
+      const result = await adminApi.getUser(userId);
+      return result?.user;
+    };
+    const load = async () => {
+      try {
+        setLoading(true);
+        const { reports: reportsList } = await adminApi.getReports({ status: statusFilter });
+        const reportsWithUsers = await Promise.all(
+          reportsList.map(async (report) => {
+            const [reporter, reportedUser] = await Promise.all([
+              loadUserDetails(report.reporterId),
+              loadUserDetails(report.contentId),
+            ]);
+            return { ...report, reporter, reportedUser };
+          })
+        );
+        if (!cancelled) {
+          setReports(reportsWithUsers);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError('Failed to load reports');
+        }
+        console.error(err);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [statusFilter, refreshKey]);
 
   const handleAction = async (reportId: string, action: ModerationAction, notes?: string) => {
     setActionLoading(true);
     try {
       await adminApi.takeAction(reportId, action, notes);
-      await loadReports();
+      setRefreshKey(k => k + 1);
       addToast(`Action "${action}" completed successfully`, 'success');
     } catch (err) {
       console.error('Action failed:', err);

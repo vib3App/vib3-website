@@ -18,6 +18,7 @@ export function CameraScanner({ onScanResult, isActive }: CameraScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [hasCamera, setHasCamera] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const scanQRCodeRef = useRef<() => void>(() => {});
 
   const stopScanning = useCallback(() => {
     if (streamRef.current) {
@@ -39,7 +40,7 @@ export function CameraScanner({ onScanResult, isActive }: CameraScannerProps) {
     const ctx = canvas.getContext('2d');
 
     if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) {
-      animationRef.current = requestAnimationFrame(scanQRCode);
+      animationRef.current = requestAnimationFrame(() => scanQRCodeRef.current());
       return;
     }
 
@@ -63,28 +64,12 @@ export function CameraScanner({ onScanResult, isActive }: CameraScannerProps) {
       // BarcodeDetector not supported in this browser
     }
 
-    animationRef.current = requestAnimationFrame(scanQRCode);
+    animationRef.current = requestAnimationFrame(() => scanQRCodeRef.current());
   }, [onScanResult, stopScanning]);
 
-  const startScanning = useCallback(async () => {
-    try {
-      setError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-      });
-
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setIsScanning(true);
-        scanQRCode();
-      }
-    } catch {
-      setHasCamera(false);
-      setError('Camera access denied. Please enable camera permissions.');
-    }
+  // Keep ref in sync with latest scanQRCode
+  useEffect(() => {
+    scanQRCodeRef.current = scanQRCode;
   }, [scanQRCode]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,11 +107,47 @@ export function CameraScanner({ onScanResult, isActive }: CameraScannerProps) {
   };
 
   useEffect(() => {
-    if (isActive) {
-      startScanning();
-    }
-    return () => stopScanning();
-  }, [isActive, startScanning, stopScanning]);
+    if (!isActive) return;
+
+    let cancelled = false;
+
+    const initCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' },
+        });
+
+        if (cancelled) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+          if (!cancelled) {
+            setIsScanning(true);
+            setError(null);
+            scanQRCodeRef.current();
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setHasCamera(false);
+          setError('Camera access denied. Please enable camera permissions.');
+        }
+      }
+    };
+
+    initCamera();
+
+    return () => {
+      cancelled = true;
+      stopScanning();
+    };
+  }, [isActive, stopScanning]);
 
   return (
     <div className="space-y-6">

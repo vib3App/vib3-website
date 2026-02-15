@@ -134,9 +134,16 @@ export default function WatchHistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const watchHistory = getWatchHistory();
-    setHistory(watchHistory);
-    setLoading(false);
+    let cancelled = false;
+    const load = async () => {
+      const watchHistory = getWatchHistory();
+      if (!cancelled) {
+        setHistory(watchHistory);
+        setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   const handleClearHistory = async () => {

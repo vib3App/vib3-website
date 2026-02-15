@@ -83,7 +83,7 @@ export function useCollectionDetail() {
     } catch (error) {
       console.error('Failed to delete playlist:', error);
     }
-  }, [collectionId, router]);
+  }, [collectionId, router, confirmDialog]);
 
   const loadMoreVideos = useCallback(() => {
     loadVideos(page + 1, true);

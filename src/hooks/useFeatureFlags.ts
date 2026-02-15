@@ -137,20 +137,22 @@ interface FeatureFlagsProviderProps {
 /**
  * Feature flags provider component
  */
-export function FeatureFlagsProvider({ children, overrides }: FeatureFlagsProviderProps) {
-  const [flags, setFlags] = useState<FeatureFlagsConfig>({ ...defaultFlags, ...overrides });
-
-  // Load from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('vib3-feature-flags');
-      if (saved) {
-        setFlags(prev => ({ ...prev, ...JSON.parse(saved), ...overrides }));
-      }
-    } catch (_e) {
-      // Invalid saved data
+function loadFlagsFromStorage(overrides?: Partial<FeatureFlagsConfig>): FeatureFlagsConfig {
+  const base = { ...defaultFlags, ...overrides };
+  if (typeof window === 'undefined') return base;
+  try {
+    const saved = localStorage.getItem('vib3-feature-flags');
+    if (saved) {
+      return { ...base, ...JSON.parse(saved), ...overrides };
     }
-  }, [overrides]);
+  } catch (_e) {
+    // Invalid saved data
+  }
+  return base;
+}
+
+export function FeatureFlagsProvider({ children, overrides }: FeatureFlagsProviderProps) {
+  const [flags, setFlags] = useState<FeatureFlagsConfig>(() => loadFlagsFromStorage(overrides));
 
   // Save to localStorage
   useEffect(() => {

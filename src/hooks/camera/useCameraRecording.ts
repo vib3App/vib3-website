@@ -171,7 +171,7 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
         return newDuration;
       });
     }, 1000);
-  }, [streamRef, videoRef, effectsCanvasRef, activeFilter, selectedSpeed, stopRecording, stopCanvasPipeline, remainingDuration, recordedClips.length]);
+  }, [streamRef, videoRef, effectsCanvasRef, activeFilter, stopRecording, stopCanvasPipeline, remainingDuration, recordedClips.length]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') {

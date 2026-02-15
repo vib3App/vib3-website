@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, RefObject } from 'react';
+import { useState, useCallback, useEffect, useMemo, RefObject } from 'react';
 import type { Chapter } from '@/components/video/player/types';
 
 interface UsePlaybackStateOptions {
@@ -31,7 +31,6 @@ export function usePlaybackState({
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(1);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [currentChapter, setCurrentChapter] = useState<Chapter | null>(null);
 
   // Handle active state - autoplay when active, pause when inactive
   useEffect(() => {
@@ -69,12 +68,16 @@ export function usePlaybackState({
     const video = videoRef.current;
     if (!video) return;
     video.muted = externalMuted;
-    setIsMuted(externalMuted);
   }, [externalMuted, videoRef]);
 
-  // Track current chapter
-  useEffect(() => {
-    if (chapters.length === 0) return;
+  // Keep isMuted in sync with externalMuted prop during render
+  if (isMuted !== externalMuted) {
+    setIsMuted(externalMuted);
+  }
+
+  // Track current chapter via useMemo (derived state)
+  const currentChapter = useMemo(() => {
+    if (chapters.length === 0) return null;
 
     const chapter = chapters.find(
       (ch, i) =>
@@ -82,10 +85,8 @@ export function usePlaybackState({
         (ch.endTime ? progress < ch.endTime : i === chapters.length - 1 || progress < chapters[i + 1]?.startTime)
     );
 
-    if (chapter !== currentChapter) {
-      setCurrentChapter(chapter || null);
-    }
-  }, [progress, chapters, currentChapter]);
+    return chapter || null;
+  }, [progress, chapters]);
 
   // Event handlers
   const handlePlay = useCallback(() => {

@@ -78,7 +78,7 @@ export function useRemix() {
       console.error('Failed to start camera:', err);
       addToast('Failed to access camera/microphone');
     }
-  }, []);
+  }, [addToast]);
 
   const startRecording = useCallback(() => {
     if (!mediaStream || !originalVideoRef.current) return;
@@ -147,7 +147,7 @@ export function useRemix() {
     } finally {
       setUploading(false);
     }
-  }, [recordedBlob, originalVideo, remixType, videoId, title, description, splitPosition, router]);
+  }, [recordedBlob, originalVideo, remixType, videoId, title, description, splitPosition, router, addToast]);
 
   useEffect(() => {
     return () => {

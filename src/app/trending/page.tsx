@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
@@ -31,43 +31,57 @@ export default function TrendingPage() {
   const [activeTab, setActiveTab] = useState<'videos' | 'hashtags' | 'sounds'>('videos');
 
   useEffect(() => {
+    let cancelled = false;
+    const loadTrending = async () => {
+      try {
+        setIsLoading(true);
+        const response = await feedApi.getTrendingFeed(1, 24);
+        if (cancelled) return;
+        setVideos(response.items);
+
+        // Extract trending hashtags from videos
+        const tagCounts: Record<string, { count: number; views: number }> = {};
+        response.items.forEach(video => {
+          video.hashtags?.forEach(tag => {
+            if (!tagCounts[tag]) {
+              tagCounts[tag] = { count: 0, views: 0 };
+            }
+            tagCounts[tag].count++;
+            tagCounts[tag].views += video.viewsCount || 0;
+          });
+        });
+
+        const sortedTags = Object.entries(tagCounts)
+          .map(([tag, data]) => ({
+            tag,
+            videoCount: data.count,
+            viewCount: data.views,
+          }))
+          .sort((a, b) => b.viewCount - a.viewCount)
+          .slice(0, 20);
+
+        if (!cancelled) {
+          setHashtags(sortedTags);
+        }
+      } catch (error) {
+        console.error('Failed to load trending:', error);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
     loadTrending();
+    return () => { cancelled = true; };
   }, []);
 
-  const loadTrending = async () => {
-    try {
-      setIsLoading(true);
-      const response = await feedApi.getTrendingFeed(1, 24);
-      setVideos(response.items);
-
-      // Extract trending hashtags from videos
-      const tagCounts: Record<string, { count: number; views: number }> = {};
-      response.items.forEach(video => {
-        video.hashtags?.forEach(tag => {
-          if (!tagCounts[tag]) {
-            tagCounts[tag] = { count: 0, views: 0 };
-          }
-          tagCounts[tag].count++;
-          tagCounts[tag].views += video.viewsCount || 0;
-        });
-      });
-
-      const sortedTags = Object.entries(tagCounts)
-        .map(([tag, data]) => ({
-          tag,
-          videoCount: data.count,
-          viewCount: data.views,
-        }))
-        .sort((a, b) => b.viewCount - a.viewCount)
-        .slice(0, 20);
-
-      setHashtags(sortedTags);
-    } catch (error) {
-      console.error('Failed to load trending:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const loadSounds = useCallback(async () => {
+    if (sounds.length > 0) return;
+    setSoundsLoading(true);
+    const result = await soundsApi.getTrending(1, 20);
+    setSounds(result.data);
+    setSoundsLoading(false);
+  }, [sounds.length]);
 
   return (
     <div className="min-h-screen aurora-bg">
@@ -201,13 +215,7 @@ export default function TrendingPage() {
 
               {/* Sounds Tab */}
               {activeTab === 'sounds' && (
-                <SoundsTab sounds={sounds} loading={soundsLoading} onLoad={async () => {
-                  if (sounds.length > 0) return;
-                  setSoundsLoading(true);
-                  const result = await soundsApi.getTrending(1, 20);
-                  setSounds(result.data);
-                  setSoundsLoading(false);
-                }} />
+                <SoundsTab sounds={sounds} loading={soundsLoading} onLoad={loadSounds} />
               )}
             </>
           )}
@@ -218,7 +226,7 @@ export default function TrendingPage() {
 }
 
 function SoundsTab({ sounds, loading, onLoad }: { sounds: MusicTrack[]; loading: boolean; onLoad: () => void }) {
-  useEffect(() => { onLoad(); }, []);
+  useEffect(() => { onLoad(); }, [onLoad]);
 
   if (loading) {
     return (

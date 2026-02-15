@@ -113,7 +113,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       console.error('Failed to get media:', err);
       addToast('Failed to access camera/microphone');
     }
-  }, []);
+  }, [addToast]);
 
   const startRecording = useCallback(() => {
     if (!mediaStream) return;
@@ -184,7 +184,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       addToast('Failed to submit clip');
       setUploadProgress(0);
     }
-  }, [recordedBlob, roomId]);
+  }, [recordedBlob, roomId, addToast]);
 
   const toggleReady = useCallback(async () => {
     try {
@@ -211,7 +211,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       console.error('Failed to finalize:', err);
       addToast('Failed to finalize collab');
     }
-  }, [roomId, router]);
+  }, [roomId, router, addToast]);
 
   const handleLeave = useCallback(async () => {
     const ok = await confirmDialog({ title: 'Leave Collab', message: 'Are you sure you want to leave this collab?' });
@@ -222,7 +222,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     } catch (err) {
       console.error('Failed to leave:', err);
     }
-  }, [roomId, router]);
+  }, [roomId, router, confirmDialog]);
 
   const copyInviteCode = useCallback(() => {
     if (room?.inviteCode) {

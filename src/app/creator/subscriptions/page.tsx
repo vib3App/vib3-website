@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { useAuthStore } from '@/stores/authStore';
@@ -25,19 +25,7 @@ export default function CreatorSubscriptionsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<TierFormData>({ name: '', price: '', benefits: '' });
-
-  const loadTiers = useCallback(async () => {
-    if (!user?.id) return;
-    setIsLoading(true);
-    setError(null);
-    const response = await subscriptionsApi.getCreatorTiers(user.id);
-    if (response) {
-      setTiers(response.tiers || []);
-      setSubscriptionsEnabled(!!response.tiers?.length);
-      setSubscriberCount((response as unknown as Record<string, unknown>).subscriberCount as number || 0);
-    }
-    setIsLoading(false);
-  }, [user?.id]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!isAuthVerified) return;
@@ -45,8 +33,29 @@ export default function CreatorSubscriptionsPage() {
       router.push('/login?redirect=/creator/subscriptions');
       return;
     }
-    loadTiers();
-  }, [isAuthenticated, isAuthVerified, router, loadTiers]);
+    const userId = user?.id;
+    if (!userId) return;
+
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await subscriptionsApi.getCreatorTiers(userId);
+        if (!cancelled && response) {
+          setTiers(response.tiers || []);
+          setSubscriptionsEnabled(!!response.tiers?.length);
+          setSubscriberCount((response as unknown as Record<string, unknown>).subscriberCount as number || 0);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [isAuthenticated, isAuthVerified, router, user?.id, refreshKey]);
 
   const handleCreateTier = async () => {
     const name = formData.name.trim();
@@ -68,7 +77,7 @@ export default function CreatorSubscriptionsPage() {
     if (success) {
       setShowCreateModal(false);
       setFormData({ name: '', price: '', benefits: '' });
-      await loadTiers();
+      setRefreshKey(k => k + 1);
     } else {
       setError('Failed to create tier. Please try again.');
     }
@@ -80,12 +89,12 @@ export default function CreatorSubscriptionsPage() {
     setSaving(true);
     if (remaining.length === 0) {
       const success = await subscriptionsApi.disableSubscriptions();
-      if (success) await loadTiers();
+      if (success) setRefreshKey(k => k + 1);
     } else {
       const success = await subscriptionsApi.enableSubscriptions(
         remaining.map(t => ({ name: t.name, price: t.price, benefits: t.benefits }))
       );
-      if (success) await loadTiers();
+      if (success) setRefreshKey(k => k + 1);
     }
     setSaving(false);
   };

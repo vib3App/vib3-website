@@ -25,6 +25,7 @@ export default function ChallengesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Form state
   const [formTitle, setFormTitle] = useState('');
@@ -35,28 +36,55 @@ export default function ChallengesPage() {
   const [formPrize, setFormPrize] = useState('');
   const [formEndDate, setFormEndDate] = useState('');
 
-  const fetchChallenges = useCallback(async (reset = false) => {
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await challengesApi.getChallenges({
+          category: activeCategory,
+          page: 1,
+          limit: 20,
+        });
+        if (!cancelled) {
+          setChallenges(response.challenges);
+          setHasMore(response.hasMore);
+          setPage(1);
+        }
+      } catch (err) {
+        console.error('Error fetching challenges:', err);
+        if (!cancelled) {
+          setError('Failed to load challenges');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [activeCategory, refreshKey]);
+
+  const fetchMoreChallenges = useCallback(async (nextPage: number) => {
     try {
       setLoading(true);
       setError(null);
-      const currentPage = reset ? 1 : page;
       const response = await challengesApi.getChallenges({
         category: activeCategory,
-        page: currentPage,
+        page: nextPage,
         limit: 20,
       });
-      setChallenges(reset ? response.challenges : (prev) => [...prev, ...response.challenges]);
+      setChallenges((prev) => [...prev, ...response.challenges]);
       setHasMore(response.hasMore);
-      if (reset) setPage(1);
     } catch (err) {
       console.error('Error fetching challenges:', err);
       setError('Failed to load challenges');
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, page]);
-
-  useEffect(() => { fetchChallenges(true); }, [activeCategory]);
+  }, [activeCategory]);
 
   const handleCategoryChange = (category: ChallengeCategory | 'all') => {
     setActiveCategory(category);
@@ -64,8 +92,9 @@ export default function ChallengesPage() {
   };
 
   const loadMore = () => {
-    setPage((p) => p + 1);
-    fetchChallenges(false);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchMoreChallenges(nextPage);
   };
 
   const resetForm = () => {
@@ -94,7 +123,7 @@ export default function ChallengesPage() {
       await challengesApi.createChallenge(input);
       setShowCreateModal(false);
       resetForm();
-      fetchChallenges(true);
+      setRefreshKey(k => k + 1);
     } catch (err) {
       console.error('Error creating challenge:', err);
       addToast('Failed to create challenge. Please try again.');
@@ -147,7 +176,7 @@ export default function ChallengesPage() {
         ) : error ? (
           <div className="text-center py-20">
             <p className="text-red-400 mb-4">{error}</p>
-            <button onClick={() => fetchChallenges(true)} className="px-6 py-3 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition">
+            <button onClick={() => setRefreshKey(k => k + 1)} className="px-6 py-3 bg-amber-500 text-white rounded-full hover:bg-amber-600 transition">
               Retry
             </button>
           </div>

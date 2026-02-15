@@ -11,10 +11,10 @@ export function useEditorTimeline(videoRef: React.RefObject<HTMLVideoElement | n
   const [isDragging, setIsDragging] = useState<'start' | 'end' | 'playhead' | null>(null);
 
   const timelineRef = useRef<HTMLDivElement>(null);
-  const thumbnailsRef = useRef<string[]>([]);
+  const [thumbnails, setThumbnails] = useState<string[]>([]);
 
   const generateThumbnails = useCallback(async () => {
-    if (!videoRef.current || thumbnailsRef.current.length > 0) return;
+    if (!videoRef.current) return;
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -23,17 +23,19 @@ export function useEditorTimeline(videoRef: React.RefObject<HTMLVideoElement | n
     canvas.height = 80;
     const thumbCount = 10;
     const interval = video.duration / thumbCount;
+    const newThumbnails: string[] = [];
     for (let i = 0; i < thumbCount; i++) {
       video.currentTime = i * interval;
       await new Promise(resolve => {
         video.onseeked = () => {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          thumbnailsRef.current.push(canvas.toDataURL('image/jpeg', 0.5));
+          newThumbnails.push(canvas.toDataURL('image/jpeg', 0.5));
           resolve(null);
         };
       });
     }
     video.currentTime = 0;
+    setThumbnails(newThumbnails);
   }, [videoRef]);
 
   const handleVideoLoad = useCallback(() => {
@@ -110,7 +112,7 @@ export function useEditorTimeline(videoRef: React.RefObject<HTMLVideoElement | n
 
   return {
     duration, currentTime, trimStart, trimEnd, isPlaying, setIsPlaying,
-    timelineRef, thumbnails: thumbnailsRef.current,
+    timelineRef, thumbnails,
     handleVideoLoad, handleTimeUpdate, togglePlayPause,
     handleTimelineMouseDown, formatTime,
   };

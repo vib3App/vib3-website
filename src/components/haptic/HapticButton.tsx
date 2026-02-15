@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ReactNode, useCallback } from 'react';
+import { ReactNode, useCallback, useRef } from 'react';
 import { useHaptics } from '@/hooks/useHaptics';
 
 interface HapticButtonProps {
@@ -133,21 +133,21 @@ export function HapticSlider({
   className = '',
 }: HapticSliderProps) {
   const { selection } = useHaptics();
-  const lastHapticValue = { current: value };
+  const lastHapticValueRef = useRef(value);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(e.target.value);
 
     // Haptic feedback every 10%
     if (hapticOnChange) {
-      const oldPercent = Math.floor(lastHapticValue.current / (max - min) * 10);
+      const oldPercent = Math.floor(lastHapticValueRef.current / (max - min) * 10);
       const newPercent = Math.floor(newValue / (max - min) * 10);
       if (oldPercent !== newPercent) {
         selection();
       }
     }
 
-    lastHapticValue.current = newValue;
+    lastHapticValueRef.current = newValue;
     onChange(newValue);
   }, [onChange, hapticOnChange, max, min, selection]);
 

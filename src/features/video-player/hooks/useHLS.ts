@@ -4,7 +4,7 @@
  */
 'use client';
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import Hls from 'hls.js';
 import type { VideoQuality } from '@/types';
 
@@ -23,30 +23,52 @@ interface UseHLSReturn {
   retry: () => void;
 }
 
+interface HLSState {
+  isLoading: boolean;
+  error: string | null;
+  qualities: VideoQuality[];
+  currentQuality: VideoQuality;
+  /** Bumped to trigger re-init */
+  version: number;
+}
+
 export function useHLS({ src, autoPlay = false }: UseHLSOptions): UseHLSReturn {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [qualities, setQualities] = useState<VideoQuality[]>(['auto']);
-  const [currentQuality, setCurrentQuality] = useState<VideoQuality>('auto');
+  const [state, setState] = useState<HLSState>({
+    isLoading: true,
+    error: null,
+    qualities: ['auto'],
+    currentQuality: 'auto',
+    version: 0,
+  });
 
-  const destroyHLS = useCallback(() => {
+  // Derive a stable "init key" so the effect re-runs when src or version changes
+  const initKey = useMemo(() => `${src ?? ''}::${state.version}`, [src, state.version]);
+
+  useEffect(() => {
+    // Destroy existing HLS instance
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
-  }, []);
 
-  const initHLS = useCallback(() => {
     if (!src || !videoRef.current) return;
 
-    destroyHLS();
-    setIsLoading(true);
-    setError(null);
-
     const video = videoRef.current;
+
+    // Use a cancelled flag to avoid setting state after cleanup
+    let cancelled = false;
+
+    const safeSetState = (updater: (prev: HLSState) => HLSState) => {
+      if (!cancelled) setState(updater);
+    };
+
+    // Reset state for new initialization via rAF to avoid synchronous setState in effect
+    requestAnimationFrame(() => {
+      safeSetState(prev => ({ ...prev, isLoading: true, error: null }));
+    });
 
     // Check if HLS.js is needed (for .m3u8 streams)
     if (src.includes('.m3u8')) {
@@ -62,8 +84,6 @@ export function useHLS({ src, autoPlay = false }: UseHLSOptions): UseHLSReturn {
         hlsRef.current = hls;
 
         hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          setIsLoading(false);
-          // Extract available qualities
           const availableQualities: VideoQuality[] = ['auto'];
           data.levels.forEach((level) => {
             if (level.height >= 1080) availableQualities.push('1080p');
@@ -71,7 +91,11 @@ export function useHLS({ src, autoPlay = false }: UseHLSOptions): UseHLSReturn {
             else if (level.height >= 480) availableQualities.push('480p');
             else if (level.height >= 360) availableQualities.push('360p');
           });
-          setQualities([...new Set(availableQualities)]);
+          safeSetState(prev => ({
+            ...prev,
+            isLoading: false,
+            qualities: [...new Set(availableQualities)],
+          }));
 
           if (autoPlay) {
             video.play().catch(() => {
@@ -82,10 +106,13 @@ export function useHLS({ src, autoPlay = false }: UseHLSOptions): UseHLSReturn {
 
         hls.on(Hls.Events.ERROR, (_, data) => {
           if (data.fatal) {
-            setError(data.type === Hls.ErrorTypes.NETWORK_ERROR
-              ? 'Network error loading video'
-              : 'Error playing video');
-            setIsLoading(false);
+            safeSetState(prev => ({
+              ...prev,
+              error: data.type === Hls.ErrorTypes.NETWORK_ERROR
+                ? 'Network error loading video'
+                : 'Error playing video',
+              isLoading: false,
+            }));
           }
         });
 
@@ -95,20 +122,34 @@ export function useHLS({ src, autoPlay = false }: UseHLSOptions): UseHLSReturn {
         // Safari native HLS
         video.src = src;
         video.addEventListener('loadedmetadata', () => {
-          setIsLoading(false);
+          safeSetState(prev => ({ ...prev, isLoading: false }));
           if (autoPlay) video.play().catch(() => {});
         });
       } else {
-        setError('HLS not supported in this browser');
-        setIsLoading(false);
+        safeSetState(prev => ({
+          ...prev,
+          error: 'HLS not supported in this browser',
+          isLoading: false,
+        }));
       }
     } else {
       // Regular video file
       video.src = src;
-      video.addEventListener('loadedmetadata', () => setIsLoading(false));
+      video.addEventListener('loadedmetadata', () => {
+        safeSetState(prev => ({ ...prev, isLoading: false }));
+      });
       if (autoPlay) video.play().catch(() => {});
     }
-  }, [src, autoPlay, destroyHLS]);
+
+    return () => {
+      cancelled = true;
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- initKey captures src and version
+  }, [initKey, autoPlay]);
 
   const setQuality = useCallback((quality: VideoQuality) => {
     if (!hlsRef.current) return;
@@ -124,24 +165,19 @@ export function useHLS({ src, autoPlay = false }: UseHLSOptions): UseHLSReturn {
         hlsRef.current.currentLevel = levelIndex;
       }
     }
-    setCurrentQuality(quality);
+    setState(prev => ({ ...prev, currentQuality: quality }));
   }, []);
 
   const retry = useCallback(() => {
-    initHLS();
-  }, [initHLS]);
-
-  useEffect(() => {
-    initHLS();
-    return destroyHLS;
-  }, [initHLS, destroyHLS]);
+    setState(prev => ({ ...prev, version: prev.version + 1 }));
+  }, []);
 
   return {
     videoRef,
-    isLoading,
-    error,
-    qualities,
-    currentQuality,
+    isLoading: state.isLoading,
+    error: state.error,
+    qualities: state.qualities,
+    currentQuality: state.currentQuality,
     setQuality,
     retry,
   };

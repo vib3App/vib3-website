@@ -13,12 +13,19 @@ export default function Home() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-    // Check if user has already seen splash this session
-    const seen = sessionStorage.getItem('vib3_splash_seen');
-    if (seen) {
-      setShowSplash(false);
-    }
+    let cancelled = false;
+    const init = async () => {
+      if (!cancelled) {
+        setMounted(true);
+      }
+      // Check if user has already seen splash this session
+      const seen = sessionStorage.getItem('vib3_splash_seen');
+      if (seen && !cancelled) {
+        setShowSplash(false);
+      }
+    };
+    init();
+    return () => { cancelled = true; };
   }, []);
 
   const handleSplashComplete = () => {

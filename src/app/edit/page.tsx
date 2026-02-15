@@ -108,38 +108,49 @@ function DraggableOverlay({ id, x, y, onMove, children, className, style }: {
 }
 
 function EditContent() {
-  const editor = useVideoEditor();
+  const {
+    videoUrl, editMode, setEditMode, videoLoaded, selectedFilter, setSelectedFilter,
+    volume, isProcessing, processingProgress, videoRef,
+    selectedMusic, setSelectedMusic, musicVolume, setMusicVolume,
+    duration, currentTime, trimStart, trimEnd, isPlaying, setIsPlaying,
+    timelineRef, thumbnails, handleVideoLoad, handleTimeUpdate, togglePlayPause,
+    handleTimelineMouseDown, formatTime,
+    texts, showTextInput, setShowTextInput, newText, setNewText,
+    stickers, addText, removeText, updateTextPosition,
+    addSticker, removeSticker, updateStickerPosition,
+    handleDone, updateVolume, goBack,
+  } = useVideoEditor();
 
-  if (!editor.videoUrl) {
+  if (!videoUrl) {
     return <EditLoading />;
   }
 
   return (
     <div className="min-h-screen aurora-bg">
       <TopNav />
-      <EditorHeader onCancel={editor.goBack} onDone={editor.handleDone} isProcessing={editor.isProcessing} />
-      {editor.isProcessing && <ProcessingModal progress={editor.processingProgress} />}
+      <EditorHeader onCancel={goBack} onDone={handleDone} isProcessing={isProcessing} />
+      {isProcessing && <ProcessingModal progress={processingProgress} />}
 
       <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
         <video
-          ref={editor.videoRef}
-          src={editor.videoUrl}
+          ref={videoRef}
+          src={videoUrl}
           className="max-w-full max-h-full object-contain"
-          style={{ filter: EDITOR_FILTERS[editor.selectedFilter].filter }}
-          onLoadedMetadata={editor.handleVideoLoad}
-          onTimeUpdate={editor.handleTimeUpdate}
-          onPlay={() => editor.setIsPlaying(true)}
-          onPause={() => editor.setIsPlaying(false)}
+          style={{ filter: EDITOR_FILTERS[selectedFilter].filter }}
+          onLoadedMetadata={handleVideoLoad}
+          onTimeUpdate={handleTimeUpdate}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
           playsInline
         />
 
-        {editor.texts.map((text) => (
+        {texts.map((text) => (
           <DraggableOverlay
             key={text.id}
             id={text.id}
             x={text.x}
             y={text.y}
-            onMove={editor.updateTextPosition}
+            onMove={updateTextPosition}
             style={{
               transform: 'translate(-50%, -50%)',
               color: text.color,
@@ -152,13 +163,13 @@ function EditContent() {
           </DraggableOverlay>
         ))}
 
-        {editor.stickers.map((sticker) => (
+        {stickers.map((sticker) => (
           <DraggableOverlay
             key={sticker.id}
             id={sticker.id}
             x={sticker.x}
             y={sticker.y}
-            onMove={editor.updateStickerPosition}
+            onMove={updateStickerPosition}
             style={{
               transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
               fontSize: '48px',
@@ -169,8 +180,8 @@ function EditContent() {
           </DraggableOverlay>
         ))}
 
-        <button onClick={editor.togglePlayPause} className="absolute inset-0 flex items-center justify-center">
-          {!editor.isPlaying && (
+        <button onClick={togglePlayPause} className="absolute inset-0 flex items-center justify-center">
+          {!isPlaying && (
             <div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center">
               <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
@@ -180,60 +191,60 @@ function EditContent() {
         </button>
 
         <div className="absolute bottom-4 left-4 bg-black/50 px-2 py-1 rounded text-white text-sm font-mono">
-          {editor.formatTime(editor.currentTime)} / {editor.formatTime(editor.duration)}
+          {formatTime(currentTime)} / {formatTime(duration)}
         </div>
       </div>
 
       <div className="glass-card border-t border-white/5">
-        <EditorTabs activeMode={editor.editMode} onModeChange={editor.setEditMode} />
+        <EditorTabs activeMode={editMode} onModeChange={setEditMode} />
 
         <div className="p-4 min-h-[200px]">
-          {editor.editMode === 'trim' && (
+          {editMode === 'trim' && (
             <TrimPanel
-              videoLoaded={editor.videoLoaded}
-              duration={editor.duration}
-              currentTime={editor.currentTime}
-              trimStart={editor.trimStart}
-              trimEnd={editor.trimEnd}
-              thumbnails={editor.thumbnails}
-              timelineRef={editor.timelineRef}
-              formatTime={editor.formatTime}
-              onMouseDown={editor.handleTimelineMouseDown}
+              videoLoaded={videoLoaded}
+              duration={duration}
+              currentTime={currentTime}
+              trimStart={trimStart}
+              trimEnd={trimEnd}
+              thumbnails={thumbnails}
+              timelineRef={timelineRef}
+              formatTime={formatTime}
+              onMouseDown={handleTimelineMouseDown}
             />
           )}
 
-          {editor.editMode === 'filters' && (
-            <FilterPanel selectedFilter={editor.selectedFilter} onSelect={editor.setSelectedFilter} />
+          {editMode === 'filters' && (
+            <FilterPanel selectedFilter={selectedFilter} onSelect={setSelectedFilter} />
           )}
 
-          {editor.editMode === 'text' && (
+          {editMode === 'text' && (
             <TextPanel
-              texts={editor.texts}
-              showTextInput={editor.showTextInput}
-              newText={editor.newText}
-              onShowTextInput={editor.setShowTextInput}
-              onNewTextChange={editor.setNewText}
-              onAddText={editor.addText}
-              onRemoveText={editor.removeText}
+              texts={texts}
+              showTextInput={showTextInput}
+              newText={newText}
+              onShowTextInput={setShowTextInput}
+              onNewTextChange={setNewText}
+              onAddText={addText}
+              onRemoveText={removeText}
             />
           )}
 
-          {editor.editMode === 'stickers' && (
+          {editMode === 'stickers' && (
             <StickerPanel
-              stickers={editor.stickers}
-              onAddSticker={editor.addSticker}
-              onRemoveSticker={editor.removeSticker}
+              stickers={stickers}
+              onAddSticker={addSticker}
+              onRemoveSticker={removeSticker}
             />
           )}
 
-          {editor.editMode === 'audio' && (
+          {editMode === 'audio' && (
             <AudioPanel
-              volume={editor.volume}
-              onVolumeChange={editor.updateVolume}
-              selectedMusic={editor.selectedMusic}
-              onMusicSelect={editor.setSelectedMusic}
-              musicVolume={editor.musicVolume}
-              onMusicVolumeChange={editor.setMusicVolume}
+              volume={volume}
+              onVolumeChange={updateVolume}
+              selectedMusic={selectedMusic}
+              onMusicSelect={setSelectedMusic}
+              musicVolume={musicVolume}
+              onMusicVolumeChange={setMusicVolume}
             />
           )}
         </div>

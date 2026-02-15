@@ -62,16 +62,23 @@ export default function CreatorSettingsPage() {
       return;
     }
 
-    // Load from localStorage
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setSettings({ ...defaultSettings, ...JSON.parse(stored) });
-      } catch {
-        // Use defaults
+    // Load from localStorage asynchronously to avoid synchronous setState in effect
+    let cancelled = false;
+    const load = async () => {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored && !cancelled) {
+        try {
+          setSettings({ ...defaultSettings, ...JSON.parse(stored) });
+        } catch {
+          // Use defaults
+        }
       }
-    }
-    setIsLoading(false);
+      if (!cancelled) {
+        setIsLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [isAuthenticated, isAuthVerified, router]);
 
   const toggleSetting = (key: keyof CreatorSettings) => {

@@ -30,6 +30,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isInitializedRef = useRef(false);
   const isLoggingOutRef = useRef(false);
   const isVerifyingRef = useRef(false);
+  const scheduleTokenRefreshRef = useRef<(token: string) => void>(() => {});
 
   // Parse JWT to get expiration time
   const getTokenExpiry = useCallback((token: string): number | null => {
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Schedule next refresh
-      scheduleTokenRefresh(response.token);
+      scheduleTokenRefreshRef.current(response.token);
       isRefreshingRef.current = false;
       return true;
     } catch (error: unknown) {
@@ -123,6 +124,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     refreshTimeoutRef.current = setTimeout(() => refreshToken(), refreshTime);
   }, [getTokenExpiry, refreshToken]);
+
+  // Keep ref in sync with latest callback
+  scheduleTokenRefreshRef.current = scheduleTokenRefresh;
 
   // Initialize auth state on mount
   useEffect(() => {

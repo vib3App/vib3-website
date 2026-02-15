@@ -12,20 +12,18 @@ interface ServiceWorkerState {
 }
 
 export function useServiceWorker() {
-  const [state, setState] = useState<ServiceWorkerState>({
-    isSupported: false,
+  const [state, setState] = useState<ServiceWorkerState>(() => ({
+    isSupported: typeof window !== 'undefined' && 'serviceWorker' in navigator,
     isRegistered: false,
     registration: null,
     updateAvailable: false,
     error: null,
-  });
+  }));
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return;
     }
-
-    setState((prev) => ({ ...prev, isSupported: true }));
 
     // Register service worker
     navigator.serviceWorker
@@ -99,16 +97,13 @@ export function useServiceWorker() {
  * Hook for push notifications
  */
 export function usePushNotifications() {
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
-
-  useEffect(() => {
+  const [permission, setPermission] = useState<NotificationPermission>(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      return;
+      return 'default';
     }
-
-    setPermission(Notification.permission);
-  }, []);
+    return Notification.permission;
+  });
+  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 
   const requestPermission = useCallback(async () => {
     if (!('Notification' in window)) {
@@ -176,16 +171,16 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+    );
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
-    // Check if already installed
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
-    setIsInstalled(isStandalone);
 
     // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {

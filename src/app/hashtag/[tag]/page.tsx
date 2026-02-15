@@ -24,23 +24,27 @@ export default function HashtagPage() {
   const [totalViews, setTotalViews] = useState(0);
 
   useEffect(() => {
-    if (tag) {
-      loadHashtagVideos();
-    }
+    if (!tag) return;
+    let cancelled = false;
+    const loadHashtagVideos = async () => {
+      try {
+        setIsLoading(true);
+        const response = await feedApi.getHashtagFeed(tag, 1, 30);
+        if (!cancelled) {
+          setVideos(response.items);
+          setTotalViews(response.items.reduce((sum, v) => sum + (v.viewsCount || 0), 0));
+        }
+      } catch (error) {
+        console.error('Failed to load hashtag videos:', error);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadHashtagVideos();
+    return () => { cancelled = true; };
   }, [tag]);
-
-  const loadHashtagVideos = async () => {
-    try {
-      setIsLoading(true);
-      const response = await feedApi.getHashtagFeed(tag, 1, 30);
-      setVideos(response.items);
-      setTotalViews(response.items.reduce((sum, v) => sum + (v.viewsCount || 0), 0));
-    } catch (error) {
-      console.error('Failed to load hashtag videos:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen aurora-bg">

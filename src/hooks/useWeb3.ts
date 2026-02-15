@@ -51,6 +51,11 @@ export function useWeb3() {
     });
   }, []);
 
+  // Disconnect wallet
+  const disconnect = useCallback(() => {
+    setWallet(null);
+  }, []);
+
   // Connect wallet
   const connect = useCallback(async (_provider: 'metamask' | 'walletconnect' | 'coinbase' = 'metamask') => {
     setIsConnecting(true);
@@ -110,12 +115,7 @@ export function useWeb3() {
     } finally {
       setIsConnecting(false);
     }
-  }, []);
-
-  // Disconnect wallet
-  const disconnect = useCallback(() => {
-    setWallet(null);
-  }, []);
+  }, [disconnect]);
 
   // Sign message (for authentication)
   const signMessage = useCallback(async (message: string): Promise<string | null> => {

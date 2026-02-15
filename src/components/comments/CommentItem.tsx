@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import type { Comment } from '@/types';
+
+// Pre-generate waveform heights for voice comment visualization
+function generateWaveformHeights(count: number): number[] {
+  return Array.from({ length: count }, () => Math.random() * 16 + 8);
+}
 
 interface CommentItemProps {
   comment: Comment;
@@ -31,6 +36,7 @@ export function CommentItem({
 
   const isOwner = currentUserId === comment.userId;
   const timeAgo = formatTimeAgo(comment.createdAt);
+  const waveformHeights = useMemo(() => generateWaveformHeights(20), []);
 
   const handleToggleReplies = async () => {
     if (!showReplies && comment.replyCount > 0 && !comment.replies?.length) {
@@ -103,11 +109,11 @@ export function CommentItem({
               )}
             </button>
             <div className="flex gap-0.5">
-              {Array.from({ length: 20 }).map((_, i) => (
+              {waveformHeights.map((h, i) => (
                 <div
                   key={i}
                   className="w-1 bg-purple-500 rounded-full"
-                  style={{ height: `${Math.random() * 16 + 8}px` }}
+                  style={{ height: `${h}px` }}
                 />
               ))}
             </div>

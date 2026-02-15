@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, StarIcon } from '@heroicons/react/24/outline';
@@ -16,21 +16,29 @@ export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadSubscriptions = useCallback(async () => {
-    setIsLoading(true);
-    const data = await subscriptionsApi.getMySubscriptions();
-    setSubscriptions(data);
-    setIsLoading(false);
-  }, []);
-
   useEffect(() => {
     if (!isAuthVerified) return;
     if (!isAuthenticated) {
       router.push('/login?redirect=/subscriptions');
       return;
     }
-    loadSubscriptions();
-  }, [isAuthenticated, isAuthVerified, router, loadSubscriptions]);
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const data = await subscriptionsApi.getMySubscriptions();
+        if (!cancelled) {
+          setSubscriptions(data);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const handleCancelSubscription = async (subscriptionId: string) => {
     const success = await subscriptionsApi.cancelSubscription(subscriptionId);

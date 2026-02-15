@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 type Mood = 'energetic' | 'chill' | 'focused' | 'creative' | 'social';
 
@@ -51,34 +51,28 @@ const moodConfigs: Record<Mood, MoodConfig> = {
   },
 };
 
+// Compute mood based on time of day - pure function
+function computeMoodFromHour(): { mood: Mood; confidence: number } {
+  const hour = new Date().getHours();
+
+  if (hour >= 6 && hour < 10) {
+    return { mood: 'energetic', confidence: 0.8 };
+  } else if (hour >= 10 && hour < 14) {
+    return { mood: 'focused', confidence: 0.85 };
+  } else if (hour >= 14 && hour < 18) {
+    return { mood: 'creative', confidence: 0.75 };
+  } else if (hour >= 18 && hour < 22) {
+    return { mood: 'social', confidence: 0.9 };
+  } else {
+    return { mood: 'chill', confidence: 0.95 };
+  }
+}
+
 /**
  * Analyzes user behavior to detect current mood/vibe
  */
 export function useMoodDetection() {
-  const [mood, setMood] = useState<Mood>('focused');
-  const [confidence, setConfidence] = useState(0.7);
-
-  useEffect(() => {
-    // Analyze based on time of day and simulated behavior
-    const hour = new Date().getHours();
-
-    if (hour >= 6 && hour < 10) {
-      setMood('energetic');
-      setConfidence(0.8);
-    } else if (hour >= 10 && hour < 14) {
-      setMood('focused');
-      setConfidence(0.85);
-    } else if (hour >= 14 && hour < 18) {
-      setMood('creative');
-      setConfidence(0.75);
-    } else if (hour >= 18 && hour < 22) {
-      setMood('social');
-      setConfidence(0.9);
-    } else {
-      setMood('chill');
-      setConfidence(0.95);
-    }
-  }, []);
+  const [{ mood, confidence }] = useState(computeMoodFromHour);
 
   return { mood, confidence, config: moodConfigs[mood] };
 }

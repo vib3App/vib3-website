@@ -47,20 +47,22 @@ const defaultSettings: ContentSettings = {
 const STORAGE_KEY = 'vib3_content_settings';
 
 export function ContentSection() {
-  const [settings, setSettings] = useState<ContentSettings>(defaultSettings);
-  const [cacheSize, setCacheSize] = useState('0 MB');
-
-  useEffect(() => {
-    // Load settings from localStorage
+  const [settings, setSettings] = useState<ContentSettings>(() => {
+    // Load settings from localStorage during initialization
+    if (typeof window === 'undefined') return defaultSettings;
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setSettings({ ...defaultSettings, ...JSON.parse(stored) });
+        return { ...defaultSettings, ...JSON.parse(stored) };
       } catch {
         // Use defaults if parse fails
       }
     }
+    return defaultSettings;
+  });
+  const [cacheSize, setCacheSize] = useState('0 MB');
 
+  useEffect(() => {
     // Estimate cache size from storage usage
     if (navigator.storage?.estimate) {
       navigator.storage.estimate().then(({ usage }) => {

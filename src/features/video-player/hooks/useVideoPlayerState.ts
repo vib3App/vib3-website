@@ -45,19 +45,6 @@ export function useVideoPlayerState({
 
   const animationFrameRef = useRef<number | null>(null);
 
-  const updateProgress = useCallback(() => {
-    const video = videoRef.current;
-    if (video) {
-      setCurrentTime(video.currentTime);
-      setDuration(video.duration || 0);
-
-      if (video.buffered.length > 0) {
-        setBuffered(video.buffered.end(video.buffered.length - 1));
-      }
-    }
-    animationFrameRef.current = requestAnimationFrame(updateProgress);
-  }, [videoRef]);
-
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -70,6 +57,18 @@ export function useVideoPlayerState({
     };
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
+    };
+
+    const updateProgress = () => {
+      if (video) {
+        setCurrentTime(video.currentTime);
+        setDuration(video.duration || 0);
+
+        if (video.buffered.length > 0) {
+          setBuffered(video.buffered.end(video.buffered.length - 1));
+        }
+      }
+      animationFrameRef.current = requestAnimationFrame(updateProgress);
     };
 
     video.addEventListener('play', handlePlay);
@@ -89,7 +88,7 @@ export function useVideoPlayerState({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [videoRef, updateProgress]);
+  }, [videoRef]);
 
   const play = useCallback(async () => {
     const video = videoRef.current;

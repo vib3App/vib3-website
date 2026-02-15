@@ -40,27 +40,28 @@ export function useAccessibility() {
  * Accessibility settings provider
  */
 export function AccessibilityProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
-
-  // Load settings on mount
-  useEffect(() => {
+  const [settings, setSettings] = useState<AccessibilitySettings>(() => {
+    // Load settings from localStorage during initialization
+    if (typeof window === 'undefined') return defaultSettings;
+    let loaded = defaultSettings;
     const saved = localStorage.getItem('vib3-accessibility');
     if (saved) {
       try {
-        setSettings({ ...defaultSettings, ...JSON.parse(saved) });
-      } catch (_e) {
-        // Invalid saved data
+        loaded = { ...defaultSettings, ...JSON.parse(saved) };
+      } catch {
+        // Invalid saved data, use defaults
       }
     }
 
     // Check system preferences
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setSettings((prev) => ({ ...prev, reducedMotion: true }));
+      loaded = { ...loaded, reducedMotion: true };
     }
     if (window.matchMedia('(prefers-contrast: high)').matches) {
-      setSettings((prev) => ({ ...prev, highContrast: true }));
+      loaded = { ...loaded, highContrast: true };
     }
-  }, []);
+    return loaded;
+  });
 
   // Save settings
   useEffect(() => {

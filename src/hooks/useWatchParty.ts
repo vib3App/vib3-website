@@ -164,7 +164,7 @@ export function useWatchParty(partyId: string) {
     };
 
     loadVideo();
-  }, [party?.currentVideoIndex, party?.playlist]);
+  }, [party]);
 
   // Sync playback state (play/pause/seek) from polling
   useEffect(() => {
@@ -180,7 +180,7 @@ export function useWatchParty(partyId: string) {
     if (Math.abs(currentTime - party.currentPosition) > 2) {
       videoRef.current.currentTime = party.currentPosition;
     }
-  }, [party?.status, party?.currentPosition]);
+  }, [party]);
 
   // Cleanup
   useEffect(() => {
@@ -283,7 +283,7 @@ export function useWatchParty(partyId: string) {
     } catch (err) {
       console.error('Failed to leave:', err);
     }
-  }, [partyId, router]);
+  }, [partyId, router, confirmDialog]);
 
   const handleEndParty = useCallback(async () => {
     const ok = await confirmDialog({ title: 'End Party', message: 'Are you sure you want to end the party?', variant: 'danger', confirmText: 'End Party' });
@@ -294,7 +294,7 @@ export function useWatchParty(partyId: string) {
     } catch (err) {
       console.error('Failed to end party:', err);
     }
-  }, [partyId, router]);
+  }, [partyId, router, confirmDialog]);
 
   const copyShareLink = useCallback(() => {
     const url = `${window.location.origin}/watch-party/${partyId}`;

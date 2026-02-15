@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import Link from 'next/link';
@@ -12,7 +12,10 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuthStore();
-  const [checking, setChecking] = useState(true);
+
+  const isAdmin = useMemo(() => {
+    return user?.isAdmin || user?.role === 'admin';
+  }, [user]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -20,15 +23,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         router.push('/login?redirect=/admin');
         return;
       }
-      if (!user?.isAdmin && user?.role !== 'admin') {
+      if (!isAdmin) {
         router.push('/');
         return;
       }
-      setChecking(false);
     }
-  }, [isAuthenticated, isLoading, user, router]);
+  }, [isAuthenticated, isLoading, isAdmin, router]);
 
-  if (isLoading || checking) {
+  if (isLoading || !isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <div className="text-white text-xl">Verifying admin access...</div>
@@ -36,7 +38,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (!user?.isAdmin && user?.role !== 'admin') {
+  if (!isAdmin) {
     return null;
   }
 

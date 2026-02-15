@@ -111,11 +111,11 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose, onShareComplete
         setTimeout(() => setCopied(false), 2000);
         break;
       case 'email':
-        window.location.href = `mailto:?subject=Check this out on VIB3&body=${encodeURIComponent(shareUrl)}`;
+        window.open(`mailto:?subject=Check this out on VIB3&body=${encodeURIComponent(shareUrl)}`, '_self');
         onClose();
         break;
       case 'sms':
-        window.location.href = `sms:?body=${encodeURIComponent(shareUrl)}`;
+        window.open(`sms:?body=${encodeURIComponent(shareUrl)}`, '_self');
         onClose();
         break;
       case 'messages':

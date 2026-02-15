@@ -27,13 +27,19 @@ export function useHlsPlayer({ src, onError }: UseHlsPlayerOptions) {
     errorMessage: null,
   });
 
+  // Reset error state when source changes (React pattern: adjust state during render)
+  const [prevSrc, setPrevSrc] = useState(src);
+  if (prevSrc !== src) {
+    setPrevSrc(src);
+    if (state.hasError || state.errorMessage) {
+      setState(prev => ({ ...prev, hasError: false, errorMessage: null }));
+    }
+  }
+
   // Initialize HLS or native video
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !src) return;
-
-    // Reset error state on new source
-    setState(prev => ({ ...prev, hasError: false, errorMessage: null }));
 
     const isHls = src.includes('.m3u8');
 

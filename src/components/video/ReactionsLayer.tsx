@@ -7,6 +7,7 @@ interface Reaction {
   id: number;
   emoji: string;
   x: number;
+  xDrift: number;
   y: number;
   scale: number;
   duration: number;
@@ -43,6 +44,7 @@ export function ReactionsLayer({
       id: Date.now() + Math.random(),
       emoji,
       x: 70 + Math.random() * 25, // Right side of screen (70-95%)
+      xDrift: (Math.random() - 0.5) * 10, // Pre-compute drift for animation
       y: 100, // Start from bottom
       scale: 0.8 + Math.random() * 0.6,
       duration: 3 + Math.random() * 2,
@@ -104,7 +106,7 @@ export function ReactionsLayer({
                 y: '-20%',
                 opacity: [0, 1, 1, 0],
                 scale: reaction.scale,
-                x: `${reaction.x + (Math.random() - 0.5) * 10}%`,
+                x: `${reaction.x + reaction.xDrift}%`,
               }}
               exit={{ opacity: 0 }}
               transition={{

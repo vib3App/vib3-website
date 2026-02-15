@@ -24,19 +24,12 @@ const hapticPatterns: Record<HapticPattern, HapticConfig> = {
  * Hook for haptic feedback using Vibration API
  */
 export function useHaptics() {
-  const [isSupported, setIsSupported] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(true);
-
-  useEffect(() => {
-    // Check if Vibration API is supported
-    setIsSupported('vibrate' in navigator);
-
-    // Load preference from localStorage
+  const [isSupported] = useState(() => typeof navigator !== 'undefined' && 'vibrate' in navigator);
+  const [isEnabled, setIsEnabled] = useState(() => {
+    if (typeof localStorage === 'undefined') return true;
     const saved = localStorage.getItem('vib3-haptics-enabled');
-    if (saved !== null) {
-      setIsEnabled(JSON.parse(saved));
-    }
-  }, []);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   // Save preference
   useEffect(() => {

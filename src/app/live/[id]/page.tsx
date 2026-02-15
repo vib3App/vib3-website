@@ -27,13 +27,52 @@ function LiveStreamContent() {
   const streamId = params.id as string;
   const isHost = searchParams.get('host') === 'true';
 
-  const ls = useLiveStream(streamId, isHost);
+  const {
+    // Refs
+    videoRef,
+    chatContainerRef,
+    // Data
+    stream,
+    messages,
+    gifts,
+    viewerCount,
+    loading,
+    error,
+    // LiveKit
+    liveKitCredentials,
+    // UI State
+    chatMessage,
+    setChatMessage,
+    showGifts,
+    setShowGifts,
+    showReactions,
+    setShowReactions,
+    showGuestRequests,
+    setShowGuestRequests,
+    floatingReactions,
+    isLiked,
+    // Host State
+    guestRequests,
+    audioEnabled,
+    setAudioEnabled,
+    videoEnabled,
+    setVideoEnabled,
+    // Actions
+    handleSendMessage,
+    handleReaction,
+    handleSendGift,
+    handleLike,
+    handleRequestToJoin,
+    handleAcceptGuest,
+    handleRejectGuest,
+    handleEndStream,
+  } = useLiveStream(streamId, isHost);
 
   const handleLeaveStream = () => {
     router.push('/live');
   };
 
-  if (ls.loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
@@ -41,11 +80,11 @@ function LiveStreamContent() {
     );
   }
 
-  if (ls.error || !ls.stream) {
+  if (error || !stream) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-4">
         <ExclamationTriangleIcon className="w-16 h-16 text-gray-600 mb-4" />
-        <h1 className="text-xl font-semibold mb-2">{ls.error || 'Stream not found'}</h1>
+        <h1 className="text-xl font-semibold mb-2">{error || 'Stream not found'}</h1>
         <Link href="/live" className="text-pink-400 hover:underline">
           Back to Live
         </Link>
@@ -54,16 +93,16 @@ function LiveStreamContent() {
   }
 
   // Use LiveKit for video streaming if credentials are available
-  if (ls.liveKitCredentials && !isHost) {
+  if (liveKitCredentials && !isHost) {
     return (
       <div className="fixed inset-0 bg-black">
         <LiveViewerRoom
-          token={ls.liveKitCredentials.token}
-          wsUrl={ls.liveKitCredentials.wsUrl}
-          roomName={ls.liveKitCredentials.roomName}
-          streamTitle={ls.stream.title}
-          hostName={ls.stream.hostUsername || 'Host'}
-          hostAvatar={ls.stream.hostAvatar}
+          token={liveKitCredentials.token}
+          wsUrl={liveKitCredentials.wsUrl}
+          roomName={liveKitCredentials.roomName}
+          streamTitle={stream.title}
+          hostName={stream.hostUsername || 'Host'}
+          hostAvatar={stream.hostAvatar}
           onLeave={handleLeaveStream}
         />
       </div>
@@ -75,48 +114,48 @@ function LiveStreamContent() {
       <div className="flex flex-col lg:flex-row h-screen">
         <div className="flex-1 relative">
           <video
-            ref={ls.videoRef}
+            ref={videoRef}
             autoPlay
             playsInline
             className="w-full h-full object-contain bg-black"
           />
 
-          <LiveFloatingReactions reactions={ls.floatingReactions} />
-          <LiveStreamHeader stream={ls.stream} viewerCount={ls.viewerCount} />
+          <LiveFloatingReactions reactions={floatingReactions} />
+          <LiveStreamHeader stream={stream} viewerCount={viewerCount} />
 
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
             <div className="flex items-center justify-between">
               {isHost ? (
                 <HostControls
-                  audioEnabled={ls.audioEnabled}
-                  videoEnabled={ls.videoEnabled}
-                  guestRequestCount={ls.guestRequests.length}
-                  onToggleAudio={() => ls.setAudioEnabled(!ls.audioEnabled)}
-                  onToggleVideo={() => ls.setVideoEnabled(!ls.videoEnabled)}
-                  onShowGuestRequests={() => ls.setShowGuestRequests(true)}
-                  onEndStream={ls.handleEndStream}
+                  audioEnabled={audioEnabled}
+                  videoEnabled={videoEnabled}
+                  guestRequestCount={guestRequests.length}
+                  onToggleAudio={() => setAudioEnabled(!audioEnabled)}
+                  onToggleVideo={() => setVideoEnabled(!videoEnabled)}
+                  onShowGuestRequests={() => setShowGuestRequests(true)}
+                  onEndStream={handleEndStream}
                 />
               ) : (
                 <ViewerControls
-                  allowGuests={ls.stream.allowGuests}
-                  onRequestToJoin={ls.handleRequestToJoin}
+                  allowGuests={stream.allowGuests}
+                  onRequestToJoin={handleRequestToJoin}
                 />
               )}
 
               <ActionButtons
-                isLiked={ls.isLiked}
-                showReactions={ls.showReactions}
-                onLike={ls.handleLike}
-                onToggleReactions={() => ls.setShowReactions(!ls.showReactions)}
-                onShowGifts={() => ls.setShowGifts(true)}
-                onReaction={ls.handleReaction}
+                isLiked={isLiked}
+                showReactions={showReactions}
+                onLike={handleLike}
+                onToggleReactions={() => setShowReactions(!showReactions)}
+                onShowGifts={() => setShowGifts(true)}
+                onReaction={handleReaction}
               />
             </div>
           </div>
 
-          {ls.stream.guests.length > 0 && (
+          {stream.guests.length > 0 && (
             <div className="absolute top-20 right-4 space-y-2">
-              {ls.stream.guests.map((guest: LiveGuest) => (
+              {stream.guests.map((guest: LiveGuest) => (
                 <div
                   key={guest.userId}
                   className="w-24 aspect-video bg-gray-800 rounded-lg overflow-hidden relative"
@@ -140,28 +179,28 @@ function LiveStreamContent() {
         </div>
 
         <LiveStreamChat
-          ref={ls.chatContainerRef}
-          messages={ls.messages}
-          chatMessage={ls.chatMessage}
-          onChatMessageChange={ls.setChatMessage}
-          onSendMessage={ls.handleSendMessage}
+          ref={chatContainerRef}
+          messages={messages}
+          chatMessage={chatMessage}
+          onChatMessageChange={setChatMessage}
+          onSendMessage={handleSendMessage}
         />
       </div>
 
       <GiftsModal
-        isOpen={ls.showGifts}
-        gifts={ls.gifts}
-        onClose={() => ls.setShowGifts(false)}
-        onSendGift={ls.handleSendGift}
+        isOpen={showGifts}
+        gifts={gifts}
+        onClose={() => setShowGifts(false)}
+        onSendGift={handleSendGift}
       />
 
       {isHost && (
         <GuestRequestsModal
-          isOpen={ls.showGuestRequests}
-          requests={ls.guestRequests}
-          onClose={() => ls.setShowGuestRequests(false)}
-          onAccept={ls.handleAcceptGuest}
-          onReject={ls.handleRejectGuest}
+          isOpen={showGuestRequests}
+          requests={guestRequests}
+          onClose={() => setShowGuestRequests(false)}
+          onAccept={handleAcceptGuest}
+          onReject={handleRejectGuest}
         />
       )}
 

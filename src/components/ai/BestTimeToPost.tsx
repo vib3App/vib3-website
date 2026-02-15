@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 
 interface BestTimeSlot {
   hour: number;
@@ -11,7 +11,7 @@ interface BestTimeSlot {
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function generateSlots(): BestTimeSlot[] {
+function generateSlots(_dayIndex: number): BestTimeSlot[] {
   return Array.from({ length: 24 }, (_, hour) => {
     let baseScore = 30;
     if (hour >= 7 && hour <= 9) baseScore = 60;
@@ -36,12 +36,10 @@ function formatHour(hour: number): string {
 }
 
 export function BestTimeToPost({ className = '' }: { className?: string }) {
-  const [slots, setSlots] = useState<BestTimeSlot[]>([]);
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
 
-  useEffect(() => {
-    setSlots(generateSlots());
-  }, [selectedDay]);
+  // Generate slots based on selectedDay - useMemo recalculates when day changes
+  const slots = useMemo(() => generateSlots(selectedDay), [selectedDay]);
 
   const bestSlot = slots.reduce((best, slot) =>
     slot.score > (best?.score || 0) ? slot : best, slots[0]);

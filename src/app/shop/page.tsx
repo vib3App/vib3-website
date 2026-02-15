@@ -20,6 +20,7 @@ export default function ShopPage() {
   const [showCart, setShowCart] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Handle Stripe redirect return
   useEffect(() => {
@@ -37,31 +38,55 @@ export default function ShopPage() {
     }
   }, [searchParams]);
 
-  const fetchProducts = useCallback(async (reset = false) => {
+  useEffect(() => {
+    let cancelled = false;
+    const debounce = setTimeout(async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await shopApi.getProducts({
+          category: activeCategory,
+          search: searchQuery || undefined,
+          page: 1,
+          limit: 20,
+        });
+        if (!cancelled) {
+          setProducts(response.products);
+          setHasMore(response.hasMore);
+          setPage(1);
+        }
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        if (!cancelled) {
+          setError('Failed to load products');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }, searchQuery ? 300 : 0);
+    return () => { cancelled = true; clearTimeout(debounce); };
+  }, [activeCategory, searchQuery, refreshKey]);
+
+  const fetchMoreProducts = useCallback(async (nextPage: number) => {
     try {
       setLoading(true);
       setError(null);
-      const currentPage = reset ? 1 : page;
       const response = await shopApi.getProducts({
         category: activeCategory,
         search: searchQuery || undefined,
-        page: currentPage,
+        page: nextPage,
         limit: 20,
       });
-      setProducts(reset ? response.products : (prev) => [...prev, ...response.products]);
+      setProducts((prev) => [...prev, ...response.products]);
       setHasMore(response.hasMore);
-      if (reset) setPage(1);
     } catch (err) {
       console.error('Error fetching products:', err);
       setError('Failed to load products');
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, searchQuery, page]);
-
-  useEffect(() => {
-    const debounce = setTimeout(() => fetchProducts(true), searchQuery ? 300 : 0);
-    return () => clearTimeout(debounce);
   }, [activeCategory, searchQuery]);
 
   const handleCategoryChange = (category: ProductCategory | 'all') => {
@@ -70,8 +95,9 @@ export default function ShopPage() {
   };
 
   const loadMore = () => {
-    setPage((p) => p + 1);
-    fetchProducts(false);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchMoreProducts(nextPage);
   };
 
   const addToCart = (product: Product) => {
@@ -162,7 +188,7 @@ export default function ShopPage() {
           <div className="text-center py-20">
             <p className="text-red-400 mb-4">{error}</p>
             <button
-              onClick={() => fetchProducts(true)}
+              onClick={() => setRefreshKey(k => k + 1)}
               className="px-6 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition"
             >
               Retry

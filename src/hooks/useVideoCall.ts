@@ -45,6 +45,13 @@ export function useVideoCall() {
     pendingCandidatesRef.current = [];
   }, []);
 
+  const handleCallEnded = useCallback((reason: string, duration?: number) => {
+    cleanupMedia();
+    setActiveCall(null);
+    setCallDuration(duration || 0);
+    setIsConnecting(false);
+  }, [cleanupMedia]);
+
   const createPeerConnection = useCallback((callId: string) => {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
 
@@ -88,14 +95,7 @@ export function useVideoCall() {
 
     pcRef.current = pc;
     return pc;
-  }, [user?.id]);
-
-  const handleCallEnded = useCallback((reason: string, duration?: number) => {
-    cleanupMedia();
-    setActiveCall(null);
-    setCallDuration(duration || 0);
-    setIsConnecting(false);
-  }, [cleanupMedia]);
+  }, [user?.id, handleCallEnded]);
 
   // --- Socket event listeners ---
   useEffect(() => {

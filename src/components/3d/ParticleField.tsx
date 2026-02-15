@@ -1,8 +1,27 @@
 'use client';
 
-import { useRef, useMemo, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+
+// Generate particle data outside of render to avoid impure function calls
+function generateParticleData(count: number, speed: number) {
+  const positions = new Float32Array(count * 3);
+  const velocities = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    positions[i3] = (Math.random() - 0.5) * 10;
+    positions[i3 + 1] = (Math.random() - 0.5) * 10;
+    positions[i3 + 2] = (Math.random() - 0.5) * 10;
+
+    velocities[i3] = (Math.random() - 0.5) * speed;
+    velocities[i3 + 1] = (Math.random() - 0.5) * speed;
+    velocities[i3 + 2] = (Math.random() - 0.5) * speed;
+  }
+
+  return { positions, velocities };
+}
 
 interface ParticlesProps {
   count?: number;
@@ -13,24 +32,7 @@ interface ParticlesProps {
 
 function Particles({ count = 500, color = '#8B5CF6', size = 0.02, speed = 0.2 }: ParticlesProps) {
   const points = useRef<THREE.Points>(null);
-
-  const particlesPosition = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const velocities = new Float32Array(count * 3);
-
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 10;
-      positions[i3 + 1] = (Math.random() - 0.5) * 10;
-      positions[i3 + 2] = (Math.random() - 0.5) * 10;
-
-      velocities[i3] = (Math.random() - 0.5) * speed;
-      velocities[i3 + 1] = (Math.random() - 0.5) * speed;
-      velocities[i3 + 2] = (Math.random() - 0.5) * speed;
-    }
-
-    return { positions, velocities };
-  }, [count, speed]);
+  const [particlesPosition] = useState(() => generateParticleData(count, speed));
 
   useFrame(() => {
     if (!points.current) return;
@@ -53,11 +55,11 @@ function Particles({ count = 500, color = '#8B5CF6', size = 0.02, speed = 0.2 }:
     points.current.geometry.attributes.position.needsUpdate = true;
   });
 
-  const geometry = useMemo(() => {
+  const [geometry] = useState(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(particlesPosition.positions, 3));
     return geo;
-  }, [particlesPosition.positions]);
+  });
 
   return (
     <points ref={points} geometry={geometry}>
@@ -171,47 +173,58 @@ export function CelebrationParticles({
   ) : null;
 }
 
+// Generate celebration burst data outside of render
+function generateCelebrationData() {
+  const count = 200;
+  const positions = new Float32Array(count * 3);
+  const velocities = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+
+  const colorPalette = [
+    new THREE.Color('#8B5CF6'),
+    new THREE.Color('#14B8A6'),
+    new THREE.Color('#F97316'),
+    new THREE.Color('#EC4899'),
+    new THREE.Color('#FBBF24'),
+  ];
+
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    positions[i3] = 0;
+    positions[i3 + 1] = 0;
+    positions[i3 + 2] = 0;
+
+    const angle = Math.random() * Math.PI * 2;
+    const force = 2 + Math.random() * 3;
+    velocities[i3] = Math.cos(angle) * force;
+    velocities[i3 + 1] = Math.sin(angle) * force + 2;
+    velocities[i3 + 2] = (Math.random() - 0.5) * force;
+
+    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    colors[i3] = color.r;
+    colors[i3 + 1] = color.g;
+    colors[i3 + 2] = color.b;
+  }
+
+  return { positions, velocities, colors };
+}
+
+// Module-level cache for the initial celebration data, used only once per mount
+const initialCelebrationData = generateCelebrationData();
+
 function CelebrationBurst({ onComplete }: { onComplete?: () => void }) {
   const points = useRef<THREE.Points>(null);
-  const startTime = useRef(Date.now());
+  const startTime = useRef<number>(0);
+  const burstDataRef = useRef(initialCelebrationData);
 
-  const { positions, velocities, colors } = useMemo(() => {
-    const count = 200;
-    const positions = new Float32Array(count * 3);
-    const velocities = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-
-    const colorPalette = [
-      new THREE.Color('#8B5CF6'),
-      new THREE.Color('#14B8A6'),
-      new THREE.Color('#F97316'),
-      new THREE.Color('#EC4899'),
-      new THREE.Color('#FBBF24'),
-    ];
-
-    for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      positions[i3] = 0;
-      positions[i3 + 1] = 0;
-      positions[i3 + 2] = 0;
-
-      const angle = Math.random() * Math.PI * 2;
-      const force = 2 + Math.random() * 3;
-      velocities[i3] = Math.cos(angle) * force;
-      velocities[i3 + 1] = Math.sin(angle) * force + 2;
-      velocities[i3 + 2] = (Math.random() - 0.5) * force;
-
-      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-      colors[i3] = color.r;
-      colors[i3 + 1] = color.g;
-      colors[i3 + 2] = color.b;
-    }
-
-    return { positions, velocities, colors };
+  useEffect(() => {
+    // Generate fresh data on mount and store in ref
+    burstDataRef.current = generateCelebrationData();
+    startTime.current = Date.now();
   }, []);
 
   useFrame(() => {
-    if (!points.current) return;
+    if (!points.current || startTime.current === 0) return;
 
     const elapsed = (Date.now() - startTime.current) / 1000;
     if (elapsed > 2) {
@@ -220,6 +233,7 @@ function CelebrationBurst({ onComplete }: { onComplete?: () => void }) {
     }
 
     const pos = points.current.geometry.attributes.position.array as Float32Array;
+    const velocities = burstDataRef.current.velocities;
 
     for (let i = 0; i < 200; i++) {
       const i3 = i * 3;
@@ -238,12 +252,12 @@ function CelebrationBurst({ onComplete }: { onComplete?: () => void }) {
     material.opacity = Math.max(0, 1 - elapsed / 2);
   });
 
-  const geometry = useMemo(() => {
+  const [geometry] = useState(() => {
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute('position', new THREE.BufferAttribute(initialCelebrationData.positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(initialCelebrationData.colors, 3));
     return geo;
-  }, [positions, colors]);
+  });
 
   return (
     <points ref={points} geometry={geometry}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Hls from 'hls.js';
 import { videoApi, searchApi } from '@/services/api';
@@ -20,7 +20,7 @@ const MAX_VIDEOS = 4;
 
 export function useMultiView() {
   const searchParams = useSearchParams();
-  const initialVideoIds = searchParams.get('videos')?.split(',') || [];
+  const initialVideoIds = useMemo(() => searchParams.get('videos')?.split(',') || [], [searchParams]);
 
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const hlsInstances = useRef<(Hls | null)[]>([]);
@@ -51,16 +51,20 @@ export function useMultiView() {
       setSlots(loadedSlots);
     };
     loadInitialVideos();
-  }, []);
+  }, [initialVideoIds]);
+
+  const slotVideoIds = useMemo(() => slots.map(s => s.video?.id).join(','), [slots]);
 
   useEffect(() => {
+    const currentHlsInstances = hlsInstances.current;
+
     slots.forEach((slot, index) => {
       const videoEl = videoRefs.current[index];
       if (!videoEl || !slot.video?.videoUrl) return;
 
-      if (hlsInstances.current[index]) {
-        hlsInstances.current[index]?.destroy();
-        hlsInstances.current[index] = null;
+      if (currentHlsInstances[index]) {
+        currentHlsInstances[index]?.destroy();
+        currentHlsInstances[index] = null;
       }
 
       // Apply volume and mute state
@@ -74,7 +78,7 @@ export function useMultiView() {
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           if (slot.isPlaying) videoEl.play().catch(() => {});
         });
-        hlsInstances.current[index] = hls;
+        currentHlsInstances[index] = hls;
       } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
         videoEl.src = slot.video.videoUrl;
         if (slot.isPlaying) videoEl.play().catch(() => {});
@@ -82,9 +86,9 @@ export function useMultiView() {
     });
 
     return () => {
-      hlsInstances.current.forEach(hls => hls?.destroy());
+      currentHlsInstances.forEach(hls => hls?.destroy());
     };
-  }, [slots.map(s => s.video?.id).join(',')]);
+  }, [slotVideoIds, slots]);
 
   const handleSearch = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

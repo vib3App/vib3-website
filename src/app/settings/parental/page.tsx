@@ -49,10 +49,15 @@ export default function ParentalControlsPage() {
   const [pinError, setPinError] = useState('');
 
   useEffect(() => {
-    const saved = localStorage.getItem('parentalSettings');
-    if (saved) {
-      try { setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) }); } catch { /* ignore */ }
-    }
+    let cancelled = false;
+    const load = async () => {
+      const saved = localStorage.getItem('parentalSettings');
+      if (saved && !cancelled) {
+        try { setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(saved) }); } catch { /* ignore */ }
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   const updateSetting = <K extends keyof ParentalSettings>(key: K, value: ParentalSettings[K]) => {

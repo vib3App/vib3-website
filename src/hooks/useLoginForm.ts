@@ -60,6 +60,21 @@ export function useLoginForm() {
 
   const maxBirthdate = useMemo(() => getMaxBirthdate(), []);
 
+  const handleGoogleCallback = useCallback(async (response: { credential: string }) => {
+    try {
+      setIsSubmitting(true);
+      setError('');
+      const user = await authApi.googleLogin(response.credential);
+      setUser(user);
+      router.push('/feed');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || 'Google sign in failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [router, setUser]);
+
   useEffect(() => {
     if (googleLoaded && window.google && GOOGLE_CLIENT_ID) {
       window.google.accounts.id.initialize({
@@ -76,22 +91,7 @@ export function useLoginForm() {
         });
       }
     }
-  }, [googleLoaded]);
-
-  const handleGoogleCallback = useCallback(async (response: { credential: string }) => {
-    try {
-      setIsSubmitting(true);
-      setError('');
-      const user = await authApi.googleLogin(response.credential);
-      setUser(user);
-      router.push('/feed');
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      setError(error.message || 'Google sign in failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [router, setUser]);
+  }, [googleLoaded, handleGoogleCallback]);
 
   const handleAppleSignIn = useCallback(async () => {
     try {

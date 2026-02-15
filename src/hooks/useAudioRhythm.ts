@@ -41,35 +41,6 @@ export function useAudioRhythm() {
   const lastBeatTimeRef = useRef(0);
   const energyHistoryRef = useRef<number[]>([]);
 
-  // Connect to an audio element
-  const connect = useCallback((audioElement: HTMLAudioElement) => {
-    try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContext();
-      }
-
-      const ctx = audioContextRef.current;
-
-      // Create analyser
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.8;
-      analyserRef.current = analyser;
-
-      // Connect source
-      if (!sourceRef.current) {
-        const source = ctx.createMediaElementSource(audioElement);
-        source.connect(analyser);
-        analyser.connect(ctx.destination);
-        sourceRef.current = source;
-      }
-
-      setIsAnalyzing(true);
-      startAnalysis();
-    } catch (_e) {
-    }
-  }, []);
-
   // Start real-time analysis
   const startAnalysis = useCallback(() => {
     if (!analyserRef.current) return;
@@ -152,6 +123,35 @@ export function useAudioRhythm() {
     analyze();
   }, []);
 
+  // Connect to an audio element
+  const connect = useCallback((audioElement: HTMLAudioElement) => {
+    try {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext();
+      }
+
+      const ctx = audioContextRef.current;
+
+      // Create analyser
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.8;
+      analyserRef.current = analyser;
+
+      // Connect source
+      if (!sourceRef.current) {
+        const source = ctx.createMediaElementSource(audioElement);
+        source.connect(analyser);
+        analyser.connect(ctx.destination);
+        sourceRef.current = source;
+      }
+
+      setIsAnalyzing(true);
+      startAnalysis();
+    } catch (_e) {
+    }
+  }, [startAnalysis]);
+
   // Stop analysis
   const disconnect = useCallback(() => {
     if (animationRef.current) {
@@ -187,17 +187,50 @@ export function useRhythmSync() {
   const { beatInfo, analysis, connect, disconnect, isAnalyzing } = useAudioRhythm();
   const [syncedValue, setSyncedValue] = useState(0);
   const [pulseIntensity, setPulseIntensity] = useState(0);
+  const syncedValueRef = useRef(0);
+  const pulseIntensityRef = useRef(0);
+  const decayFrameRef = useRef<number | null>(null);
 
-  // Sync a value to the beat
+  // Handle beat detection: set values on beat, decay otherwise via rAF
   useEffect(() => {
     if (beatInfo.isBeat) {
-      setSyncedValue(1);
-      setPulseIntensity(beatInfo.energy);
-    } else {
-      // Decay
-      setSyncedValue(prev => Math.max(0, prev - 0.1));
-      setPulseIntensity(prev => Math.max(0, prev - 0.05));
+      syncedValueRef.current = 1;
+      pulseIntensityRef.current = beatInfo.energy;
     }
+
+    const update = () => {
+      if (beatInfo.isBeat) {
+        setSyncedValue(syncedValueRef.current);
+        setPulseIntensity(pulseIntensityRef.current);
+        return;
+      }
+
+      let needsUpdate = false;
+      if (syncedValueRef.current > 0) {
+        syncedValueRef.current = Math.max(0, syncedValueRef.current - 0.1);
+        needsUpdate = true;
+      }
+      if (pulseIntensityRef.current > 0) {
+        pulseIntensityRef.current = Math.max(0, pulseIntensityRef.current - 0.05);
+        needsUpdate = true;
+      }
+      if (needsUpdate) {
+        setSyncedValue(syncedValueRef.current);
+        setPulseIntensity(pulseIntensityRef.current);
+        decayFrameRef.current = requestAnimationFrame(update);
+      } else {
+        decayFrameRef.current = null;
+      }
+    };
+
+    decayFrameRef.current = requestAnimationFrame(update);
+
+    return () => {
+      if (decayFrameRef.current !== null) {
+        cancelAnimationFrame(decayFrameRef.current);
+        decayFrameRef.current = null;
+      }
+    };
   }, [beatInfo]);
 
   // Get CSS transform based on rhythm

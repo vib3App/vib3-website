@@ -55,6 +55,25 @@ export function useAmbientSound() {
   const [volume, setVolumeState] = useState(0.5);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Stop ambient sound
+  const stopAmbient = useCallback(() => {
+    nodesRef.current.oscillators.forEach((osc) => {
+      try {
+        osc.stop();
+        osc.disconnect();
+      } catch (_e) {
+        // Already stopped
+      }
+    });
+    nodesRef.current.gains.forEach((gain) => gain.disconnect());
+    nodesRef.current.lfo?.stop();
+    nodesRef.current.lfo?.disconnect();
+    nodesRef.current.masterGain?.disconnect();
+
+    nodesRef.current = { oscillators: [], gains: [], lfo: null, masterGain: null };
+    setIsPlaying(false);
+  }, []);
+
   // Create ambient sound for a mode
   const createAmbient = useCallback((ambientMode: Exclude<AmbientMode, 'off'>) => {
     if (!audioContextRef.current) {
@@ -107,26 +126,7 @@ export function useAmbientSound() {
 
     lfo.start();
     setIsPlaying(true);
-  }, [volume]);
-
-  // Stop ambient sound
-  const stopAmbient = useCallback(() => {
-    nodesRef.current.oscillators.forEach((osc) => {
-      try {
-        osc.stop();
-        osc.disconnect();
-      } catch (_e) {
-        // Already stopped
-      }
-    });
-    nodesRef.current.gains.forEach((gain) => gain.disconnect());
-    nodesRef.current.lfo?.stop();
-    nodesRef.current.lfo?.disconnect();
-    nodesRef.current.masterGain?.disconnect();
-
-    nodesRef.current = { oscillators: [], gains: [], lfo: null, masterGain: null };
-    setIsPlaying(false);
-  }, []);
+  }, [volume, stopAmbient]);
 
   // Set mode
   const setMode = useCallback((newMode: AmbientMode) => {
@@ -188,22 +188,30 @@ export function useAmbientSound() {
  * Provider component for ambient sound settings
  */
 export function useAmbientSoundSettings() {
-  const [enabled, setEnabled] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<AmbientMode>('focus');
-
-  // Load from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('vib3-ambient-settings');
-    if (saved) {
-      try {
-        const { enabled, mode } = JSON.parse(saved);
-        setEnabled(enabled);
-        setSelectedMode(mode);
-      } catch (_e) {
-        // Invalid saved data
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof localStorage === 'undefined') return false;
+    try {
+      const saved = localStorage.getItem('vib3-ambient-settings');
+      if (saved) {
+        return JSON.parse(saved).enabled ?? false;
       }
+    } catch (_e) {
+      // Invalid saved data
     }
-  }, []);
+    return false;
+  });
+  const [selectedMode, setSelectedMode] = useState<AmbientMode>(() => {
+    if (typeof localStorage === 'undefined') return 'focus';
+    try {
+      const saved = localStorage.getItem('vib3-ambient-settings');
+      if (saved) {
+        return JSON.parse(saved).mode ?? 'focus';
+      }
+    } catch (_e) {
+      // Invalid saved data
+    }
+    return 'focus';
+  });
 
   // Save to localStorage
   useEffect(() => {

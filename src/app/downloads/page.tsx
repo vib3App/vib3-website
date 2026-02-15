@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -25,27 +25,8 @@ export default function DownloadsPage() {
   const [downloads, setDownloads] = useState<OfflineVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [storageUsage, setStorageUsage] = useState({ used: '0 MB', max: '500 MB', percent: 0 });
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [isSupported, setIsSupported] = useState(true);
-
-  const loadDownloads = useCallback(async () => {
-    setIsLoading(true);
-    const supported = 'indexedDB' in window;
-    setIsSupported(supported);
-    if (!supported) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const videos = await offlineVideoService.getOfflineVideos();
-      setDownloads(videos);
-      const usage = await offlineVideoService.getStorageUsage();
-      setStorageUsage(usage);
-    } catch (error) {
-      console.error('Failed to load downloads:', error);
-    }
-    setIsLoading(false);
-  }, []);
 
   useEffect(() => {
     if (!isAuthVerified) return;
@@ -53,18 +34,38 @@ export default function DownloadsPage() {
       router.push('/login?redirect=/downloads');
       return;
     }
+
+    let cancelled = false;
+    const loadDownloads = async () => {
+      setIsLoading(true);
+      const supported = 'indexedDB' in window;
+      if (!cancelled) setIsSupported(supported);
+      if (!supported) {
+        if (!cancelled) setIsLoading(false);
+        return;
+      }
+      try {
+        const videos = await offlineVideoService.getOfflineVideos();
+        if (!cancelled) setDownloads(videos);
+        const usage = await offlineVideoService.getStorageUsage();
+        if (!cancelled) setStorageUsage(usage);
+      } catch (error) {
+        console.error('Failed to load downloads:', error);
+      }
+      if (!cancelled) setIsLoading(false);
+    };
     loadDownloads();
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    setIsOnline(navigator.onLine);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     return () => {
+      cancelled = true;
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [isAuthenticated, isAuthVerified, router, loadDownloads]);
+  }, [isAuthenticated, isAuthVerified, router]);
 
   const handleDelete = async (videoId: string) => {
     await offlineVideoService.deleteOfflineVideo(videoId);

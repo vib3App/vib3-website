@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsCard, SettingsToggle, SettingsLink } from './SettingsComponents';
 
@@ -22,19 +22,19 @@ const STORAGE_KEY = 'vib3_privacy_settings';
 
 export function PrivacySection() {
   const router = useRouter();
-  const [settings, setSettings] = useState<PrivacySettings>(defaultSettings);
-
-  useEffect(() => {
-    // Load settings from localStorage
+  const [settings, setSettings] = useState<PrivacySettings>(() => {
+    // Load settings from localStorage during initialization
+    if (typeof window === 'undefined') return defaultSettings;
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        setSettings({ ...defaultSettings, ...JSON.parse(stored) });
+        return { ...defaultSettings, ...JSON.parse(stored) };
       } catch {
         // Use defaults if parse fails
       }
     }
-  }, []);
+    return defaultSettings;
+  });
 
   const toggleSetting = (key: keyof PrivacySettings) => {
     const newSettings = { ...settings, [key]: !settings[key] };
