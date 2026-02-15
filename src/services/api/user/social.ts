@@ -34,8 +34,7 @@ export const socialApi = {
         params: { page, limit },
       });
       return data;
-    } catch (error) {
-      console.warn('Blocked users endpoint not available:', error);
+    } catch {
       return { users: [], hasMore: false };
     }
   },

@@ -53,7 +53,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'friends' } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.warn('Friends feed endpoint not available:', error);
+      console.error('Failed to get Friends feed:', error);
       return { items: [], page, hasMore: false };
     }
   },

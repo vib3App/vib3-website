@@ -74,12 +74,12 @@ export const userVideosApi = {
 
   async getTaggedVideos(page = 1, limit = 20): Promise<UserVideosResponse> {
     try {
-      const { data } = await apiClient.get<UserVideosResponse>('/user/tagged-videos', {
+      const { data } = await apiClient.get<{ videos?: BackendVideo[] }>('/social/user/tagged-videos', {
         params: { page, limit },
       });
-      return data;
-    } catch (error) {
-      console.warn('Tagged videos endpoint not available:', error);
+      const videosArray = data.videos || [];
+      return { videos: videosArray.map(v => transformVideo(v)) };
+    } catch {
       return { videos: [] };
     }
   },

@@ -51,8 +51,7 @@ export const messagingApi = {
         { params: { page, limit } }
       );
       return { items: data.requests.map(transformConversation), total: data.total, page: data.page, hasMore: data.hasMore };
-    } catch (error) {
-      console.warn('Message requests endpoint not available:', error);
+    } catch {
       return { items: [], total: 0, page, hasMore: false };
     }
   },

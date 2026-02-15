@@ -43,6 +43,7 @@ export function VerificationSteps({ onSubmit, isSubmitting }: VerificationStepsP
   const [links, setLinks] = useState(['']);
   const [idDocument, setIdDocument] = useState<File | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,9 +66,10 @@ export function VerificationSteps({ onSubmit, isSubmitting }: VerificationStepsP
 
   const handleSubmit = () => {
     if (!fullName || !category || !reason || !idDocument) {
-      alert('Please fill in all required fields');
+      setValidationError('Please fill in all required fields');
       return;
     }
+    setValidationError(null);
     onSubmit({ fullName, category, reason, links: links.filter(l => l.trim()), idDocument });
   };
 
@@ -173,6 +175,11 @@ export function VerificationSteps({ onSubmit, isSubmitting }: VerificationStepsP
             )}
           </div>
           {idDocument && <p className="text-white/50 text-sm text-center">{idDocument.name}</p>}
+          {validationError && (
+            <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400 text-sm text-center">
+              {validationError}
+            </div>
+          )}
           <div className="flex gap-3">
             <button onClick={() => setStep(2)} className="flex-1 py-3 glass text-white rounded-full font-medium hover:bg-white/10 transition">Back</button>
             <button onClick={handleSubmit} disabled={!idDocument || isSubmitting}

@@ -91,7 +91,7 @@ export const callsApi = {
       );
       return data;
     } catch {
-      return { available: true }; // Default to available if endpoint not ready
+      return { available: true };
     }
   },
 };

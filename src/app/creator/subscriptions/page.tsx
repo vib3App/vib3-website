@@ -60,7 +60,7 @@ export default function CreatorSubscriptionsPage() {
     setSaving(true);
     setError(null);
 
-    const newTiers = [...tiers, { id: `tier${tiers.length + 1}`, name, price, benefits }];
+    const newTiers = [...tiers, { id: `temp_${Date.now()}`, name, price, benefits }];
     const success = await subscriptionsApi.enableSubscriptions(
       newTiers.map(t => ({ name: t.name, price: t.price, benefits: t.benefits }))
     );

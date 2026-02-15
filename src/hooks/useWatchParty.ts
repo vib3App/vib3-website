@@ -55,7 +55,7 @@ export function useWatchParty(partyId: string) {
           setParty(data);
           setLoading(false);
         } else {
-          setError('Watch party feature not available');
+          setError('Watch party not found');
           setLoading(false);
           if (interval) clearInterval(interval);
         }

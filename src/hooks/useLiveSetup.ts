@@ -147,8 +147,7 @@ export function useLiveSetup() {
           setStep('live');
           // Don't navigate - stay on page with LiveKit room
         } else {
-          // Fallback if LiveKit is not available
-          setError('Live streaming is not configured. Please contact support.');
+          setError('Live streaming setup failed. Please try again or contact support.');
           setStep('preview');
         }
       }
