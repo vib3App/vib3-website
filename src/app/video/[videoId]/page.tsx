@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -13,6 +13,14 @@ import { videoApi, userApi } from '@/services/api';
 import type { Video } from '@/types';
 
 export default function VideoPlayerPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen aurora-bg flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" /></div>}>
+      <VideoPlayerContent />
+    </Suspense>
+  );
+}
+
+function VideoPlayerContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();

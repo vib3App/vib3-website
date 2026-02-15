@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { shopApi } from '@/services/api';
@@ -8,6 +8,14 @@ import { ShopHero, CategoryTabs, ProductCard, CartSidebar } from '@/components/s
 import type { Product, ProductCategory, CartItem } from '@/types/shop';
 
 export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen aurora-bg flex items-center justify-center"><div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>}>
+      <ShopPageContent />
+    </Suspense>
+  );
+}
+
+function ShopPageContent() {
   const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
