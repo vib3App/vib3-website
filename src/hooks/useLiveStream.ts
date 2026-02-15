@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { liveApi } from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
 import type { LiveStream, LiveChatMessage, LiveGift, LiveKitCredentials } from '@/types';
@@ -14,8 +15,9 @@ interface FloatingReaction {
   x: number;
 }
 
-export function useLiveStream(streamId: string, isHost: boolean) {
+export function useLiveStream(streamId: string, _isHost?: boolean) {
   const router = useRouter();
+  const { user } = useAuthStore();
   const addToast = useToastStore(s => s.addToast);
   const confirmDialog = useConfirmStore(s => s.show);
 
@@ -41,6 +43,12 @@ export function useLiveStream(streamId: string, isHost: boolean) {
   const [showGuestRequests, setShowGuestRequests] = useState(false);
   const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
   const [isLiked, setIsLiked] = useState(false);
+
+  // Determine host status from stream data and current user
+  const isHost = useMemo(() => {
+    if (!stream || !user) return false;
+    return stream.hostId === user.id;
+  }, [stream, user]);
 
   // Host controls
   const [guestRequests, setGuestRequests] = useState<Array<{ requestId: string; userId: string; username: string; avatar?: string }>>([]);
@@ -230,6 +238,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
     likeCount,
     loading,
     error,
+    isHost,
     // LiveKit
     liveKitCredentials,
     // UI State

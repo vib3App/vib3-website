@@ -106,9 +106,13 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose, onShareComplete
 
     switch (action) {
       case 'copy':
-        await navigator.clipboard.writeText(shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          // Clipboard API not available or permission denied
+        }
         break;
       case 'email':
         window.open(`mailto:?subject=Check this out on VIB3&body=${encodeURIComponent(shareUrl)}`, '_self');
@@ -122,10 +126,14 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose, onShareComplete
         // Open in-app messages
         break;
       case 'embed':
-        const embedCode = `<iframe src="${shareUrl}/embed" width="325" height="580" frameborder="0" allowfullscreen></iframe>`;
-        await navigator.clipboard.writeText(embedCode);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        try {
+          const embedCode = `<iframe src="${shareUrl}/embed" width="325" height="580" frameborder="0" allowfullscreen></iframe>`;
+          await navigator.clipboard.writeText(embedCode);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          // Clipboard API not available or permission denied
+        }
         break;
       case 'qr':
         // Show QR code modal

@@ -42,22 +42,32 @@ export default function WithdrawalsPage() {
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);
-    const result = await adminApi.approveWithdrawal(id);
-    if (result.success) {
-      triggerRefresh();
+    try {
+      const result = await adminApi.approveWithdrawal(id);
+      if (result.success) {
+        triggerRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to approve withdrawal:', err);
+    } finally {
+      setProcessingId(null);
     }
-    setProcessingId(null);
   };
 
   const handleReject = async (id: string) => {
     setProcessingId(id);
-    const result = await adminApi.rejectWithdrawal(id, rejectReason);
-    if (result.success) {
-      setShowRejectModal(null);
-      setRejectReason('');
-      triggerRefresh();
+    try {
+      const result = await adminApi.rejectWithdrawal(id, rejectReason);
+      if (result.success) {
+        setShowRejectModal(null);
+        setRejectReason('');
+        triggerRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to reject withdrawal:', err);
+    } finally {
+      setProcessingId(null);
     }
-    setProcessingId(null);
   };
 
   const filtered = statusFilter === 'all'

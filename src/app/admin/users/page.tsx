@@ -24,7 +24,7 @@ export default function UserManagementPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
 
-  const isOwner = currentUser?.email === 'tmc363@gmail.com';
+  const isOwner = currentUser?.role === 'owner';
   const isAdmin = currentUser?.isAdmin || currentUser?.role === 'admin' || isOwner;
 
   const loadUsers = useCallback(async () => {
@@ -86,7 +86,7 @@ export default function UserManagementPage() {
   };
 
   const canChangeRole = (targetUser: AdminUser): boolean => {
-    if (isOwner && targetUser.email !== 'tmc363@gmail.com') return true;
+    if (isOwner && targetUser.effectiveRole !== 'owner') return true;
     if (isAdmin && !isOwner) {
       return targetUser.effectiveRole === 'user' || targetUser.effectiveRole === 'moderator';
     }

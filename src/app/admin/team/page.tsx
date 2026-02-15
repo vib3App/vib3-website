@@ -17,7 +17,7 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const isOwner = currentUser?.email === 'tmc363@gmail.com';
+  const isOwner = currentUser?.role === 'owner';
 
   useEffect(() => { loadTeam(); }, []);
 

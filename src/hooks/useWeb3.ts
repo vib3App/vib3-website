@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { logger } from '@/utils/logger';
 
 interface WalletInfo {
@@ -39,6 +39,8 @@ export function useWeb3() {
   });
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const accountsHandlerRef = useRef<((accounts: unknown) => void) | null>(null);
+  const chainHandlerRef = useRef<((chainId: unknown) => void) | null>(null);
 
   // Check Web3 capabilities
   useEffect(() => {
@@ -52,10 +54,28 @@ export function useWeb3() {
     });
   }, []);
 
+  // Remove ethereum event listeners
+  const removeListeners = useCallback(() => {
+    const ethereum = (window as Window & { ethereum?: {
+      removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
+    } }).ethereum;
+    if (ethereum?.removeListener) {
+      if (accountsHandlerRef.current) {
+        ethereum.removeListener('accountsChanged', accountsHandlerRef.current);
+        accountsHandlerRef.current = null;
+      }
+      if (chainHandlerRef.current) {
+        ethereum.removeListener('chainChanged', chainHandlerRef.current);
+        chainHandlerRef.current = null;
+      }
+    }
+  }, []);
+
   // Disconnect wallet
   const disconnect = useCallback(() => {
+    removeListeners();
     setWallet(null);
-  }, []);
+  }, [removeListeners]);
 
   // Connect wallet
   const connect = useCallback(async (_provider: 'metamask' | 'walletconnect' | 'coinbase' = 'metamask') => {
@@ -95,20 +115,27 @@ export function useWeb3() {
         isConnected: true,
       });
 
+      // Remove any previous listeners before adding new ones
+      removeListeners();
+
       // Listen for account changes
-      ethereum.on('accountsChanged', (newAccounts: unknown) => {
+      const accountsHandler = (newAccounts: unknown) => {
         const accts = newAccounts as string[];
         if (accts.length === 0) {
           disconnect();
         } else {
           setWallet(prev => prev ? { ...prev, address: accts[0] } : null);
         }
-      });
+      };
+      accountsHandlerRef.current = accountsHandler;
+      ethereum.on('accountsChanged', accountsHandler);
 
       // Listen for chain changes
-      ethereum.on('chainChanged', (newChainId: unknown) => {
+      const chainHandler = (newChainId: unknown) => {
         setWallet(prev => prev ? { ...prev, chainId: parseInt(newChainId as string, 16) } : null);
-      });
+      };
+      chainHandlerRef.current = chainHandler;
+      ethereum.on('chainChanged', chainHandler);
 
     } catch (e) {
       const error = e as Error;
@@ -116,7 +143,14 @@ export function useWeb3() {
     } finally {
       setIsConnecting(false);
     }
-  }, [disconnect]);
+  }, [disconnect, removeListeners]);
+
+  // Cleanup listeners on unmount
+  useEffect(() => {
+    return () => {
+      removeListeners();
+    };
+  }, [removeListeners]);
 
   // Sign message (for authentication)
   const signMessage = useCallback(async (message: string): Promise<string | null> => {

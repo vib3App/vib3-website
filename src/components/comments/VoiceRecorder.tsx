@@ -125,6 +125,13 @@ export function VoiceRecorder({
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      if (mediaRecorderRef.current?.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      // Stop all media stream tracks to release the microphone
+      if (mediaRecorderRef.current?.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
       }

@@ -40,7 +40,8 @@ export function useLiveSetup() {
   useEffect(() => {
     const getDevices = async () => {
       try {
-        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        tempStream.getTracks().forEach(t => t.stop());
         const devices = await navigator.mediaDevices.enumerateDevices();
         setCameras(devices.filter(d => d.kind === 'videoinput'));
         setMics(devices.filter(d => d.kind === 'audioinput'));
@@ -75,6 +76,9 @@ export function useLiveSetup() {
           audio: selectedMic ? { deviceId: selectedMic } : true,
         });
         stream = new MediaStream([...screenStream.getVideoTracks(), ...cameraStream.getAudioTracks()]);
+        // Stop unused tracks to avoid resource leaks
+        cameraStream.getVideoTracks().forEach(t => t.stop());
+        screenStream.getAudioTracks().forEach(t => t.stop());
       } else {
         stream = await navigator.mediaDevices.getUserMedia({
           video: selectedCamera ? { deviceId: selectedCamera } : true,

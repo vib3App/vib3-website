@@ -65,7 +65,6 @@ class WebSocketService {
     try {
       this.socket = io(SOCKET_URL, {
         auth: { token },
-        query: { token },
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 5,

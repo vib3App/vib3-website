@@ -43,11 +43,16 @@ export default function DMCAPage() {
 
   const handleProcess = async (noticeId: string, action: 'approve' | 'reject') => {
     setProcessingId(noticeId);
-    const result = await adminApi.processDMCA(noticeId, action);
-    if (result.success) {
-      triggerRefresh();
+    try {
+      const result = await adminApi.processDMCA(noticeId, action);
+      if (result.success) {
+        triggerRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to process DMCA notice:', err);
+    } finally {
+      setProcessingId(null);
     }
-    setProcessingId(null);
   };
 
   const filtered = statusFilter === 'all'

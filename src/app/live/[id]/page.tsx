@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { Suspense } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ExclamationTriangleIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
@@ -22,10 +22,8 @@ import type { LiveGuest } from '@/types';
 
 function LiveStreamContent() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const streamId = params.id as string;
-  const isHost = searchParams.get('host') === 'true';
 
   const {
     // Refs
@@ -38,6 +36,7 @@ function LiveStreamContent() {
     viewerCount,
     loading,
     error,
+    isHost,
     // LiveKit
     liveKitCredentials,
     // UI State
@@ -66,7 +65,7 @@ function LiveStreamContent() {
     handleAcceptGuest,
     handleRejectGuest,
     handleEndStream,
-  } = useLiveStream(streamId, isHost);
+  } = useLiveStream(streamId);
 
   const handleLeaveStream = () => {
     router.push('/live');

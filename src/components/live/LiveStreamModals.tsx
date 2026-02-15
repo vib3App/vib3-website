@@ -15,8 +15,9 @@ export function GiftsModal({ isOpen, gifts, onClose, onSendGift }: GiftsModalPro
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center bg-black/80">
-      <div className="w-full max-w-md bg-gray-900 rounded-t-3xl lg:rounded-3xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center">
+      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-gray-900 rounded-t-3xl lg:rounded-3xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h3 className="text-lg font-semibold">Send a Gift</h3>
           <button
@@ -74,8 +75,9 @@ export function GuestRequestsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+      <div className="relative w-full max-w-md bg-gray-900 rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h3 className="text-lg font-semibold">Guest Requests</h3>
           <button

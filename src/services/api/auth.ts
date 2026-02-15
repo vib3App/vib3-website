@@ -89,6 +89,12 @@ export const authApi = {
       await apiClient.post('/auth/logout');
     } catch {
       // Ignore errors on logout - clear local state anyway
+    } finally {
+      // Always clear tokens from localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('refresh_token');
+      }
     }
   },
 
@@ -182,9 +188,14 @@ export const authApi = {
 };
 
 function transformAuthResponse(data: AuthResponse): AuthUser {
-  // Store refresh token separately
-  if (typeof window !== 'undefined' && data.refreshToken) {
-    localStorage.setItem('refresh_token', data.refreshToken);
+  // Store tokens for request interceptor
+  if (typeof window !== 'undefined') {
+    if (data.token) {
+      localStorage.setItem('auth_token', data.token);
+    }
+    if (data.refreshToken) {
+      localStorage.setItem('refresh_token', data.refreshToken);
+    }
   }
 
   // Handle both nested user object and top-level fields

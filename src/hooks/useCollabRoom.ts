@@ -97,11 +97,16 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       if (mediaStream) {
         mediaStream.getTracks().forEach(track => track.stop());
       }
+    };
+  }, [mediaStream]);
+
+  useEffect(() => {
+    return () => {
       if (recordedUrl) {
         URL.revokeObjectURL(recordedUrl);
       }
     };
-  }, [mediaStream, recordedUrl]);
+  }, [recordedUrl]);
 
   const startPreview = useCallback(async () => {
     try {

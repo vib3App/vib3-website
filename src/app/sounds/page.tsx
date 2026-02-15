@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { BottomNav } from '@/components/ui/BottomNav';
@@ -91,6 +91,7 @@ export default function SoundsPage() {
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const playingIdRef = useRef<string | null>(null);
   const [audio] = useState(() => typeof Audio !== 'undefined' ? new Audio() : null);
 
   const loadTracks = useCallback(async () => {
@@ -130,16 +131,19 @@ export default function SoundsPage() {
     if (playingId === track.id) {
       audio.pause();
       setPlayingId(null);
+      playingIdRef.current = null;
     } else {
       audio.src = track.previewUrl || track.audioUrl;
       audio.play().catch(console.error);
       setPlayingId(track.id);
+      playingIdRef.current = track.id;
 
       // Stop after 15 seconds
       setTimeout(() => {
-        if (playingId === track.id) {
+        if (playingIdRef.current === track.id) {
           audio.pause();
           setPlayingId(null);
+          playingIdRef.current = null;
         }
       }, 15000);
     }

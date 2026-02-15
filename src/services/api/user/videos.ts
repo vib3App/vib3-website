@@ -1,26 +1,15 @@
 import { apiClient } from '../client';
 import type { Video } from '@/types';
 import type { UserVideosResponse, BackendVideo } from './types';
+import { type VideoResponse, transformVideo as canonicalTransformVideo } from '../videoTransformers';
 import { logger } from '@/utils/logger';
 
 function transformVideo(v: BackendVideo, fallbackUserId?: string): Video {
-  return {
-    id: v.id || v._id || '',
-    userId: v.userId || v.author?._id || fallbackUserId || '',
-    username: v.author?.username || 'Unknown',
-    userAvatar: v.author?.profileImage,
-    caption: v.caption || v.title || v.description || '',
-    videoUrl: v.media?.[0]?.url || '',
-    thumbnailUrl: v.media?.[0]?.thumbnailUrl,
-    duration: v.duration || 0,
-    likesCount: v.likesCount || 0,
-    commentsCount: v.commentsCount || 0,
-    viewsCount: v.viewsCount || 0,
-    sharesCount: v.sharesCount || 0,
-    hashtags: v.hashtags || v.tags || [],
-    createdAt: v.createdAt || new Date().toISOString(),
-    isLiked: v.isLiked,
-  };
+  const video = canonicalTransformVideo(v as unknown as VideoResponse);
+  if (!video.userId && fallbackUserId) {
+    video.userId = fallbackUserId;
+  }
+  return video;
 }
 
 export const userVideosApi = {

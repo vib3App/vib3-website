@@ -14,6 +14,13 @@ export interface VideoResponse {
     displayName?: string;
     profileImage?: string;
   };
+  user?: {
+    _id: string;
+    username: string;
+    displayName?: string;
+    profileImage?: string;
+    profilePicture?: string;
+  };
   username?: string;
   profilePicture?: string;
   media?: Array<{
@@ -34,6 +41,12 @@ export interface VideoResponse {
   viewsCount?: number;
   sharesCount?: number;
   savesCount?: number;
+  // Alternative count field names from some backend responses
+  likes?: number;
+  comments?: number;
+  views?: number;
+  shares?: number;
+  saves?: number;
   isPublic?: boolean;
   createdAt?: string;
   isLiked?: boolean;
@@ -67,12 +80,14 @@ export interface CommentResponse {
 }
 
 export function transformVideo(data: VideoResponse): Video {
-  const username = data.author?.username || data.username || 'Unknown';
-  const userAvatar = data.author?.profileImage || data.profilePicture;
-  const userId = data.userId || data.author?._id || '';
+  const username = data.author?.username || data.user?.username || data.username || 'Unknown';
+  const rawAvatar = data.author?.profileImage || data.profilePicture || data.user?.profileImage || data.user?.profilePicture;
+  const userAvatar = rawAvatar && rawAvatar !== 'null' ? rawAvatar : undefined;
+  const userId = data.userId || data.author?._id || data.user?._id || '';
 
   const videoUrl = data.media?.[0]?.url || data.hlsUrl || data.videoUrl || '';
-  const thumbnailUrl = data.media?.[0]?.thumbnailUrl || data.thumbnailUrl;
+  const rawThumbnail = data.media?.[0]?.thumbnailUrl || data.thumbnailUrl;
+  const thumbnailUrl = rawThumbnail && rawThumbnail !== 'null' ? rawThumbnail : undefined;
 
   return {
     id: data.id || data._id,
@@ -84,11 +99,11 @@ export function transformVideo(data: VideoResponse): Video {
     caption: data.caption || data.title || data.description || '',
     hashtags: data.hashtags || data.tags || [],
     duration: data.duration || 0,
-    likesCount: data.likesCount || 0,
-    commentsCount: data.commentsCount || 0,
-    viewsCount: data.viewsCount || 0,
-    sharesCount: data.sharesCount || 0,
-    savesCount: data.savesCount || 0,
+    likesCount: data.likesCount || data.likes || 0,
+    commentsCount: data.commentsCount || data.comments || 0,
+    viewsCount: data.viewsCount || data.views || 0,
+    sharesCount: data.sharesCount || data.shares || 0,
+    savesCount: data.savesCount || data.saves || 0,
     isPublic: data.isPublic !== false,
     createdAt: data.createdAt || new Date().toISOString(),
     isLiked: data.isLiked,

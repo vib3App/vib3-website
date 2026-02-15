@@ -95,7 +95,7 @@ export const videoApi = {
   ): Promise<Comment> {
     const { data } = await apiClient.post<CommentResponse>(
       `/videos/${videoId}/comments/${commentId}/replies`,
-      { content }
+      { text: content }
     );
     return transformComment(data);
   },
@@ -106,8 +106,7 @@ export const videoApi = {
 
     const { data } = await apiClient.post<CommentResponse>(
       `/videos/${videoId}/comments/voice`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     );
     return transformComment(data);
   },

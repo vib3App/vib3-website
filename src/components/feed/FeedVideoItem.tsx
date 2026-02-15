@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
@@ -34,24 +34,19 @@ export function FeedVideoItem({
   userId,
 }: FeedVideoItemProps) {
   const [showHeart, setShowHeart] = useState(false);
-  const lastTapRef = useRef(0);
 
   const handleDoubleTap = () => {
-    const now = Date.now();
-    if (now - lastTapRef.current < 300) {
-      if (!video.isLiked) {
-        onLike();
-      }
-      setShowHeart(true);
-      setTimeout(() => setShowHeart(false), 800);
+    if (!video.isLiked) {
+      onLike();
     }
-    lastTapRef.current = now;
+    setShowHeart(true);
+    setTimeout(() => setShowHeart(false), 800);
   };
 
   return (
     <div className="relative w-full h-full snap-start snap-always flex-shrink-0">
       {/* Video */}
-      <div className="absolute inset-0" onClick={handleDoubleTap}>
+      <div className="absolute inset-0" onDoubleClick={handleDoubleTap}>
         <VideoPlayer
           src={video.videoUrl}
           poster={video.thumbnailUrl}

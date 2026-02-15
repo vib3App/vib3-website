@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   LiveKitRoom,
   VideoTrack,
@@ -146,7 +146,7 @@ function RoomContent({
   const { localParticipant } = useLocalParticipant();
 
   // Enable camera and mic when room connects (for host)
-  useCallback(() => {
+  useEffect(() => {
     if (isHost && room && localParticipant) {
       localParticipant.setCameraEnabled(true);
       localParticipant.setMicrophoneEnabled(true);

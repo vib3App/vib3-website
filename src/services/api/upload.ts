@@ -68,10 +68,7 @@ export const uploadApi = {
 
     const { data } = await apiClient.post<{ thumbnailUrl: string }>(
       `/uploads/${uploadId}/thumbnail`,
-      formData,
-      {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      }
+      formData
     );
     return data;
   },

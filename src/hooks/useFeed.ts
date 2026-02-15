@@ -37,6 +37,7 @@ export function useFeed() {
   const isLoadingRef = useRef(false);
   const lastLoadedCategoryRef = useRef<string | null>(null);
   const erroredCategoriesRef = useRef<Set<string>>(new Set()); // Track categories that errored to prevent retries
+  const hasRecycledRef = useRef(false);
 
   // Preload video function - uses fetch instead of link preload for better compatibility
   const preloadVideo = useCallback((url: string) => {
@@ -101,6 +102,10 @@ export function useFeed() {
         setVideos(prev => [...prev, ...response.items]);
       }
       setHasMore(response.hasMore);
+      // Reset recycle flag when new content is available
+      if (response.hasMore || response.items.length > 0) {
+        hasRecycledRef.current = false;
+      }
 
       response.items.slice(0, 3).forEach(video => preloadVideo(video.videoUrl));
     } catch (err) {
@@ -148,6 +153,7 @@ export function useFeed() {
     // Store is pre-initialized - safe to load immediately
     hasInitialLoadRef.current = true;
     lastLoadedCategoryRef.current = currentKey;
+    hasRecycledRef.current = false;
     loadVideos(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, selectedVibe, selectedCategory?.id, isAuthVerified]);
@@ -180,9 +186,9 @@ export function useFeed() {
     if (currentIndex >= videos.length - 3 && videos.length > 0 && !loadingMore && !isLoading) {
       if (hasMore) {
         setPage(prev => prev + 1);
-      } else if (videos.length >= 3) {
-        // Only recycle if we have enough videos to make it meaningful
-        // This prevents unnecessary array creation with empty/small arrays
+      } else if (videos.length >= 3 && !hasRecycledRef.current) {
+        // Only recycle once to prevent unbounded array growth
+        hasRecycledRef.current = true;
         setVideos(prev => [...prev, ...prev.slice(0, Math.min(10, prev.length))]);
       }
     }

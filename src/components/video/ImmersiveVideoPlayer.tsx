@@ -51,6 +51,7 @@ export function ImmersiveVideoPlayer({
   // Handle escape key to exit theater mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement)?.isContentEditable) return;
       if (e.key === 'Escape' && theaterMode) {
         setTheaterMode(false);
         onTheaterModeChange?.(false);

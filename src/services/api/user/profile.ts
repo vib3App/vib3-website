@@ -33,9 +33,7 @@ export const profileApi = {
   },
 
   async uploadProfilePicture(formData: FormData): Promise<{ url: string }> {
-    const { data } = await apiClient.post<{ url: string }>('/user/profile-picture', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await apiClient.post<{ url: string }>('/user/profile-picture', formData);
     return data;
   },
 };

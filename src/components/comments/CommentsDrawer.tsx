@@ -35,9 +35,11 @@ export function CommentsDrawer({
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const isLoadingRef = useRef(false);
 
   const loadComments = useCallback(async (pageNum: number, append = false) => {
-    if (isLoading) return;
+    if (isLoadingRef.current) return;
+    isLoadingRef.current = true;
     setIsLoading(true);
 
     try {
@@ -52,9 +54,10 @@ export function CommentsDrawer({
     } catch (error) {
       logger.error('Failed to load comments:', error);
     } finally {
+      isLoadingRef.current = false;
       setIsLoading(false);
     }
-  }, [videoId, isLoading]);
+  }, [videoId]);
 
   useEffect(() => {
     if (isOpen && comments.length === 0) {
