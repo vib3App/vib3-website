@@ -103,8 +103,7 @@ export function CameraScanner({ onScanResult, isActive }: CameraScannerProps) {
 
       try {
         if ('BarcodeDetector' in window) {
-          // @ts-expect-error BarcodeDetector is not yet in TypeScript types
-          const barcodeDetector = new window.BarcodeDetector({ formats: ['qr_code'] });
+          const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
           const barcodes = await barcodeDetector.detect(canvas);
 
           if (barcodes.length > 0) {
