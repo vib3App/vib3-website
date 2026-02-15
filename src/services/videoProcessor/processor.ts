@@ -22,7 +22,7 @@ export class VideoProcessorService {
     this.loadPromise = (async () => {
       try {
         this.ffmpeg = new FFmpeg();
-        this.ffmpeg.on('log', ({ message }) => console.log('[FFmpeg]', message));
+        this.ffmpeg.on('log', () => {});
         this.ffmpeg.on('progress', ({ progress }) => {
           const percent = Math.round(progress * 100);
           onProgress?.({ stage: 'processing', percent, message: `Processing: ${percent}%` });
@@ -91,7 +91,6 @@ export class VideoProcessorService {
       }
 
       let args = buildFFmpegArgs(edits, hasOverlay, hasMusic);
-      console.log('FFmpeg args:', args.join(' '));
 
       onProgress?.({ stage: 'encoding', percent: 0, message: 'Encoding video...' });
       try {
@@ -99,7 +98,6 @@ export class VideoProcessorService {
       } catch (execError) {
         // If music mixing failed (likely no audio in source), retry without music mix
         if (hasMusic && edits.volume !== undefined) {
-          console.warn('FFmpeg exec failed, retrying with music-only audio:', execError);
           const fallbackEdits = { ...edits, volume: 0 };
           args = buildFFmpegArgs(fallbackEdits, hasOverlay, hasMusic);
           await this.ffmpeg!.exec(args);

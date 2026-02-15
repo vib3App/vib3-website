@@ -68,7 +68,6 @@ export const creatorSettingsApi = {
           await apiClient.post('/subscriptions/disable');
         }
       } catch (e) {
-        console.warn('Failed to sync subscription status:', e);
       }
     }
 

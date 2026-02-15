@@ -49,7 +49,6 @@ export function useSpatialAudio(options: SpatialAudioOptions = {}) {
 
       setIsInitialized(true);
     } catch (e) {
-      console.warn('Spatial audio not supported');
     }
   }, []);
 

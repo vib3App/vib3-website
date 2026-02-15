@@ -22,7 +22,6 @@ export async function sendSubscriptionToServer(subscription: PushSubscription): 
     platform: 'web',
     userAgent: navigator.userAgent,
   });
-  console.log('Subscription sent to server');
 }
 
 export async function removeSubscriptionFromServer(endpoint: string): Promise<void> {
@@ -36,7 +35,6 @@ export async function createPushSubscription(
   if (Notification.permission !== 'granted') {
     const permission = await requestPermission();
     if (permission !== 'granted') {
-      console.warn('Notification permission not granted');
       return null;
     }
   }
@@ -53,7 +51,6 @@ export async function createPushSubscription(
       applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
     });
 
-    console.log('Push subscription created:', subscription.endpoint);
     await sendSubscriptionToServer(subscription);
     return subscription;
   } catch (error) {
@@ -66,7 +63,6 @@ export async function removePushSubscription(subscription: PushSubscription): Pr
   try {
     await removeSubscriptionFromServer(subscription.endpoint);
     await subscription.unsubscribe();
-    console.log('Unsubscribed from push notifications');
     return true;
   } catch (error) {
     console.error('Failed to unsubscribe:', error);

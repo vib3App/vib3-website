@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { videoApi } from '@/services/api';
@@ -30,6 +31,7 @@ export function VideoActions({
   onCommentAdded,
   orientation = 'vertical',
 }: VideoActionsProps) {
+  const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const addToast = useToastStore(s => s.addToast);
 
@@ -59,7 +61,7 @@ export function VideoActions({
 
   const handleLike = async () => {
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      router.push('/login');
       return;
     }
 
@@ -92,7 +94,7 @@ export function VideoActions({
 
   const handleSave = async () => {
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      router.push('/login');
       return;
     }
 
@@ -113,7 +115,7 @@ export function VideoActions({
 
   const handleShare = async () => {
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      router.push('/login');
       return;
     }
 

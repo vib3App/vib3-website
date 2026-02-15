@@ -72,8 +72,8 @@ export const watchPartyApi = {
         { params: { before, limit } }
       );
       return data.messages;
-    } catch (error: any) {
-      if (error?.status === 404) return [];
+    } catch (error: unknown) {
+      if ((error as { status?: number })?.status === 404) return [];
       throw error;
     }
   },

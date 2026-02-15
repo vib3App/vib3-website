@@ -44,7 +44,6 @@ export const subscriptionsApi = {
       );
       return data;
     } catch (error) {
-      console.warn('Failed to check subscription:', error);
       return { isSubscribed: false };
     }
   },
@@ -59,7 +58,6 @@ export const subscriptionsApi = {
       );
       return data;
     } catch (error) {
-      console.warn('Failed to get creator tiers:', error);
       return null;
     }
   },
@@ -108,7 +106,6 @@ export const subscriptionsApi = {
       );
       return data.subscriptions || [];
     } catch (error) {
-      console.warn('Failed to get subscriptions:', error);
       return [];
     }
   },
@@ -150,7 +147,6 @@ export const subscriptionsApi = {
       );
       return data;
     } catch (error) {
-      console.warn('Failed to get subscribers:', error);
       return { subscriptions: [], total: 0 };
     }
   },

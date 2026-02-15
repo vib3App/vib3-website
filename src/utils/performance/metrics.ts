@@ -18,7 +18,7 @@ export function measureRender(name: string): () => void {
 
     const entries = performance.getEntriesByName(name);
     if (entries.length > 0) {
-      console.log(`[Performance] ${name}: ${entries[0].duration.toFixed(2)}ms`);
+      // Performance metric captured
     }
 
     performance.clearMarks(startMark);

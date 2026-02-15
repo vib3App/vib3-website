@@ -116,7 +116,6 @@ export async function freeSpace(bytesNeeded: number): Promise<void> {
     freedSpace += video.fileSize;
   }
 
-  console.log(`Freed ${formatBytes(freedSpace)} of storage`);
 }
 
 export function isOnline(): boolean {

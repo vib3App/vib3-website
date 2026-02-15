@@ -132,13 +132,11 @@ class DesktopNotificationsService {
    */
   async registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
     if (!('serviceWorker' in navigator)) {
-      console.warn('Service workers not supported');
       return null;
     }
 
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('Service worker registered:', registration);
       return registration;
     } catch (error) {
       console.error('Service worker registration failed:', error);

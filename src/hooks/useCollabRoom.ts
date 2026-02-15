@@ -245,9 +245,9 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
   const inviteUser = useCallback(async (inviteUserId: string) => {
     try {
       await collaborationApi.inviteUser(roomId, inviteUserId);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to invite user:', err);
-      const message = err?.message || 'Failed to send invite';
+      const message = (err as Error)?.message || 'Failed to send invite';
       throw new Error(message);
     }
   }, [roomId]);

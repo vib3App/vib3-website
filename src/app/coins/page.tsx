@@ -131,8 +131,9 @@ export default function CoinsPage() {
       setGiftAmount('');
       setGiftMessage('');
       setSelectedRecipient(null);
-    } catch (err: any) {
-      setGiftError(err.response?.data?.error || 'Failed to send gift');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      setGiftError(axiosErr.response?.data?.error || 'Failed to send gift');
     } finally {
       setGiftLoading(false);
     }
@@ -148,9 +149,10 @@ export default function CoinsPage() {
       } else {
         setPurchaseError('Failed to create checkout session');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Purchase error:', err);
-      setPurchaseError(err.response?.data?.error || 'Failed to start purchase. Please try again.');
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      setPurchaseError(axiosErr.response?.data?.error || 'Failed to start purchase. Please try again.');
     } finally {
       setPurchaseLoading(null);
     }

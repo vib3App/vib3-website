@@ -67,7 +67,6 @@ export function useAudioRhythm() {
       setIsAnalyzing(true);
       startAnalysis();
     } catch (e) {
-      console.warn('Audio analysis not supported');
     }
   }, []);
 

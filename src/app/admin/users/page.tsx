@@ -56,8 +56,9 @@ export default function UserManagementPage() {
       await adminApi.changeUserRole(userId, newRole);
       await loadUsers();
       setSelectedUsers(new Set());
-    } catch (err: any) {
-      addToast(err.response?.data?.message || 'Failed to change role');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      addToast(axiosErr.response?.data?.message || 'Failed to change role');
     } finally {
       setActionLoading(null);
     }
@@ -75,8 +76,9 @@ export default function UserManagementPage() {
       }
       await loadUsers();
       setSelectedUsers(new Set());
-    } catch (err: any) {
-      addToast(err.response?.data?.message || 'Some role changes failed');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      addToast(axiosErr.response?.data?.message || 'Some role changes failed');
     } finally {
       setActionLoading(null);
     }

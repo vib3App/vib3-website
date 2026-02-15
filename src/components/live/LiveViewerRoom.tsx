@@ -107,7 +107,6 @@ export function LiveViewerRoom({
   }, []);
 
   const handleDisconnected = useCallback(() => {
-    console.log('Disconnected from room');
     setStreamEnded(true);
   }, []);
 

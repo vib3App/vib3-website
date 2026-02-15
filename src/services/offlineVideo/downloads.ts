@@ -32,7 +32,6 @@ export async function downloadVideo(
   }
 
   if (activeDownloads.has(video.id)) {
-    console.warn('Already downloading this video');
     return false;
   }
 
@@ -55,7 +54,6 @@ export async function downloadVideo(
   if (onProgress) progressCallbacks.set(video.id, onProgress);
 
   try {
-    console.log(`Downloading video ${video.id} at ${quality}`);
 
     const response = await fetch(actualDownloadUrl, { signal: abortController.signal });
     if (!response.ok) throw new Error(`Failed to fetch video: ${response.status}`);
@@ -93,11 +91,9 @@ export async function downloadVideo(
     };
     await saveMetadataToDb(metadata);
 
-    console.log(`Successfully saved video ${video.id} for offline viewing`);
     return true;
   } catch (error) {
     if ((error as Error).name === 'AbortError') {
-      console.log('Download cancelled');
       return false;
     }
     console.error('Download failed:', error);

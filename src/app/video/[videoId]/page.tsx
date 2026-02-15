@@ -42,7 +42,6 @@ export default function VideoPlayerPage() {
 
         // If we have a userId, load all their videos and find the target
         if (userId) {
-          console.log('Loading videos for user:', userId);
           const userVideosResponse = await userApi.getUserVideos(userId);
           const userVideos = userVideosResponse.videos || [];
 
@@ -59,7 +58,6 @@ export default function VideoPlayerPage() {
           }
         } else {
           // No userId - try to fetch single video via API
-          console.log('Loading single video:', videoId);
           try {
             targetVideo = await videoApi.getVideo(videoId);
             if (targetVideo) {
@@ -163,7 +161,7 @@ export default function VideoPlayerPage() {
 
   const handleFollow = useCallback(async (index: number) => {
     // Follow logic - would need user API
-    console.log('Follow user for video:', index);
+    // TODO: Wire follow API
   }, []);
 
   const handleComment = useCallback((id: string) => {

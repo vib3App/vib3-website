@@ -139,7 +139,7 @@ export function useLiveSetup() {
       } else {
         // Start the stream and get LiveKit credentials
         const response = await liveApi.startStream(input);
-        const newStreamId = (response.stream as any)._id || response.stream.id;
+        const newStreamId = (response.stream as unknown as { _id?: string })._id || response.stream.id;
         setStreamId(newStreamId);
 
         if (response.liveKit) {
@@ -151,13 +151,13 @@ export function useLiveSetup() {
           setStep('preview');
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create stream:', err);
-      // Show specific error messages
-      if (err?.response?.status === 401) {
+      const axiosErr = err as { response?: { status?: number; data?: { error?: string } } };
+      if (axiosErr?.response?.status === 401) {
         setError('Please login to start a live stream.');
-      } else if (err?.response?.data?.error) {
-        setError(err.response.data.error);
+      } else if (axiosErr?.response?.data?.error) {
+        setError(axiosErr.response.data.error);
       } else {
         setError('Failed to create stream. Please try again.');
       }

@@ -44,7 +44,6 @@ function migrateUser(user: AuthUser | null): AuthUser | null {
   // Try to extract ID from profile picture URL
   const extractedId = extractUserIdFromProfilePic(user.profilePicture);
   if (extractedId) {
-    console.log('Migrated user ID from profile picture:', extractedId);
     return { ...user, id: extractedId };
   }
 

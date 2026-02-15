@@ -73,12 +73,10 @@ class WebSocketService {
       });
 
       this.socket.on('connect', () => {
-        console.log('Socket.IO connected');
         this.notifyConnectionHandlers(true);
       });
 
       this.socket.on('disconnect', (reason) => {
-        console.log('Socket.IO disconnected:', reason);
         this.notifyConnectionHandlers(false);
       });
 

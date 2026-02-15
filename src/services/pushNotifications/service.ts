@@ -18,14 +18,12 @@ class PushNotificationService {
 
   async initialize(): Promise<boolean> {
     if (!this.isSupported()) {
-      console.warn('Push notifications not supported');
       return false;
     }
     if (this.isInitialized) return true;
 
     try {
       this.registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      console.log('Service worker registered:', this.registration.scope);
       await navigator.serviceWorker.ready;
       this.subscription = await this.registration.pushManager.getSubscription();
       this.isInitialized = true;
@@ -38,7 +36,6 @@ class PushNotificationService {
   }
 
   private handleServiceWorkerMessage = (event: MessageEvent) => {
-    console.log('Message from service worker:', event.data);
     if (event.data?.type === 'NOTIFICATION_CLICK') {
       window.dispatchEvent(new CustomEvent('vib3-notification-click', { detail: event.data.data }));
     }
@@ -48,7 +45,6 @@ class PushNotificationService {
     if (!this.isSupported()) return 'denied';
     try {
       const permission = await Notification.requestPermission();
-      console.log('Notification permission:', permission);
       return permission;
     } catch (error) {
       console.error('Failed to request notification permission:', error);

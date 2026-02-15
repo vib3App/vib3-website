@@ -29,7 +29,7 @@ class VideoDownloadService {
 
     // Check if already downloading
     if (this.activeDownloads.has(videoId)) {
-      console.warn('Download already in progress for this video');
+      // Already downloading
       return false;
     }
 
@@ -89,7 +89,7 @@ class VideoDownloadService {
       return true;
     } catch (error) {
       if ((error as Error).name === 'AbortError') {
-        console.log('Download cancelled');
+        // Download cancelled
         return false;
       }
       console.error('Download failed:', error);

@@ -92,7 +92,7 @@ export const capsuleApi = {
    */
   async getUpcomingCapsules(page = 1, limit = 20): Promise<{ capsules: TimeCapsule[]; hasMore: boolean }> {
     try {
-      const { data } = await apiClient.get<{ capsules: any[]; pagination?: { pages: number; page: number } }>('/capsules/public/discover', {
+      const { data } = await apiClient.get<{ capsules: BackendCapsule[]; pagination?: { pages: number; page: number } }>('/capsules/public/discover', {
         params: { page, limit },
       });
       return {
@@ -111,7 +111,7 @@ export const capsuleApi = {
    */
   async getUnlockedCapsules(page = 1, limit = 20): Promise<{ capsules: TimeCapsule[]; hasMore: boolean }> {
     try {
-      const { data } = await apiClient.get<{ capsules: any[]; pagination?: { pages: number; page: number } }>('/capsules/feed', {
+      const { data } = await apiClient.get<{ capsules: BackendCapsule[]; pagination?: { pages: number; page: number } }>('/capsules/feed', {
         params: { page, limit },
       });
       return {
@@ -129,7 +129,7 @@ export const capsuleApi = {
    */
   async getMyCapsules(): Promise<TimeCapsule[]> {
     try {
-      const { data } = await apiClient.get<{ capsules: any[] }>('/capsules/my');
+      const { data } = await apiClient.get<{ capsules: BackendCapsule[] }>('/capsules/my');
       return (data.capsules || []).map(transformCapsule);
     } catch (error) {
       console.error('Error fetching my capsules:', error);
@@ -143,7 +143,7 @@ export const capsuleApi = {
    */
   async getReceivedCapsules(): Promise<TimeCapsule[]> {
     try {
-      const { data } = await apiClient.get<{ capsules: any[] }>('/capsules/feed', {
+      const { data } = await apiClient.get<{ capsules: BackendCapsule[] }>('/capsules/feed', {
         params: { limit: 50 },
       });
       return (data.capsules || []).map(transformCapsule);
@@ -157,7 +157,7 @@ export const capsuleApi = {
    * Get a single capsule
    */
   async getCapsule(capsuleId: string): Promise<TimeCapsule> {
-    const { data } = await apiClient.get<{ capsule: any }>(`/capsules/${capsuleId}`);
+    const { data } = await apiClient.get<{ capsule: BackendCapsule }>(`/capsules/${capsuleId}`);
     return transformCapsule(data.capsule);
   },
 
@@ -179,7 +179,7 @@ export const capsuleApi = {
       mediaType: input.videoUrl ? 'video' : (input.coverImageUrl ? 'image' : null),
     };
 
-    const { data } = await apiClient.post<{ capsule: any }>('/capsules', payload);
+    const { data } = await apiClient.post<{ capsule: BackendCapsule }>('/capsules', payload);
     return transformCapsule(data.capsule);
   },
 

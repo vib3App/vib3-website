@@ -8,7 +8,6 @@ export async function initializeDb(): Promise<boolean> {
 
   return new Promise((resolve) => {
     if (!('indexedDB' in window)) {
-      console.warn('IndexedDB not supported');
       resolve(false);
       return;
     }
@@ -23,7 +22,6 @@ export async function initializeDb(): Promise<boolean> {
     request.onsuccess = (event) => {
       db = (event.target as IDBOpenDBRequest).result;
       isInitialized = true;
-      console.log('Offline video database initialized');
       resolve(true);
     };
 

@@ -99,7 +99,6 @@ export function useHlsPlayer({ src, onError }: UseHlsPlayerOptions) {
             errorMessage: errorMsg,
           }));
 
-          console.warn(`Video playback error: ${data.details}`, { src, data });
           onError?.(new Error(errorMsg));
         }
       });

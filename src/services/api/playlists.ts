@@ -62,7 +62,6 @@ export const playlistsApi = {
       const { data } = await apiClient.get<{ playlists: PlaylistResponse[] }>(endpoint);
       return (data.playlists || []).map(transformPlaylist);
     } catch (error) {
-      console.warn('Failed to get playlists:', error);
       return [];
     }
   },
@@ -204,7 +203,6 @@ export const playlistsApi = {
       );
       return transformPlaylist(data.playlist);
     } catch (error) {
-      console.warn('Failed to get watch later:', error);
       return null;
     }
   },

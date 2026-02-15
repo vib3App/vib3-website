@@ -54,8 +54,9 @@ export default function TeamPage() {
     try {
       await adminApi.changeUserRole(userId, role);
       await loadTeam();
-    } catch (err: any) {
-      addToast(err.response?.data?.message || 'Failed to change role');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      addToast(axiosErr.response?.data?.message || 'Failed to change role');
     } finally {
       setActionLoading(null);
     }
