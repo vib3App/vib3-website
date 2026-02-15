@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { shopApi } from '@/services/api';
 import { ShopHero, CategoryTabs, ProductCard, CartSidebar } from '@/components/shop';
 import type { Product, ProductCategory, CartItem } from '@/types/shop';
 
 export default function ShopPage() {
+  const searchParams = useSearchParams();
   const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -17,6 +19,23 @@ export default function ShopPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
   const [checkingOut, setCheckingOut] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Handle Stripe redirect return
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    const orderId = searchParams.get('order_id');
+
+    if (success === 'true' && orderId) {
+      setSuccessMessage(`Order placed successfully! Order ID: ${orderId}`);
+      // Clean URL params
+      window.history.replaceState({}, '', '/shop');
+    } else if (canceled === 'true') {
+      setError('Payment was canceled. Your cart items are still saved.');
+      window.history.replaceState({}, '', '/shop');
+    }
+  }, [searchParams]);
 
   const fetchProducts = useCallback(async (reset = false) => {
     try {
@@ -85,16 +104,24 @@ export default function ShopPage() {
     if (cart.length === 0) return;
     try {
       setCheckingOut(true);
+      setError(null);
       const response = await shopApi.checkout({
         items: cart.map((item) => ({ productId: item.productId, quantity: item.quantity })),
         paymentMethod,
       });
       if (response.success) {
-        if (response.requiresPayment) {
-          setError('Stripe payment integration coming soon. Please use VIB3 coins for now.');
+        if (response.requiresPayment && response.order?._id) {
+          // Create Stripe Checkout Session and redirect
+          const { url } = await shopApi.createOrderPayment(response.order._id);
+          if (url) {
+            window.location.href = url;
+            return;
+          }
+          setError('Failed to create payment session. Please try again.');
         } else {
           setCart([]);
           setShowCart(false);
+          setSuccessMessage('Order completed successfully!');
         }
       }
     } catch (err) {
@@ -115,6 +142,15 @@ export default function ShopPage() {
           cartCount={cart.length}
           onCartClick={() => setShowCart(true)}
         />
+
+        {successMessage && (
+          <div className="mx-6 mt-4 p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex items-center justify-between">
+            <span className="text-green-400">{successMessage}</span>
+            <button onClick={() => setSuccessMessage(null)} className="text-green-400 hover:text-green-300 ml-4">
+              &times;
+            </button>
+          </div>
+        )}
 
         <CategoryTabs activeCategory={activeCategory} onCategoryChange={handleCategoryChange} />
 

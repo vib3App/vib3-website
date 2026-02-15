@@ -156,7 +156,9 @@ export const authApi = {
 
       const username = data.user?.username || data.username || '';
       const email = data.user?.email || data.email || '';
-      const profilePicture = data.user?.profilePicture || data.profilePicture;
+      const rawProfilePicture = data.user?.profilePicture || data.profilePicture;
+      // Guard against null string values in profile pictures
+      const profilePicture = rawProfilePicture && rawProfilePicture !== 'null' ? rawProfilePicture : undefined;
       const isVerified = data.user?.isVerified || data.isVerified || false;
       const role = data.user?.role || data.role;
       // Check both isAdmin flag and role === 'admin' or 'owner'
@@ -196,7 +198,9 @@ function transformAuthResponse(data: AuthResponse): AuthUser {
 
   const username = data.user?.username || data.username || '';
   const email = data.user?.email || data.email || '';
-  const profilePicture = data.user?.profilePicture || data.profilePicture;
+  const rawProfilePicture = data.user?.profilePicture || data.profilePicture;
+  // Guard against null string values in profile pictures
+  const profilePicture = rawProfilePicture && rawProfilePicture !== 'null' ? rawProfilePicture : undefined;
   const isVerified = data.user?.isVerified || data.isVerified || false;
   const role = data.user?.role || data.role;
   // Check both isAdmin flag and role === 'admin' or 'owner'

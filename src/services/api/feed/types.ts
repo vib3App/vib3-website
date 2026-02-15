@@ -65,13 +65,18 @@ export function transformVideo(data: FeedVideoResponse): Video {
   const username = data.username || data.user?.username || 'unknown';
   const userAvatar = data.profilePicture || data.user?.profileImage || data.user?.profilePicture;
 
+  // Guard against null/undefined URLs that could cause fetch errors
+  const videoUrl = data.hlsUrl || data.videoUrl || '';
+  const thumbnailUrl = data.thumbnailUrl && data.thumbnailUrl !== 'null' ? data.thumbnailUrl : undefined;
+  const safeUserAvatar = userAvatar && userAvatar !== 'null' ? userAvatar : undefined;
+
   return {
     id: data._id,
     userId,
     username,
-    userAvatar,
-    videoUrl: data.hlsUrl || data.videoUrl,
-    thumbnailUrl: data.thumbnailUrl,
+    userAvatar: safeUserAvatar,
+    videoUrl,
+    thumbnailUrl,
     caption: data.caption || data.title || data.description || '',
     hashtags: data.hashtags || [],
     duration: data.duration,

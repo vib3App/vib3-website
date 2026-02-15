@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { VideoDraft } from '@/types';
 import type { UploadStep } from './types';
 import { useUploadDrafts } from './useUploadDrafts';
 import { useUploadProcess } from './useUploadProcess';
 
 export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<UploadStep>('select');
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
@@ -77,6 +79,52 @@ export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
       loadDrafts();
     }
   }, [isAuthenticated, isAuthVerified, loadDrafts]);
+
+  // Handle video from camera recording
+  useEffect(() => {
+    if (!isAuthVerified || !isAuthenticated) return;
+    if (searchParams.get('from') !== 'camera') return;
+
+    const recordedVideoUrl = sessionStorage.getItem('recordedVideoUrl');
+    if (!recordedVideoUrl) return;
+
+    // Fetch the blob from the URL and create a File
+    const loadRecordedVideo = async () => {
+      try {
+        const response = await fetch(recordedVideoUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `recording-${Date.now()}.webm`, { type: 'video/webm' });
+
+        // Clean up sessionStorage
+        sessionStorage.removeItem('recordedVideoUrl');
+        sessionStorage.removeItem('recordingSpeed');
+
+        // Set the video file and preview
+        setVideoFile(file);
+        setVideoPreviewUrl(recordedVideoUrl);
+        setStep('edit');
+
+        // Generate thumbnail
+        const video = document.createElement('video');
+        video.src = recordedVideoUrl;
+        video.currentTime = 1;
+        video.onloadeddata = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext('2d')?.drawImage(video, 0, 0);
+          const thumbnail = canvas.toDataURL('image/jpeg');
+          setSelectedThumbnail(thumbnail);
+          setThumbnailOptions([thumbnail]);
+        };
+      } catch (err) {
+        console.error('Failed to load recorded video:', err);
+        setError('Failed to load recorded video');
+      }
+    };
+
+    loadRecordedVideo();
+  }, [isAuthVerified, isAuthenticated, searchParams]);
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('video/')) {

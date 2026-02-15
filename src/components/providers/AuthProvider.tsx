@@ -4,8 +4,8 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/services/api';
 
-const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes (assuming 15min token expiry)
-const TOKEN_REFRESH_MARGIN = 60 * 1000; // 1 minute before expiry
+const TOKEN_REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours (tokens last 30 days)
+const TOKEN_REFRESH_MARGIN = 60 * 60 * 1000; // 1 hour before expiry
 const MAX_REFRESH_RETRIES = 3;
 const REFRESH_RETRY_DELAY = 2000; // 2 seconds between retries
 

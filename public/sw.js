@@ -1,5 +1,10 @@
 // VIB3 Service Worker
 const CACHE_NAME = 'vib3-cache-v1';
+const API_BASE = 'https://api.vib3app.net';
+const DB_NAME = 'vib3-offline';
+const DB_VERSION = 1;
+const STORE_NAME = 'pending-actions';
+
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -32,13 +37,9 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-
-  // Skip cross-origin requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
-  // Skip API requests (don't cache dynamic data)
   if (event.request.url.includes('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -51,12 +52,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For navigation requests, try network first
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // Cache successful responses
           if (response.ok) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -66,7 +65,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Return cached version or offline page
           return caches.match(event.request).then((response) => {
             return response || caches.match('/offline.html');
           });
@@ -75,25 +73,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For other requests, try cache first
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
-        // Update cache in background
         fetch(event.request).then((networkResponse) => {
-          if (networkResponse.ok) {
+          if (networkResponse.status === 200) {
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, networkResponse);
             });
           }
-        });
+        }).catch(() => {});
         return response;
       }
 
-      // Not in cache, fetch from network
       return fetch(event.request).then((networkResponse) => {
-        // Cache successful responses
-        if (networkResponse.ok) {
+        if (networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
@@ -105,10 +99,68 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// IndexedDB helpers for offline sync
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function getActionsByType(db, type) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const request = tx.objectStore(STORE_NAME).getAll();
+    request.onsuccess = () => {
+      resolve(request.result.filter((a) => a.type === type));
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function deleteAction(db, id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function syncActionsByType(type) {
+  const db = await openDB();
+  const actions = await getActionsByType(db, type);
+
+  for (const action of actions) {
+    try {
+      const url = action.endpoint.startsWith('http') ? action.endpoint : `${API_BASE}${action.endpoint}`;
+      const response = await fetch(url, {
+        method: action.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${action.token}`,
+        },
+        body: action.body ? JSON.stringify(action.body) : undefined,
+      });
+
+      if (response.ok || response.status === 409) {
+        await deleteAction(db, action.id);
+      }
+    } catch (error) {
+      console.error(`[SW] Failed to sync ${type} action:`, error);
+    }
+  }
+}
+
 // Push notification handler
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push received:', event);
-
   let data = {
     title: 'VIB3',
     body: 'You have a new notification',
@@ -123,7 +175,6 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  // Determine icon based on notification type
   let icon = '/vib3-logo.png';
   let actions = [];
 
@@ -179,13 +230,11 @@ self.addEventListener('push', (event) => {
 
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification clicked:', event.action, event.notification.data);
   event.notification.close();
 
   const data = event.notification.data || {};
   let url = data.url || '/';
 
-  // Route based on notification type
   if (data.type === 'like' || data.type === 'comment' || data.type === 'mention') {
     url = data.videoId ? `/video/${data.videoId}` : '/';
     if (data.type === 'comment' && event.action === 'reply') {
@@ -199,26 +248,17 @@ self.addEventListener('notificationclick', (event) => {
     url = data.streamId ? `/live/${data.streamId}` : '/live';
   }
 
-  // Handle action-specific behavior
-  if (event.action === 'dismiss') {
-    return;
-  }
+  if (event.action === 'dismiss') return;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Try to focus an existing window
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
-          // Send message to client
-          client.postMessage({
-            type: 'NOTIFICATION_CLICK',
-            data: data,
-          });
+          client.postMessage({ type: 'NOTIFICATION_CLICK', data });
           client.navigate(url);
           return client.focus();
         }
       }
-      // Open new window if none exists
       if (clients.openWindow) {
         return clients.openWindow(url);
       }
@@ -226,31 +266,19 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Handle notification close
-self.addEventListener('notificationclose', (event) => {
-  console.log('[SW] Notification closed');
-});
+self.addEventListener('notificationclose', () => {});
 
-// Background sync for offline actions
+// Background sync
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-likes') {
-    event.waitUntil(syncLikes());
+    event.waitUntil(syncActionsByType('like'));
   }
   if (event.tag === 'sync-comments') {
-    event.waitUntil(syncComments());
+    event.waitUntil(syncActionsByType('comment'));
   }
 });
 
-async function syncLikes() {
-  // Get pending likes from IndexedDB and sync with server
-  // Implementation would depend on your offline storage strategy
-}
-
-async function syncComments() {
-  // Get pending comments from IndexedDB and sync with server
-}
-
-// Periodic background sync (if supported)
+// Periodic background sync
 self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'update-feed') {
     event.waitUntil(updateFeedCache());
@@ -258,14 +286,20 @@ self.addEventListener('periodicsync', (event) => {
 });
 
 async function updateFeedCache() {
-  // Fetch latest feed data and cache it
   try {
-    const response = await fetch('/api/feed?limit=10');
+    const response = await fetch(`${API_BASE}/feed?limit=10`);
     if (response.ok) {
       const cache = await caches.open(CACHE_NAME);
-      await cache.put('/api/feed', response);
+      await cache.put(new Request('/api/feed'), response);
     }
   } catch {
     // Ignore errors during background sync
   }
 }
+
+// Handle skip waiting message from client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});

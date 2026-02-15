@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useCameraStream } from './useCameraStream';
 import { useCameraRecording } from './useCameraRecording';
+import { useParticleEffects } from './useParticleEffects';
+import { CAMERA_FILTERS } from './types';
 
 export function useCamera() {
   const router = useRouter();
@@ -20,10 +22,15 @@ export function useCamera() {
   const [showSpeed, setShowSpeed] = useState(false);
 
   const stream = useCameraStream();
+  const activeFilter = CAMERA_FILTERS[selectedFilter]?.filter || 'none';
+  const effects = useParticleEffects(selectedEffect);
   const recording = useCameraRecording({
     streamRef: stream.streamRef,
+    videoRef: stream.videoRef,
+    effectsCanvasRef: effects.effectsCanvasRef,
     maxDuration,
     selectedSpeed,
+    activeFilter,
   });
 
   useEffect(() => {
@@ -52,11 +59,12 @@ export function useCamera() {
   }, []);
 
   const handleNext = useCallback(() => {
-    if (recording.recordedBlob) {
-      sessionStorage.setItem('recordedVideoUrl', recording.previewUrl || '');
+    const blob = recording.getRecordedBlob();
+    if (blob && recording.previewUrl) {
+      sessionStorage.setItem('recordedVideoUrl', recording.previewUrl);
       router.push('/upload?from=camera');
     }
-  }, [recording.recordedBlob, recording.previewUrl, router]);
+  }, [recording, router]);
 
   return {
     isAuthenticated,
@@ -83,6 +91,7 @@ export function useCamera() {
     error: stream.error,
     videoRef: stream.videoRef,
     previewVideoRef: recording.previewVideoRef,
+    effectsCanvasRef: effects.effectsCanvasRef,
     flipCamera: stream.flipCamera,
     handleRecordButton: recording.handleRecordButton,
     pauseRecording: recording.pauseRecording,
@@ -93,5 +102,16 @@ export function useCamera() {
     cycleTimer: recording.cycleTimer,
     goBack: () => router.back(),
     goToUpload: () => router.push('/upload'),
+    // Multi-clip support
+    clipCount: recording.clipCount,
+    recordedClips: recording.recordedClips,
+    totalClipsDuration: recording.totalClipsDuration,
+    remainingDuration: recording.remainingDuration,
+    canAddMoreClips: recording.canAddMoreClips,
+    isCombining: recording.isCombining,
+    mergeProgress: recording.mergeProgress,
+    removeLastClip: recording.removeLastClip,
+    discardAllClips: recording.discardAllClips,
+    goToPreview: recording.goToPreview,
   };
 }

@@ -3,18 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Hls from 'hls.js';
-import { collaborationApi } from '@/services/api';
+import { collaborationApi, videoApi, feedApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
 import type { WatchParty, WatchPartyChatMessage } from '@/types/collaboration';
 
 export function useWatchParty(partyId: string) {
   const router = useRouter();
-  const { isAuthVerified } = useAuthStore();
+  const { user, isAuthVerified } = useAuthStore();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const hasFetchedRef = useRef(false);
+  const loadedVideoIdRef = useRef<string | null>(null);
 
   // Party data
   const [party, setParty] = useState<WatchParty | null>(null);
@@ -35,14 +36,11 @@ export function useWatchParty(partyId: string) {
   const [searchResults, setSearchResults] = useState<Array<{ id: string; title: string; thumbnail?: string }>>([]);
   const [searching, setSearching] = useState(false);
 
-  const isHost = party?.hostId === 'current-user-id';
+  const isHost = party?.hostId === user?.id;
 
   // Fetch party data
   useEffect(() => {
-    // Wait for auth to be verified before fetching
     if (!isAuthVerified) return;
-
-    // Prevent duplicate initial fetches
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
 
@@ -59,7 +57,6 @@ export function useWatchParty(partyId: string) {
         } else {
           setError('Watch party feature not available');
           setLoading(false);
-          // Stop polling if feature not available
           if (interval) clearInterval(interval);
         }
       } catch (err) {
@@ -67,13 +64,11 @@ export function useWatchParty(partyId: string) {
         console.error('Failed to fetch party:', err);
         setError('Watch party not found');
         setLoading(false);
-        // Stop polling on error
         if (interval) clearInterval(interval);
       }
     };
 
     fetchParty();
-    // Only poll if we successfully got a party
     interval = setInterval(fetchParty, 2000);
 
     return () => {
@@ -84,7 +79,6 @@ export function useWatchParty(partyId: string) {
 
   // Fetch chat messages - only after we have a party
   useEffect(() => {
-    // Don't fetch chat until we have a valid party
     if (!party) return;
 
     let isMounted = true;
@@ -93,7 +87,7 @@ export function useWatchParty(partyId: string) {
       try {
         const msgs = await collaborationApi.getWatchPartyChat(partyId);
         if (isMounted) setMessages(msgs);
-      } catch (err) {
+      } catch {
         // Silently fail - chat is not critical
       }
     };
@@ -113,12 +107,69 @@ export function useWatchParty(partyId: string) {
     }
   }, [messages]);
 
-  // Sync video position
+  // Load video via HLS when current video changes
   useEffect(() => {
-    if (!party || !videoRef.current) return;
+    if (!party) return;
+    const currentVideo = party.playlist[party.currentVideoIndex];
+    if (!currentVideo) return;
+
+    // Skip if already loaded this video
+    if (loadedVideoIdRef.current === currentVideo.videoId) return;
+    loadedVideoIdRef.current = currentVideo.videoId;
+
+    const loadVideo = async () => {
+      try {
+        const video = await videoApi.getVideo(currentVideo.videoId);
+        const videoUrl = video.videoUrl;
+        if (!videoUrl || !videoRef.current) return;
+
+        // Destroy previous HLS instance
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+
+        const isHls = videoUrl.includes('.m3u8');
+
+        if (isHls && Hls.isSupported()) {
+          const hls = new Hls({ enableWorker: true, startPosition: party.currentPosition || 0 });
+          hls.loadSource(videoUrl);
+          hls.attachMedia(videoRef.current);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            if (party.status === 'playing') {
+              videoRef.current?.play().catch(() => {});
+            }
+          });
+          hlsRef.current = hls;
+        } else if (isHls && videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+          // Safari native HLS
+          videoRef.current.src = videoUrl;
+          videoRef.current.currentTime = party.currentPosition || 0;
+          if (party.status === 'playing') {
+            videoRef.current.play().catch(() => {});
+          }
+        } else {
+          // Direct MP4
+          videoRef.current.src = videoUrl;
+          videoRef.current.currentTime = party.currentPosition || 0;
+          if (party.status === 'playing') {
+            videoRef.current.play().catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load video URL:', err);
+      }
+    };
+
+    loadVideo();
+  }, [party?.currentVideoIndex, party?.playlist]);
+
+  // Sync playback state (play/pause/seek) from polling
+  useEffect(() => {
+    if (!party || !videoRef.current || !loadedVideoIdRef.current) return;
 
     if (party.status === 'playing') {
-      videoRef.current.play();
+      videoRef.current.play().catch(() => {});
     } else if (party.status === 'paused') {
       videoRef.current.pause();
     }
@@ -162,6 +213,7 @@ export function useWatchParty(partyId: string) {
 
   const handleSkipNext = useCallback(async () => {
     if (!isHost) return;
+    loadedVideoIdRef.current = null; // Force reload on next video
     try {
       await collaborationApi.skipToNext(partyId);
     } catch (err) {
@@ -171,6 +223,7 @@ export function useWatchParty(partyId: string) {
 
   const handleSkipToVideo = useCallback(async (index: number) => {
     if (!isHost) return;
+    loadedVideoIdRef.current = null; // Force reload
     try {
       await collaborationApi.skipToVideo(partyId, index);
     } catch (err) {
@@ -204,10 +257,14 @@ export function useWatchParty(partyId: string) {
 
     setSearching(true);
     try {
-      setSearchResults([
-        { id: '1', title: 'Sample Video 1', thumbnail: undefined },
-        { id: '2', title: 'Sample Video 2', thumbnail: undefined },
-      ]);
+      const response = await feedApi.searchVideos(searchQuery.trim());
+      setSearchResults(
+        response.items.map(v => ({
+          id: v.id,
+          title: v.caption || v.title || 'Untitled',
+          thumbnail: v.thumbnailUrl,
+        }))
+      );
     } catch (err) {
       console.error('Failed to search:', err);
     } finally {

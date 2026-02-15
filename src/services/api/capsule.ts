@@ -13,6 +13,44 @@ import type {
   CapsuleReveal,
 } from '@/types/capsule';
 
+function transformCapsule(c: any): TimeCapsule {
+  const isUnlocked = c.isUnlocked || c.status === 'unlocked';
+  let status: TimeCapsule['status'] = 'sealed';
+  if (isUnlocked) status = 'unlocked';
+  else if (c.status === 'unlocking') status = 'unlocking';
+  else if (c.status === 'expired') status = 'expired';
+
+  // Extract title from message (first line)
+  const messageParts = (c.message || '').split('\n\n');
+  const title = messageParts[0] || c.title || 'Untitled';
+  const description = messageParts.slice(1).join('\n\n') || c.description;
+
+  return {
+    id: c.id || c._id,
+    creatorId: c.userId || c.creatorId,
+    creatorUsername: c.creatorUsername || c.username || 'Unknown',
+    creatorAvatar: c.creatorAvatar || c.profilePicture,
+    title,
+    description,
+    coverImageUrl: c.coverImageUrl || (c.mediaType === 'image' ? c.mediaUrl : undefined),
+    videoUrl: isUnlocked ? (c.videoUrl || (c.mediaType === 'video' ? c.mediaUrl : undefined)) : undefined,
+    thumbnailUrl: c.thumbnailUrl,
+    status,
+    unlockAt: c.unlockAt,
+    unlockedAt: c.unlockedAt,
+    createdAt: c.createdAt,
+    viewCount: c.viewCount || 0,
+    likeCount: c.likeCount || 0,
+    commentCount: c.commentCount || 0,
+    isPrivate: c.recipientType === 'friends' || c.recipientType === 'self' || c.isPrivate || false,
+    recipientIds: c.recipientIds,
+    recipientUsernames: c.recipientUsernames,
+    previewEnabled: c.previewEnabled || false,
+    previewSeconds: c.previewSeconds,
+    notifyOnUnlock: c.notifyOnUnlock ?? true,
+  };
+}
+
 export const capsuleApi = {
   /**
    * Get upcoming capsule reveals (public discover)
@@ -20,11 +58,11 @@ export const capsuleApi = {
    */
   async getUpcomingCapsules(page = 1, limit = 20): Promise<{ capsules: TimeCapsule[]; hasMore: boolean }> {
     try {
-      const { data } = await apiClient.get<{ capsules: TimeCapsule[]; pagination?: { pages: number; page: number } }>('/capsules/public/discover', {
+      const { data } = await apiClient.get<{ capsules: any[]; pagination?: { pages: number; page: number } }>('/capsules/public/discover', {
         params: { page, limit },
       });
       return {
-        capsules: data.capsules || [],
+        capsules: (data.capsules || []).map(transformCapsule),
         hasMore: data.pagination ? data.pagination.page < data.pagination.pages : false,
       };
     } catch (error) {
@@ -39,11 +77,11 @@ export const capsuleApi = {
    */
   async getUnlockedCapsules(page = 1, limit = 20): Promise<{ capsules: TimeCapsule[]; hasMore: boolean }> {
     try {
-      const { data } = await apiClient.get<{ capsules: TimeCapsule[]; pagination?: { pages: number; page: number } }>('/capsules/feed', {
+      const { data } = await apiClient.get<{ capsules: any[]; pagination?: { pages: number; page: number } }>('/capsules/feed', {
         params: { page, limit },
       });
       return {
-        capsules: data.capsules || [],
+        capsules: (data.capsules || []).map(transformCapsule),
         hasMore: data.pagination ? data.pagination.page < data.pagination.pages : false,
       };
     } catch (error) {
@@ -57,8 +95,8 @@ export const capsuleApi = {
    */
   async getMyCapsules(): Promise<TimeCapsule[]> {
     try {
-      const { data } = await apiClient.get<{ capsules: TimeCapsule[] }>('/capsules/my');
-      return data.capsules || [];
+      const { data } = await apiClient.get<{ capsules: any[] }>('/capsules/my');
+      return (data.capsules || []).map(transformCapsule);
     } catch (error) {
       console.error('Error fetching my capsules:', error);
       return [];
@@ -71,10 +109,10 @@ export const capsuleApi = {
    */
   async getReceivedCapsules(): Promise<TimeCapsule[]> {
     try {
-      const { data } = await apiClient.get<{ capsules: TimeCapsule[] }>('/capsules/feed', {
+      const { data } = await apiClient.get<{ capsules: any[] }>('/capsules/feed', {
         params: { limit: 50 },
       });
-      return data.capsules || [];
+      return (data.capsules || []).map(transformCapsule);
     } catch (error) {
       console.error('Error fetching received capsules:', error);
       return [];
@@ -85,16 +123,30 @@ export const capsuleApi = {
    * Get a single capsule
    */
   async getCapsule(capsuleId: string): Promise<TimeCapsule> {
-    const { data } = await apiClient.get<{ capsule: TimeCapsule }>(`/capsules/${capsuleId}`);
-    return data.capsule;
+    const { data } = await apiClient.get<{ capsule: any }>(`/capsules/${capsuleId}`);
+    return transformCapsule(data.capsule);
   },
 
   /**
    * Create a new time capsule
    */
   async createCapsule(input: Omit<CreateCapsuleInput, 'videoFile'>): Promise<TimeCapsule> {
-    const { data } = await apiClient.post<{ capsule: TimeCapsule }>('/capsules', input);
-    return data.capsule;
+    // Map frontend fields to backend format
+    const recipientType = input.isPrivate
+      ? (input.recipientIds && input.recipientIds.length > 0 ? 'friends' : 'self')
+      : 'public';
+
+    const payload = {
+      message: [input.title, input.description].filter(Boolean).join('\n\n'),
+      unlockAt: input.unlockAt,
+      recipientType,
+      recipientIds: input.recipientIds || [],
+      mediaUrl: input.videoUrl || input.coverImageUrl,
+      mediaType: input.videoUrl ? 'video' : (input.coverImageUrl ? 'image' : null),
+    };
+
+    const { data } = await apiClient.post<{ capsule: any }>('/capsules', payload);
+    return transformCapsule(data.capsule);
   },
 
   /**

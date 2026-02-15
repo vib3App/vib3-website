@@ -103,8 +103,13 @@ export const feedsApi = {
   },
 
   async getVibesFeed(vibe: VibeType, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
-    const hashtag = vibeHashtags[vibe] || vibe.toLowerCase();
-    return this.getHashtagFeed(hashtag, page, limit);
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, vibe } });
+      return transformFeedResponse(data);
+    } catch (error) {
+      console.error('Failed to get vibe feed:', error);
+      return { items: [], page, hasMore: false };
+    }
   },
 
   async searchVideos(query: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {

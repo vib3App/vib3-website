@@ -196,7 +196,7 @@ export function useFeed() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, hasMore]);
 
-  // Handle URL video parameter
+  // Handle URL parameters (video and vibe)
   useEffect(() => {
     const videoId = searchParams.get('video');
     if (videoId && videos.length > 0) {
@@ -208,6 +208,16 @@ export function useFeed() {
           const videoHeight = container.clientHeight;
           container.scrollTo({ top: index * videoHeight, behavior: 'smooth' });
         }
+      }
+    }
+
+    // Read ?vibe= param and set selectedVibe (title-case match)
+    const vibeParam = searchParams.get('vibe');
+    if (vibeParam) {
+      const VALID_VIBES = ['Energetic', 'Chill', 'Creative', 'Social', 'Romantic', 'Funny', 'Inspirational'] as const;
+      const matched = VALID_VIBES.find(v => v.toLowerCase() === vibeParam.toLowerCase()) as VibeType | undefined;
+      if (matched && matched !== selectedVibe) {
+        setSelectedVibe(matched);
       }
     }
   }, [searchParams, videos]);

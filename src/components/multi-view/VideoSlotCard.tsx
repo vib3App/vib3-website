@@ -57,7 +57,6 @@ export function VideoSlotCard({
     <div className="relative w-full h-full bg-gray-900">
       <video
         ref={videoRef}
-        autoPlay
         loop
         muted={slot.isMuted}
         playsInline
@@ -73,11 +72,11 @@ export function VideoSlotCard({
                 <img src={slot.video.userAvatar} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
-                  {slot.video.username[0].toUpperCase()}
+                  {(slot.video.username || '?')[0].toUpperCase()}
                 </div>
               )}
             </div>
-            <span className="text-sm font-medium">@{slot.video.username}</span>
+            <span className="text-sm font-medium">@{slot.video.username || 'user'}</span>
           </div>
           <button onClick={onRemove} className="p-1.5 bg-black/50 hover:bg-black/70 rounded-full transition">
             <XMarkIcon className="w-4 h-4" />

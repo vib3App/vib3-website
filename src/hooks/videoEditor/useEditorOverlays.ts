@@ -27,6 +27,10 @@ export function useEditorOverlays() {
     setTexts(prev => prev.filter(t => t.id !== id));
   }, []);
 
+  const updateTextPosition = useCallback((id: string, x: number, y: number) => {
+    setTexts(prev => prev.map(t => t.id === id ? { ...t, x, y } : t));
+  }, []);
+
   const addSticker = useCallback((emoji: string) => {
     setStickers(prev => [...prev, {
       id: Date.now().toString(),
@@ -42,8 +46,13 @@ export function useEditorOverlays() {
     setStickers(prev => prev.filter(s => s.id !== id));
   }, []);
 
+  const updateStickerPosition = useCallback((id: string, x: number, y: number) => {
+    setStickers(prev => prev.map(s => s.id === id ? { ...s, x, y } : s));
+  }, []);
+
   return {
     texts, showTextInput, setShowTextInput, newText, setNewText,
-    stickers, addText, removeText, addSticker, removeSticker,
+    stickers, addText, removeText, updateTextPosition,
+    addSticker, removeSticker, updateStickerPosition,
   };
 }

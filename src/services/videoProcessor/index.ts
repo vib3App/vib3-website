@@ -1,4 +1,4 @@
 import { VideoProcessorService } from './processor';
 
 export const videoProcessor = new VideoProcessorService();
-export type { ProcessingProgress, VideoEdits, TextOverlay } from './types';
+export type { ProcessingProgress, VideoEdits, TextOverlay, StickerOverlay } from './types';

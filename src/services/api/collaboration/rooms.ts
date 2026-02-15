@@ -76,7 +76,11 @@ export const roomsApi = {
   },
 
   async joinByInviteCode(inviteCode: string): Promise<CollabRoom> {
-    const { data } = await apiClient.post<{ room: any }>('/collab/rooms/join-by-code', { inviteCode });
+    // First look up the room by invite code
+    const { data: lookupData } = await apiClient.get<{ room: any }>(`/collab/rooms/invite/${encodeURIComponent(inviteCode.toUpperCase())}`);
+    const room = mapBackendRoom(lookupData.room);
+    // Then join it
+    const { data } = await apiClient.post<{ room: any }>(`/collab/rooms/${room.id}/join`, { inviteCode: inviteCode.toUpperCase() });
     return mapBackendRoom(data.room);
   },
 
@@ -89,7 +93,7 @@ export const roomsApi = {
   },
 
   async startRecording(roomId: string): Promise<void> {
-    await apiClient.post(`/collab/rooms/${roomId}/start`);
+    await apiClient.post(`/collab/rooms/${roomId}/go-live`);
   },
 
   async submitClip(roomId: string, clipUrl: string): Promise<void> {

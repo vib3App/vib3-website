@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useUpload } from '@/hooks/useUpload';
@@ -16,6 +16,22 @@ import {
 } from '@/components/upload';
 
 export default function UploadPage() {
+  return (
+    <Suspense fallback={<UploadLoading />}>
+      <UploadPageContent />
+    </Suspense>
+  );
+}
+
+function UploadLoading() {
+  return (
+    <div className="min-h-screen aurora-bg flex items-center justify-center">
+      <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-purple-500 animate-spin" />
+    </div>
+  );
+}
+
+function UploadPageContent() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
   const upload = useUpload(isAuthenticated, isAuthVerified);

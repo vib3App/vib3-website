@@ -75,6 +75,21 @@ export const shopApi = {
   },
 
   /**
+   * Create a Stripe Checkout Session for a pending order
+   * Returns a URL to redirect the user to Stripe's hosted checkout page
+   */
+  async createOrderPayment(orderId: string): Promise<{ url: string; sessionId: string }> {
+    const successUrl = `${window.location.origin}/shop?success=true&order_id=${orderId}`;
+    const cancelUrl = `${window.location.origin}/shop?canceled=true`;
+
+    const { data } = await apiClient.post<{ url: string; sessionId: string }>(
+      `/shop/orders/${orderId}/pay`,
+      { successUrl, cancelUrl }
+    );
+    return data;
+  },
+
+  /**
    * Complete an order (after Stripe payment)
    */
   async completeOrder(orderId: string, paymentIntentId: string): Promise<{ success: boolean; order: Order }> {

@@ -63,13 +63,21 @@ export function useMultiView() {
         hlsInstances.current[index] = null;
       }
 
+      // Apply volume and mute state
+      videoEl.muted = slot.isMuted;
+      videoEl.volume = slot.volume;
+
       if (Hls.isSupported()) {
-        const hls = new Hls();
+        const hls = new Hls({ enableWorker: true });
         hls.loadSource(slot.video.videoUrl);
         hls.attachMedia(videoEl);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (slot.isPlaying) videoEl.play().catch(() => {});
+        });
         hlsInstances.current[index] = hls;
       } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
         videoEl.src = slot.video.videoUrl;
+        if (slot.isPlaying) videoEl.play().catch(() => {});
       }
     });
 

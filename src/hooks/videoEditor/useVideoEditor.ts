@@ -6,6 +6,7 @@ import { videoProcessor, type ProcessingProgress } from '@/services/videoProcess
 import { EDITOR_FILTERS, type EditMode, type TextOverlay } from './types';
 import { useEditorTimeline } from './useEditorTimeline';
 import { useEditorOverlays } from './useEditorOverlays';
+import type { MusicTrack } from '@/types/sound';
 
 export function useVideoEditor() {
   const searchParams = useSearchParams();
@@ -16,6 +17,8 @@ export function useVideoEditor() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [selectedMusic, setSelectedMusic] = useState<MusicTrack | null>(null);
+  const [musicVolume, setMusicVolume] = useState(0.5);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingProgress, setProcessingProgress] = useState<ProcessingProgress | null>(null);
 
@@ -57,7 +60,9 @@ export function useVideoEditor() {
   }, []);
 
   const handleDone = useCallback(async () => {
-    const hasEdits = trimStart > 0 || trimEnd < duration || selectedFilter !== 0 || volume !== 1;
+    const hasOverlays = overlays.texts.length > 0 || overlays.stickers.length > 0;
+    const hasMusic = !!selectedMusic;
+    const hasEdits = trimStart > 0 || trimEnd < duration || selectedFilter !== 0 || volume !== 1 || hasOverlays || hasMusic;
 
     const saveSettings = (texts: TextOverlay[]) => {
       sessionStorage.setItem('editSettings', JSON.stringify({
@@ -87,6 +92,13 @@ export function useVideoEditor() {
           trimEnd: trimEnd < duration ? trimEnd : undefined,
           filter: selectedFilter !== 0 ? EDITOR_FILTERS[selectedFilter].filter : undefined,
           volume: volume !== 1 ? volume : undefined,
+          texts: overlays.texts.length > 0 ? overlays.texts : undefined,
+          stickers: overlays.stickers.length > 0 ? overlays.stickers : undefined,
+          videoWidth: videoRef.current?.videoWidth,
+          videoHeight: videoRef.current?.videoHeight,
+          displayHeight: videoRef.current?.clientHeight,
+          musicUrl: selectedMusic?.audioUrl,
+          musicVolume: hasMusic ? musicVolume : undefined,
         },
         setProcessingProgress
       );
@@ -113,11 +125,12 @@ export function useVideoEditor() {
     } finally {
       setIsProcessing(false);
     }
-  }, [trimStart, trimEnd, duration, selectedFilter, volume, overlays.texts, videoUrl, router]);
+  }, [trimStart, trimEnd, duration, selectedFilter, volume, overlays.texts, overlays.stickers, selectedMusic, musicVolume, videoUrl, router]);
 
   return {
     videoUrl, editMode, setEditMode, videoLoaded, selectedFilter, setSelectedFilter,
     volume, isProcessing, processingProgress, videoRef,
+    selectedMusic, setSelectedMusic, musicVolume, setMusicVolume,
     ...timeline, ...overlays,
     handleVideoLoad, handleDone, updateVolume, goBack: () => router.back(),
   };

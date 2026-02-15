@@ -40,17 +40,24 @@ export default function CameraPage() {
             muted
           />
         ) : (
-          <video
-            ref={camera.videoRef}
-            className="w-full h-full object-cover"
-            style={{
-              filter: CAMERA_FILTERS[camera.selectedFilter].filter,
-              transform: camera.cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
-            }}
-            autoPlay
-            playsInline
-            muted
-          />
+          <>
+            <video
+              ref={camera.videoRef}
+              className="w-full h-full object-cover"
+              style={{
+                filter: CAMERA_FILTERS[camera.selectedFilter].filter,
+                transform: camera.cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
+              }}
+              autoPlay
+              playsInline
+              muted
+            />
+            {/* Particle effects overlay canvas */}
+            <canvas
+              ref={camera.effectsCanvasRef}
+              className="absolute inset-0 w-full h-full pointer-events-none"
+            />
+          </>
         )}
       </div>
 
@@ -68,6 +75,38 @@ export default function CameraPage() {
         </div>
       )}
 
+      {/* Clip Timeline Indicator (when recording or has clips) */}
+      {camera.recordingState !== 'preview' && (camera.clipCount > 0 || camera.recordingState === 'recording') && (
+        <div className="absolute top-20 left-4 right-4 z-20">
+          <div className="bg-black/40 rounded-full h-1.5 overflow-hidden">
+            {/* Existing clips progress */}
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-teal-400 transition-all duration-300"
+              style={{ width: `${(camera.totalClipsDuration / camera.maxDuration) * 100}%` }}
+            />
+            {/* Current recording progress (stacked on top) */}
+            {camera.recordingState === 'recording' && (
+              <div
+                className="h-full bg-red-500 -mt-1.5 transition-all duration-1000"
+                style={{
+                  width: `${(camera.recordingDuration / camera.maxDuration) * 100}%`,
+                  marginLeft: `${(camera.totalClipsDuration / camera.maxDuration) * 100}%`,
+                }}
+              />
+            )}
+          </div>
+          {/* Time remaining */}
+          <div className="flex justify-between mt-1 px-1">
+            <span className="text-white/70 text-xs">
+              {camera.formatTime(camera.totalClipsDuration + camera.recordingDuration)}
+            </span>
+            <span className="text-white/70 text-xs">
+              {camera.formatTime(camera.maxDuration)}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Top Controls */}
       {camera.recordingState !== 'preview' && (
         <CameraTopControls
@@ -76,7 +115,7 @@ export default function CameraPage() {
           timerMode={camera.timerMode}
           recordingState={camera.recordingState}
           recordingDuration={camera.recordingDuration}
-          maxDuration={camera.maxDuration}
+          maxDuration={camera.remainingDuration}
           onClose={camera.goBack}
           onFlashToggle={camera.toggleFlash}
           onTimerCycle={camera.cycleTimer}
@@ -120,9 +159,16 @@ export default function CameraPage() {
       {/* Bottom Controls */}
       <CameraBottomControls
         recordingState={camera.recordingState}
+        clipCount={camera.clipCount}
+        canAddMoreClips={camera.canAddMoreClips}
+        isCombining={camera.isCombining}
+        mergeProgress={camera.mergeProgress}
         onRecord={camera.handleRecordButton}
         onPause={camera.pauseRecording}
+        onRemoveLastClip={camera.removeLastClip}
+        onDiscardAll={camera.discardAllClips}
         onDiscard={camera.discardRecording}
+        onGoToPreview={camera.goToPreview}
         onNext={camera.handleNext}
         onGoToUpload={camera.goToUpload}
       />

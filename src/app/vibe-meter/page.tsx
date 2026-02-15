@@ -103,11 +103,8 @@ export default function VibeMeterPage() {
       localStorage.setItem('vib3_vibe_preference', currentVibe);
       localStorage.setItem('vib3_vibe_intensity', vibeLevel.toString());
 
-      // TODO: Call API to save preference and refresh feed
-      // await feedApi.setVibePreference(currentVibe, vibeLevel);
-
-      // Show success and navigate back
-      router.push('/?vibe=' + currentVibe.toLowerCase());
+      // Navigate to feed with vibe param — backend filters via ?vibe= query
+      router.push('/?vibe=' + encodeURIComponent(currentVibe));
     } catch (error) {
       console.error('Failed to apply vibe:', error);
     } finally {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useRef, useCallback } from 'react';
 import { useVideoEditor, EDITOR_FILTERS } from '@/hooks/useVideoEditor';
 import { EditorHeader, EditorTabs, TrimPanel, FilterPanel, TextPanel, AudioPanel, StickerPanel } from '@/components/edit';
 import { TopNav } from '@/components/ui/TopNav';
@@ -62,6 +62,51 @@ function EditLoading() {
   );
 }
 
+function DraggableOverlay({ id, x, y, onMove, children, className, style }: {
+  id: string; x: number; y: number;
+  onMove: (id: string, x: number, y: number) => void;
+  children: React.ReactNode; className?: string; style?: React.CSSProperties;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  const handleDrag = useCallback((clientX: number, clientY: number) => {
+    const parent = containerRef.current?.parentElement;
+    if (!parent) return;
+    const rect = parent.getBoundingClientRect();
+    const newX = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    const newY = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100));
+    onMove(id, newX, newY);
+  }, [id, onMove]);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isDragging.current = true;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, []);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    handleDrag(e.clientX, e.clientY);
+  }, [handleDrag]);
+
+  const onPointerUp = useCallback(() => { isDragging.current = false; }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`absolute cursor-move select-none touch-none ${className || ''}`}
+      style={{ left: `${x}%`, top: `${y}%`, ...style }}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+    >
+      {children}
+    </div>
+  );
+}
+
 function EditContent() {
   const editor = useVideoEditor();
 
@@ -89,12 +134,13 @@ function EditContent() {
         />
 
         {editor.texts.map((text) => (
-          <div
+          <DraggableOverlay
             key={text.id}
-            className="absolute cursor-move select-none"
+            id={text.id}
+            x={text.x}
+            y={text.y}
+            onMove={editor.updateTextPosition}
             style={{
-              left: `${text.x}%`,
-              top: `${text.y}%`,
               transform: 'translate(-50%, -50%)',
               color: text.color,
               fontSize: text.fontSize,
@@ -103,23 +149,24 @@ function EditContent() {
             }}
           >
             {text.text}
-          </div>
+          </DraggableOverlay>
         ))}
 
         {editor.stickers.map((sticker) => (
-          <div
+          <DraggableOverlay
             key={sticker.id}
-            className="absolute cursor-move select-none"
+            id={sticker.id}
+            x={sticker.x}
+            y={sticker.y}
+            onMove={editor.updateStickerPosition}
             style={{
-              left: `${sticker.x}%`,
-              top: `${sticker.y}%`,
               transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
               fontSize: '48px',
               filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
             }}
           >
             {sticker.emoji}
-          </div>
+          </DraggableOverlay>
         ))}
 
         <button onClick={editor.togglePlayPause} className="absolute inset-0 flex items-center justify-center">
@@ -180,7 +227,14 @@ function EditContent() {
           )}
 
           {editor.editMode === 'audio' && (
-            <AudioPanel volume={editor.volume} onVolumeChange={editor.updateVolume} />
+            <AudioPanel
+              volume={editor.volume}
+              onVolumeChange={editor.updateVolume}
+              selectedMusic={editor.selectedMusic}
+              onMusicSelect={editor.setSelectedMusic}
+              musicVolume={editor.musicVolume}
+              onMusicVolumeChange={editor.setMusicVolume}
+            />
           )}
         </div>
       </div>

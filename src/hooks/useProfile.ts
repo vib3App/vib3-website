@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
-import { userApi } from '@/services/api';
+import { userApi, videoApi } from '@/services/api';
 import type { Video } from '@/types';
 
 export interface UserProfile {
@@ -177,6 +177,24 @@ export function useProfile() {
     if (profile) setProfile({ ...profile, ...updates });
   }, [profile]);
 
+  const deleteVideo = useCallback(async (videoId: string) => {
+    try {
+      await videoApi.deleteVideo(videoId);
+      // Remove the video from local state
+      setVideos(prev => prev.filter(v => v.id !== videoId));
+      // Update profile stats
+      if (profile) {
+        setProfile({
+          ...profile,
+          stats: { ...profile.stats, videos: Math.max(0, profile.stats.videos - 1) }
+        });
+      }
+    } catch (err) {
+      console.error('Failed to delete video:', err);
+      throw err;
+    }
+  }, [profile]);
+
   return {
     userId,
     profile,
@@ -200,6 +218,7 @@ export function useProfile() {
     handleFollow,
     copyProfileLink,
     updateProfile,
+    deleteVideo,
     goBack: () => router.back(),
   };
 }

@@ -10,6 +10,12 @@ export interface VideoEdits {
   filter?: string;
   volume?: number;
   texts?: TextOverlay[];
+  stickers?: StickerOverlay[];
+  videoWidth?: number;
+  videoHeight?: number;
+  displayHeight?: number;
+  musicUrl?: string;
+  musicVolume?: number;
 }
 
 export interface TextOverlay {
@@ -18,4 +24,12 @@ export interface TextOverlay {
   y: number;
   color: string;
   fontSize: number;
+}
+
+export interface StickerOverlay {
+  emoji: string;
+  x: number;
+  y: number;
+  scale: number;
+  rotation: number;
 }

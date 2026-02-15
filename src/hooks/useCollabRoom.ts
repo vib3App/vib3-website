@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { collaborationApi } from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 import type { CollabRoom } from '@/types/collaboration';
 
 interface UseCollabRoomReturn {
@@ -38,6 +39,7 @@ interface UseCollabRoomReturn {
 
 export function useCollabRoom(roomId: string): UseCollabRoomReturn {
   const router = useRouter();
+  const { user } = useAuthStore();
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -57,17 +59,20 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
   const [isReady, setIsReady] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const isCreator = room?.creatorId === 'current-user-id';
+  const userId = user?.id;
+  const isCreator = room?.creatorId === userId;
 
   useEffect(() => {
     const fetchRoom = async () => {
       try {
         const data = await collaborationApi.getCollabRoom(roomId);
         setRoom(data);
-        const currentParticipant = data.participants.find(p => p.userId === 'current-user-id');
-        if (currentParticipant) {
-          setIsReady(currentParticipant.isReady);
-          setHasSubmitted(currentParticipant.hasRecorded);
+        if (userId) {
+          const currentParticipant = data.participants.find(p => p.userId === userId);
+          if (currentParticipant) {
+            setIsReady(currentParticipant.isReady);
+            setHasSubmitted(currentParticipant.hasRecorded);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch room:', err);
@@ -79,7 +84,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     fetchRoom();
     const interval = setInterval(fetchRoom, 5000);
     return () => clearInterval(interval);
-  }, [roomId]);
+  }, [roomId, userId]);
 
   useEffect(() => {
     return () => {
@@ -138,13 +143,37 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
   const submitClip = useCallback(async () => {
     if (!recordedBlob) return;
     try {
-      for (let i = 0; i <= 100; i += 10) {
-        setUploadProgress(i);
-        await new Promise(r => setTimeout(r, 100));
-      }
-      await collaborationApi.submitClip(roomId, 'uploaded-clip-url');
+      setUploadProgress(10);
+      // Upload the recorded blob as a file
+      const formData = new FormData();
+      formData.append('clip', recordedBlob, `clip-${Date.now()}.webm`);
+
+      const xhr = new XMLHttpRequest();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
+
+      await new Promise<void>((resolve, reject) => {
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 90) + 10);
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed: ${xhr.status}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Upload failed'));
+        xhr.open('POST', `${apiUrl}/api/collab/rooms/${roomId}/submit`);
+        const token = localStorage.getItem('auth_token');
+        if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        xhr.send(formData);
+      });
+
       setHasSubmitted(true);
-      setUploadProgress(0);
+      setUploadProgress(100);
+      setTimeout(() => setUploadProgress(0), 1000);
     } catch (err) {
       console.error('Failed to submit clip:', err);
       alert('Failed to submit clip');
@@ -208,9 +237,9 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     setTimeout(() => setCopied(false), 2000);
   }, [roomId, room?.inviteCode]);
 
-  const inviteUser = useCallback(async (userId: string) => {
+  const inviteUser = useCallback(async (inviteUserId: string) => {
     try {
-      await collaborationApi.inviteUser(roomId, userId);
+      await collaborationApi.inviteUser(roomId, inviteUserId);
     } catch (err: any) {
       console.error('Failed to invite user:', err);
       const message = err?.message || 'Failed to send invite';

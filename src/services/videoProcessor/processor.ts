@@ -1,7 +1,7 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import type { ProcessingProgress, VideoEdits } from './types';
-import { buildFFmpegArgs } from './filters';
+import { buildFFmpegArgs, renderOverlaysToImage } from './filters';
 
 export class VideoProcessorService {
   private ffmpeg: FFmpeg | null = null;
@@ -68,16 +68,52 @@ export class VideoProcessorService {
       const inputData = await this.getInputData(inputFile);
       await this.ffmpeg!.writeFile('input.mp4', inputData);
 
-      const args = buildFFmpegArgs(edits);
+      let hasOverlay = false;
+      let hasMusic = false;
+      const texts = edits.texts || [];
+      const stickers = edits.stickers || [];
+      if ((texts.length > 0 || stickers.length > 0) && edits.videoWidth && edits.videoHeight) {
+        const overlayData = renderOverlaysToImage(texts, stickers, edits.videoWidth, edits.videoHeight, edits.displayHeight);
+        if (overlayData) {
+          await this.ffmpeg!.writeFile('overlay.png', overlayData);
+          hasOverlay = true;
+        }
+      }
+
+      if (edits.musicUrl) {
+        try {
+          const musicData = await fetchFile(edits.musicUrl);
+          await this.ffmpeg!.writeFile('music.mp3', musicData);
+          hasMusic = true;
+        } catch (e) {
+          console.error('Failed to fetch music track:', e);
+        }
+      }
+
+      let args = buildFFmpegArgs(edits, hasOverlay, hasMusic);
       console.log('FFmpeg args:', args.join(' '));
 
       onProgress?.({ stage: 'encoding', percent: 0, message: 'Encoding video...' });
-      await this.ffmpeg!.exec(args);
+      try {
+        await this.ffmpeg!.exec(args);
+      } catch (execError) {
+        // If music mixing failed (likely no audio in source), retry without music mix
+        if (hasMusic && edits.volume !== undefined) {
+          console.warn('FFmpeg exec failed, retrying with music-only audio:', execError);
+          const fallbackEdits = { ...edits, volume: 0 };
+          args = buildFFmpegArgs(fallbackEdits, hasOverlay, hasMusic);
+          await this.ffmpeg!.exec(args);
+        } else {
+          throw execError;
+        }
+      }
 
       const data = await this.ffmpeg!.readFile('output.mp4');
       const blob = new Blob([data as BlobPart], { type: 'video/mp4' });
 
       await this.ffmpeg!.deleteFile('input.mp4');
+      if (hasOverlay) await this.ffmpeg!.deleteFile('overlay.png');
+      if (hasMusic) await this.ffmpeg!.deleteFile('music.mp3');
       await this.ffmpeg!.deleteFile('output.mp4');
 
       onProgress?.({ stage: 'complete', percent: 100, message: 'Processing complete!' });

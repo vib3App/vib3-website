@@ -154,7 +154,15 @@ class DesktopNotificationsService {
     if (!registration) return null;
 
     try {
-      const subscription = await registration.pushManager.subscribe({
+      // Wait for the service worker to become active
+      // The registration may have an installing/waiting worker that isn't active yet
+      let activeRegistration = registration;
+      if (!registration.active) {
+        // Wait for the service worker to be ready (active)
+        activeRegistration = await navigator.serviceWorker.ready;
+      }
+
+      const subscription = await activeRegistration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
       });

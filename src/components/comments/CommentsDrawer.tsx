@@ -12,7 +12,8 @@ interface CommentsDrawerProps {
   videoId: string;
   isOpen: boolean;
   onClose: () => void;
-  commentsCount: number;
+  commentsCount?: number;
+  onCommentAdded?: () => void;
 }
 
 export function CommentsDrawer({
@@ -20,6 +21,7 @@ export function CommentsDrawer({
   isOpen,
   onClose,
   commentsCount,
+  onCommentAdded,
 }: CommentsDrawerProps) {
   const { user, isAuthenticated } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -94,6 +96,7 @@ export function CommentsDrawer({
       }
       setNewComment('');
       setReplyingTo(null);
+      onCommentAdded?.();
     } catch (error) {
       console.error('Failed to post comment:', error);
     } finally {
@@ -163,7 +166,7 @@ export function CommentsDrawer({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <h2 className="text-white font-semibold">
-            {commentsCount.toLocaleString()} comments
+            {(commentsCount ?? comments.length).toLocaleString()} comments
           </h2>
           <button onClick={onClose} className="text-white/70 hover:text-white p-2">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

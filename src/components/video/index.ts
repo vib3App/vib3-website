@@ -1,5 +1,5 @@
 export { ActionButton } from './ActionButton';
-export { CommentsSheet } from './CommentsSheet';
+export { CommentSheet } from './CommentSheet';
 export { ShareModal } from './ShareModal';
 export { ProfileButton } from './ProfileButton';
 export { VideoPlayer } from './VideoPlayer';

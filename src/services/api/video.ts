@@ -233,6 +233,13 @@ export const videoApi = {
       return false;
     }
   },
+
+  /**
+   * Delete a video (owner only)
+   */
+  async deleteVideo(videoId: string): Promise<void> {
+    await apiClient.delete(`/videos/${videoId}`);
+  },
 };
 
 function transformVideo(data: VideoResponse): Video {

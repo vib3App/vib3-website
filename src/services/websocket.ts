@@ -13,6 +13,10 @@ type NotificationHandler = (notification: Notification) => void;
 type ConnectionHandler = (connected: boolean) => void;
 type IncomingCallHandler = (call: IncomingCall) => void;
 type CallEndedHandler = (event: CallEndedEvent) => void;
+type CallAcceptedHandler = (data: { callId: string }) => void;
+type CallRejectedHandler = (data: { callId: string; reason: string }) => void;
+type CallRegisteredHandler = (data: { callId: string }) => void;
+type CallSignalHandler = (data: { callId: string; type: string; sdp?: string; iceCandidate?: RTCIceCandidateInit; fromUserId: string; toUserId: string }) => void;
 
 interface Notification {
   id: string;
@@ -34,6 +38,10 @@ class WebSocketService {
   private connectionHandlers: Set<ConnectionHandler> = new Set();
   private incomingCallHandlers: Set<IncomingCallHandler> = new Set();
   private callEndedHandlers: Set<CallEndedHandler> = new Set();
+  private callAcceptedHandlers: Set<CallAcceptedHandler> = new Set();
+  private callRejectedHandlers: Set<CallRejectedHandler> = new Set();
+  private callRegisteredHandlers: Set<CallRegisteredHandler> = new Set();
+  private callSignalHandlers: Set<CallSignalHandler> = new Set();
   private currentToken: string | null = null;
 
   /**
@@ -110,17 +118,29 @@ class WebSocketService {
         this.notificationHandlers.forEach((handler) => handler(data));
       });
 
-      // Call events
-      this.socket.on('incoming_call', (data: IncomingCall) => {
+      // Call events (matching backend socket event names)
+      this.socket.on('call:incoming', (data: IncomingCall) => {
         this.incomingCallHandlers.forEach((handler) => handler(data));
       });
 
-      this.socket.on('call_ended', (data: CallEndedEvent) => {
+      this.socket.on('call:ended', (data: CallEndedEvent) => {
         this.callEndedHandlers.forEach((handler) => handler(data));
       });
 
-      this.socket.on('call_declined', (data: CallEndedEvent) => {
-        this.callEndedHandlers.forEach((handler) => handler({ ...data, reason: 'declined' }));
+      this.socket.on('call:accepted', (data: { callId: string }) => {
+        this.callAcceptedHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('call:rejected', (data: { callId: string; reason: string }) => {
+        this.callRejectedHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('call:registered', (data: { callId: string }) => {
+        this.callRegisteredHandlers.forEach((handler) => handler(data));
+      });
+
+      this.socket.on('call:signal', (data: { callId: string; type: string; sdp?: string; iceCandidate?: RTCIceCandidateInit; fromUserId: string; toUserId: string }) => {
+        this.callSignalHandlers.forEach((handler) => handler(data));
       });
 
     } catch (error) {
@@ -230,6 +250,26 @@ class WebSocketService {
   onCallEnded(handler: CallEndedHandler): () => void {
     this.callEndedHandlers.add(handler);
     return () => this.callEndedHandlers.delete(handler);
+  }
+
+  onCallAccepted(handler: CallAcceptedHandler): () => void {
+    this.callAcceptedHandlers.add(handler);
+    return () => this.callAcceptedHandlers.delete(handler);
+  }
+
+  onCallRejected(handler: CallRejectedHandler): () => void {
+    this.callRejectedHandlers.add(handler);
+    return () => this.callRejectedHandlers.delete(handler);
+  }
+
+  onCallRegistered(handler: CallRegisteredHandler): () => void {
+    this.callRegisteredHandlers.add(handler);
+    return () => this.callRegisteredHandlers.delete(handler);
+  }
+
+  onCallSignal(handler: CallSignalHandler): () => void {
+    this.callSignalHandlers.add(handler);
+    return () => this.callSignalHandlers.delete(handler);
   }
 
   /**
