@@ -92,7 +92,7 @@ interface MoodIndicatorProps {
  * Visual mood indicator based on detected user mood
  */
 export function MoodIndicator({ className = '', showLabel = true }: MoodIndicatorProps) {
-  const { mood, confidence, config } = useMoodDetection();
+  const { mood: _mood, confidence, config } = useMoodDetection();
 
   return (
     <motion.div

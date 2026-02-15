@@ -18,7 +18,7 @@ export function useVideoProcessor() {
     try {
       const success = await videoProcessor.load(setProgress);
       return success;
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load video processor');
       return false;
     } finally {
@@ -37,7 +37,7 @@ export function useVideoProcessor() {
       try {
         const result = await videoProcessor.processVideo(input, edits, setProgress);
         return result;
-      } catch (err) {
+      } catch (_err) {
         setError('Video processing failed');
         return null;
       } finally {
@@ -64,7 +64,7 @@ export function useVideoProcessor() {
           setProgress
         );
         return result;
-      } catch (err) {
+      } catch (_err) {
         setError('Trimming failed');
         return null;
       } finally {

@@ -167,7 +167,7 @@ function ProfileHeader({ profile, onBack, onQRClick, showMoreMenu, onToggleMenu,
   );
 }
 
-function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFollow, onEditClick, onShare, userId, onAnalyticsClick, onMessageClick }: { profile: UserProfile; isOwnProfile: boolean; isFollowing: boolean; isFollowLoading: boolean; onFollow: () => void; onEditClick: () => void; onShare: () => void; userId: string; onAnalyticsClick: () => void; onMessageClick: () => void }) {
+function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFollow, onEditClick, onShare, userId: _userId, onAnalyticsClick, onMessageClick }: { profile: UserProfile; isOwnProfile: boolean; isFollowing: boolean; isFollowLoading: boolean; onFollow: () => void; onEditClick: () => void; onShare: () => void; userId: string; onAnalyticsClick: () => void; onMessageClick: () => void }) {
   return (
     <div className="flex flex-col items-center text-center mb-8">
       {/* Floating Profile Picture */}

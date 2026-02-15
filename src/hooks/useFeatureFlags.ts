@@ -147,7 +147,7 @@ export function FeatureFlagsProvider({ children, overrides }: FeatureFlagsProvid
       if (saved) {
         setFlags(prev => ({ ...prev, ...JSON.parse(saved), ...overrides }));
       }
-    } catch (e) {
+    } catch (_e) {
       // Invalid saved data
     }
   }, [overrides]);

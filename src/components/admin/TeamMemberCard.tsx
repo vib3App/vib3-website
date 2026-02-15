@@ -1,6 +1,6 @@
 'use client';
 
-import type { TeamMember, UserRole } from '@/services/api';
+import type { TeamMember } from '@/services/api';
 
 interface TeamMemberCardProps {
   member: TeamMember;

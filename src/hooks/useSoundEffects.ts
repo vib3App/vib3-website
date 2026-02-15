@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 // Sound effect types
 export type SoundEffect =
@@ -83,7 +83,7 @@ class SoundManager {
 
       const finalVolume = config.volume * this.volume;
       const attack = config.attack || 0.01;
-      const decay = config.decay || config.duration * 0.8;
+      const _decay = config.decay || config.duration * 0.8;
 
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
       gainNode.gain.linearRampToValueAtTime(finalVolume, ctx.currentTime + attack);
@@ -102,7 +102,7 @@ class SoundManager {
       if (effect === 'success') {
         setTimeout(() => this.playTone(1100, 0.1, 0.1), 80);
       }
-    } catch (e) {
+    } catch (_e) {
       // Audio context not available
     }
   }
@@ -122,7 +122,7 @@ class SoundManager {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + duration);
-    } catch (e) {
+    } catch (_e) {
       // Ignore
     }
   }

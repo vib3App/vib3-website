@@ -122,7 +122,7 @@ export default function MonetizationPage() {
     setNewBenefitText('');
   };
 
-  const handleConfirmAddBenefit = () => {
+  const _handleConfirmAddBenefit = () => {
     if (editingBenefitTier === null || !newBenefitText.trim()) return;
     const updated = [...tiers];
     updated[editingBenefitTier] = { ...updated[editingBenefitTier], benefits: [...updated[editingBenefitTier].benefits, newBenefitText.trim()] };

@@ -12,7 +12,7 @@ import type {
   Position,
   ButtonConfig,
 } from '@/types/actionButtons';
-import { DEFAULT_PREFERENCES, DEFAULT_BUTTONS } from '@/types/actionButtons';
+import { DEFAULT_PREFERENCES } from '@/types/actionButtons';
 
 interface ActionButtonState {
   // Preferences

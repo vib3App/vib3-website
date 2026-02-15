@@ -19,7 +19,7 @@ interface SpatialAudioOptions {
  * Hook for 3D spatial audio positioning
  * Used in live streams and watch parties
  */
-export function useSpatialAudio(options: SpatialAudioOptions = {}) {
+export function useSpatialAudio(_options: SpatialAudioOptions = {}) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const listenerRef = useRef<AudioListener | null>(null);
   const sourcesRef = useRef<Map<string, AudioSource>>(new Map());
@@ -48,7 +48,7 @@ export function useSpatialAudio(options: SpatialAudioOptions = {}) {
       }
 
       setIsInitialized(true);
-    } catch (e) {
+    } catch (_e) {
     }
   }, []);
 

@@ -169,7 +169,7 @@ function UploadPageContent() {
 function UploadHeader({
   step,
   draftsCount,
-  showDrafts,
+  showDrafts: _showDrafts,
   onToggleDrafts,
   onBack,
 }: {

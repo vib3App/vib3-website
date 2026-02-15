@@ -67,7 +67,7 @@ export const creatorSettingsApi = {
         } else {
           await apiClient.post('/subscriptions/disable');
         }
-      } catch (e) {
+      } catch (_e) {
       }
     }
 

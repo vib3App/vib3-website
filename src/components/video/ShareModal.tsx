@@ -20,7 +20,7 @@ const shareOptions = [
   { id: 'email', label: 'Email', icon: '📧' },
 ];
 
-export function ShareModal({ videoId, videoUrl, caption, isOpen, onClose }: ShareModalProps) {
+export function ShareModal({ videoId, videoUrl: _videoUrl, caption, isOpen, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
 
   const shareUrl = `https://vib3app.net/v/${videoId}`;
@@ -80,7 +80,7 @@ export function ShareModal({ videoId, videoUrl, caption, isOpen, onClose }: Shar
         });
         await videoApi.shareVideo(videoId, 'native');
         onClose();
-      } catch (err) {
+      } catch (_err) {
         // User cancelled or error
         // User cancelled share
       }

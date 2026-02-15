@@ -10,7 +10,7 @@ interface RadioOptionProps {
   onSelect: () => void;
 }
 
-export function RadioOption({ value, selected, title, description, onSelect }: RadioOptionProps) {
+export function RadioOption({ value: _value, selected, title, description, onSelect }: RadioOptionProps) {
   return (
     <label
       className={`flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-colors ${

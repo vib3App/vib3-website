@@ -48,7 +48,7 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     if (saved) {
       try {
         setSettings({ ...defaultSettings, ...JSON.parse(saved) });
-      } catch (e) {
+      } catch (_e) {
         // Invalid saved data
       }
     }

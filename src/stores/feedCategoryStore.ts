@@ -64,7 +64,7 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
           const categories = await feedCategoryApi.getCategories(forceRefresh);
 
           // Try to get stats but don't fail if it errors (e.g., 401)
-          let counts: Record<string, number> = {};
+          const counts: Record<string, number> = {};
           try {
             const stats = await feedCategoryApi.getCategoryStats();
             if (stats?.categories) {

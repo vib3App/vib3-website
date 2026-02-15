@@ -136,7 +136,7 @@ const createApiClient = (): AxiosInstance => {
             onTokenRefreshed('');
             return Promise.reject(formatApiError(error));
           }
-        } catch (refreshError) {
+        } catch (_refreshError) {
           isRefreshing = false;
           onTokenRefreshed('');
           return Promise.reject(formatApiError(error));

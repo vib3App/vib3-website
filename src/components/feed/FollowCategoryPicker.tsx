@@ -25,7 +25,7 @@ export function FollowCategoryPicker({
   const [isLoading, setIsLoading] = useState(true);
 
   const {
-    categories,
+    categories: _categories,
     getAssignableCategories,
     getUserCategories,
     addUserToCategory,

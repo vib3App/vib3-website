@@ -33,7 +33,7 @@ function FeedContent() {
   const [pickerUser, setPickerUser] = useState<{ id: string; username: string; avatar?: string } | null>(null);
 
   // Show category picker after successful follow
-  const handleFollowWithPicker = (userId: string, username: string, avatar?: string) => {
+  const _handleFollowWithPicker = (userId: string, username: string, avatar?: string) => {
     setPickerUser({ id: userId, username, avatar });
     setShowCategoryPicker(true);
   };

@@ -61,7 +61,7 @@ export const playlistsApi = {
       const endpoint = userId ? `/playlists/user/${userId}` : '/playlists';
       const { data } = await apiClient.get<{ playlists: PlaylistResponse[] }>(endpoint);
       return (data.playlists || []).map(transformPlaylist);
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   },
@@ -202,7 +202,7 @@ export const playlistsApi = {
         '/playlists/watch-later'
       );
       return transformPlaylist(data.playlist);
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   },

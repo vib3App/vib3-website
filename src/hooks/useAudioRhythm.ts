@@ -66,7 +66,7 @@ export function useAudioRhythm() {
 
       setIsAnalyzing(true);
       startAnalysis();
-    } catch (e) {
+    } catch (_e) {
     }
   }, []);
 

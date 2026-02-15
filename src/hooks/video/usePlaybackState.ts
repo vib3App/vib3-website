@@ -42,7 +42,7 @@ export function usePlaybackState({
 
     const playVideo = () => {
       if (cancelled) return;
-      video.play().catch((err) => {
+      video.play().catch((_err) => {
         // Autoplay prevented by browser policy
       });
     };

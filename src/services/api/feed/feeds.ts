@@ -2,7 +2,7 @@ import { apiClient } from '../client';
 import type { Video, PaginatedResponse, FeedOrder } from '@/types';
 import { FeedResponse, FeedVideoResponse, FeedType, VibeType, transformFeedResponse, transformVideo } from './types';
 
-const vibeHashtags: Record<string, string> = {
+const _vibeHashtags: Record<string, string> = {
   'Energetic': 'hype', 'Chill': 'chill', 'Creative': 'creative', 'Social': 'friends',
   'Romantic': 'love', 'Funny': 'funny', 'Inspirational': 'motivation',
 };

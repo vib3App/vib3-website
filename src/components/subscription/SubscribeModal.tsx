@@ -8,7 +8,7 @@ import {
   CheckIcon,
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
-import { subscriptionsApi, type CreatorTiersResponse } from '@/services/api/subscriptions';
+import { subscriptionsApi } from '@/services/api/subscriptions';
 import type { SubscriptionTier } from '@/types/creator';
 
 interface SubscribeModalProps {

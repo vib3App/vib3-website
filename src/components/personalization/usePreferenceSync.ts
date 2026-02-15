@@ -44,7 +44,7 @@ export function usePreferenceSync() {
           content: JSON.parse(localStorage.getItem(PREFERENCE_KEYS[4]) || '{}'),
         };
         setPreferences(prefs);
-      } catch (e) {
+      } catch (_e) {
         console.error('Failed to load preferences');
       }
     };
@@ -64,7 +64,7 @@ export function usePreferenceSync() {
         isSyncing: false,
         error: null,
       });
-    } catch (error) {
+    } catch (_error) {
       setStatus(prev => ({
         ...prev,
         isSyncing: false,
@@ -84,7 +84,7 @@ export function usePreferenceSync() {
         isSyncing: false,
         error: null,
       });
-    } catch (error) {
+    } catch (_error) {
       setStatus(prev => ({
         ...prev,
         isSyncing: false,
@@ -120,7 +120,7 @@ export function usePreferenceSync() {
         });
         setPreferences(imported);
         window.location.reload();
-      } catch (error) {
+      } catch (_error) {
         setStatus(prev => ({ ...prev, error: 'Invalid preferences file' }));
       }
     };

@@ -52,7 +52,7 @@ export function useHaptics() {
       } else {
         navigator.vibrate(hapticPatterns[pattern].pattern);
       }
-    } catch (e) {
+    } catch (_e) {
       // Vibration failed silently
     }
   }, [isSupported, isEnabled]);

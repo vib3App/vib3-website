@@ -32,7 +32,7 @@ export function useProfile() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
-  const [likedVideos, setLikedVideos] = useState<Video[]>([]);
+  const [likedVideos, _setLikedVideos] = useState<Video[]>([]);
   const [activeTab, setActiveTab] = useState<'videos' | 'liked'>('videos');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

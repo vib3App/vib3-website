@@ -79,7 +79,7 @@ class WatchHistoryService {
           videoApi.recordView(entry.videoId).catch(() => {})
         )
       );
-    } catch (error) {
+    } catch (_error) {
       // Re-add failed entries to pending
       this.pendingSync.push(...toSync);
     }

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import Image from 'next/image';
-import type { Call, CallType } from '@/types/call';
+import type { Call } from '@/types/call';
 
 interface VideoCallModalProps {
   call: Call;

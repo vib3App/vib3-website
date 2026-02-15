@@ -57,7 +57,7 @@ export function useAR() {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         caps.hasCamera = devices.some(d => d.kind === 'videoinput');
-      } catch (e) {
+      } catch (_e) {
         // No camera access
       }
 
@@ -69,7 +69,7 @@ export function useAR() {
         try {
           caps.hasWebXR = await (navigator as Navigator & { xr: { isSessionSupported: (mode: string) => Promise<boolean> } })
             .xr.isSessionSupported('immersive-ar');
-        } catch (e) {
+        } catch (_e) {
           // WebXR not available
         }
       }
@@ -201,7 +201,7 @@ export function useMotionControls() {
       try {
         const permission = await (DeviceOrientationEvent as unknown as { requestPermission: () => Promise<string> }).requestPermission();
         if (permission !== 'granted') return false;
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     }

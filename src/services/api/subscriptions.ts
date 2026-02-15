@@ -43,7 +43,7 @@ export const subscriptionsApi = {
         `/subscriptions/check/${creatorId}`
       );
       return data;
-    } catch (error) {
+    } catch (_error) {
       return { isSubscribed: false };
     }
   },
@@ -57,7 +57,7 @@ export const subscriptionsApi = {
         `/subscriptions/tiers/${creatorId}`
       );
       return data;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   },
@@ -105,7 +105,7 @@ export const subscriptionsApi = {
         `/subscriptions/my-subscriptions`
       );
       return data.subscriptions || [];
-    } catch (error) {
+    } catch (_error) {
       return [];
     }
   },
@@ -146,7 +146,7 @@ export const subscriptionsApi = {
         { params: { offset, limit } }
       );
       return data;
-    } catch (error) {
+    } catch (_error) {
       return { subscriptions: [], total: 0 };
     }
   },

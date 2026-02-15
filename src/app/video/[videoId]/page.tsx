@@ -19,7 +19,7 @@ export default function VideoPlayerPage() {
   const videoId = params.videoId as string;
   const userId = searchParams.get('user'); // Get userId from query param
 
-  const { isAuthenticated, isAuthVerified, user } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -159,16 +159,16 @@ export default function VideoPlayerPage() {
     }
   }, [videos, isAuthenticated]);
 
-  const handleFollow = useCallback(async (index: number) => {
+  const handleFollow = useCallback(async (_index: number) => {
     // Follow logic - would need user API
     // TODO: Wire follow API
   }, []);
 
-  const handleComment = useCallback((id: string) => {
+  const handleComment = useCallback((_id: string) => {
     setCommentsOpen(true);
   }, []);
 
-  const handleShare = useCallback((id: string) => {
+  const handleShare = useCallback((_id: string) => {
     setShareOpen(true);
   }, []);
 

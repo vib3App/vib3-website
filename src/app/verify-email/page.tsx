@@ -10,7 +10,7 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
-  const { isAuthenticated, isAuthVerified } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'no-token'>('verifying');
   const [error, setError] = useState('');

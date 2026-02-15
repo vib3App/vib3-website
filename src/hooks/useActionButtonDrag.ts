@@ -129,7 +129,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   }, [clientToPercent, onDrag, clearLongPressTimer]);
 
   // Handle pointer up - end drag
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
+  const handlePointerUp = useCallback((_e: React.PointerEvent) => {
     clearLongPressTimer();
 
     // Release pointer capture if we captured it

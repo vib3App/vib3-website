@@ -8,7 +8,7 @@ export function ArcMenu({
   video,
   buttons,
   size,
-  position,
+  position: _position,
   isDragging: globalDragging,
   onLike,
   onComment,
@@ -16,7 +16,7 @@ export function ArcMenu({
   onShare,
   onDragStart,
   onDragEnd,
-  onOpenSettings,
+  onOpenSettings: _onOpenSettings,
 }: LayoutProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDragging, setIsDragging] = useState(false);

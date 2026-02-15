@@ -92,7 +92,7 @@ export default function UserManagementPage() {
     return false;
   };
 
-  const getAvailableRoles = (targetUser: AdminUser): UserRole[] => {
+  const getAvailableRoles = (_targetUser: AdminUser): UserRole[] => {
     if (isOwner) return ['user', 'moderator', 'admin'];
     if (isAdmin) return ['user', 'moderator'];
     return [];

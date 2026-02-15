@@ -17,7 +17,7 @@ export function CornerCluster({
   onShare,
   onDragStart,
   onDragEnd,
-  onOpenSettings,
+  onOpenSettings: _onOpenSettings,
 }: LayoutProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { isDragging, dragProps } = useActionButtonDrag({

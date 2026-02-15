@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRhythmSync } from '@/hooks/useAudioRhythm';
 
 interface RhythmVisualizerProps {
@@ -127,7 +127,7 @@ export function RhythmVisualizer({
  * Beat indicator that pulses with the music
  */
 export function BeatIndicator({ className = '' }: { className?: string }) {
-  const { beatInfo, pulseIntensity } = useRhythmSync();
+  const { beatInfo, pulseIntensity: _pulseIntensity } = useRhythmSync();
 
   return (
     <motion.div

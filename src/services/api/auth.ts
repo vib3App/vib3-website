@@ -2,7 +2,7 @@
  * Auth API service
  * Handles login, register, OAuth, and token refresh
  */
-import { apiClient, ApiError } from './client';
+import { apiClient } from './client';
 import type { AuthUser, LoginCredentials, RegisterData } from '@/types';
 
 interface AuthResponse {

@@ -115,7 +115,7 @@ export function useAmbientSound() {
       try {
         osc.stop();
         osc.disconnect();
-      } catch (e) {
+      } catch (_e) {
         // Already stopped
       }
     });
@@ -199,7 +199,7 @@ export function useAmbientSoundSettings() {
         const { enabled, mode } = JSON.parse(saved);
         setEnabled(enabled);
         setSelectedMode(mode);
-      } catch (e) {
+      } catch (_e) {
         // Invalid saved data
       }
     }

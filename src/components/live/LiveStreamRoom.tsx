@@ -10,7 +10,7 @@ import {
   useTracks,
   useParticipants,
 } from '@livekit/components-react';
-import { Track, RoomEvent } from 'livekit-client';
+import { Track } from 'livekit-client';
 import {
   MicrophoneIcon,
   VideoCameraIcon,
@@ -184,7 +184,7 @@ function RoomContent({
 export function LiveStreamRoom({
   token,
   wsUrl,
-  roomName,
+  roomName: _roomName,
   isHost,
   streamTitle,
   onEnd,

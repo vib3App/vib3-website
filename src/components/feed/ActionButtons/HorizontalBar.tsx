@@ -16,7 +16,7 @@ export function HorizontalBar({
   onShare,
   onDragStart,
   onDragEnd,
-  onOpenSettings,
+  onOpenSettings: _onOpenSettings,
 }: LayoutProps) {
   const { isDragging, dragProps } = useActionButtonDrag({
     onDragStart,

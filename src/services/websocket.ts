@@ -76,7 +76,7 @@ class WebSocketService {
         this.notifyConnectionHandlers(true);
       });
 
-      this.socket.on('disconnect', (reason) => {
+      this.socket.on('disconnect', (_reason) => {
         this.notifyConnectionHandlers(false);
       });
 

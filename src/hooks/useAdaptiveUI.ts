@@ -41,7 +41,7 @@ export function useAdaptiveUI() {
       if (saved) {
         setPatterns(JSON.parse(saved));
       }
-    } catch (e) {
+    } catch (_e) {
       // Invalid data
     }
     setIsLoaded(true);
@@ -118,7 +118,7 @@ export function useAdaptiveUI() {
 
   // Suggest features based on context
   const getSuggestedFeatures = useCallback((): string[] => {
-    const hour = new Date().getHours();
+    const _hour = new Date().getHours();
     const topFeatures = getTopFeatures(10);
     const recentFeatures = getRecentFeatures(3);
 

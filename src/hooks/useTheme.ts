@@ -62,7 +62,7 @@ export function useTheme() {
       if (saved) {
         setConfig({ ...defaultConfig, ...JSON.parse(saved) });
       }
-    } catch (e) {
+    } catch (_e) {
       // Invalid saved data
     }
     setIsLoaded(true);
@@ -189,7 +189,7 @@ export function useTheme() {
  * Hook for time-based theme adjustments
  */
 export function useTimeBasedTheme() {
-  const { setMode, config } = useTheme();
+  const { setMode, config: _config } = useTheme();
   const [autoEnabled, setAutoEnabled] = useState(false);
 
   useEffect(() => {

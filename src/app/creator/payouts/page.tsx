@@ -36,7 +36,7 @@ export default function PayoutsPage() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  const [showAddMethod, setShowAddMethod] = useState(false);
+  const [_showAddMethod, setShowAddMethod] = useState(false);
 
   useEffect(() => {
     if (!isAuthVerified) return;

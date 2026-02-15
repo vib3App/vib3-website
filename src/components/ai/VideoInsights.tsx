@@ -3,10 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-interface VideoInsight {
-  type: 'summary' | 'highlights' | 'topics' | 'sentiment';
-  data: unknown;
-}
+
 
 interface KeyMoment {
   timestamp: number;

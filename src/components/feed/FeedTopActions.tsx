@@ -7,7 +7,7 @@ interface FeedTopActionsProps {
   onToggleQueue: () => void;
 }
 
-export function FeedTopActions({ showQueue, onToggleQueue }: FeedTopActionsProps) {
+export function FeedTopActions({ showQueue: _showQueue, onToggleQueue }: FeedTopActionsProps) {
   return (
     <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
       <button

@@ -30,7 +30,7 @@ interface CollabShareModalProps {
 
 export function CollabShareModal({
   inviteCode,
-  roomId,
+  roomId: _roomId,
   copied,
   onCopyCode,
   onShareLink,

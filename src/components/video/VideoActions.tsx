@@ -84,7 +84,8 @@ export function VideoActions({
   };
 
   // Called when user successfully adds a comment
-  const handleCommentAdded = () => {
+  // TODO: Wire this to comment submission UI
+  const _handleCommentAdded = () => {
     setIsCommentAnimating(true);
     setHasCommented(true);
     setCommentsCount(prev => prev + 1);

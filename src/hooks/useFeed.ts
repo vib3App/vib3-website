@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { feedApi } from '@/services/api';
 import { watchHistoryService } from '@/services/watchHistory';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { useAuthStore } from '@/stores/authStore';
-import type { Video, FeedCategory } from '@/types';
+import type { Video } from '@/types';
 import type { FeedTab, VibeType } from '@/components/feed/FeedHeader';
 
 // Stable empty array to prevent re-renders when no videos

@@ -52,7 +52,7 @@ export function useWeb3() {
   }, []);
 
   // Connect wallet
-  const connect = useCallback(async (provider: 'metamask' | 'walletconnect' | 'coinbase' = 'metamask') => {
+  const connect = useCallback(async (_provider: 'metamask' | 'walletconnect' | 'coinbase' = 'metamask') => {
     setIsConnecting(true);
     setError(null);
 
@@ -205,7 +205,7 @@ export function useNFT() {
  * Hook for crypto tipping/payments
  */
 export function useCryptoPayments() {
-  const { wallet, signMessage } = useWeb3();
+  const { wallet, signMessage: _signMessage } = useWeb3();
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Send tip in ETH

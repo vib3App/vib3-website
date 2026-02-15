@@ -11,7 +11,7 @@ interface IncomingCallModalProps {
 }
 
 export function IncomingCallModal({ call, onAnswer, onDecline }: IncomingCallModalProps) {
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const _audioRef = useRef<HTMLAudioElement>(null);
   const isVideoCall = call.type === 'video';
 
   // Play ringtone
