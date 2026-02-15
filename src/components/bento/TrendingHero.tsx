@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { GlassPill } from '@/components/ui/Glass';
 import { BentoItem } from './BentoItem';
 
@@ -56,7 +57,7 @@ export function TrendingHero({ video }: TrendingHeroProps) {
         <div className="absolute bottom-0 left-0 right-0 p-6">
           <h2 className="text-2xl font-bold mb-2 line-clamp-2">{video.title}</h2>
           <div className="flex items-center gap-3">
-            <img src={video.creatorAvatar} alt={video.creator} className="w-10 h-10 rounded-full border-2 border-white/20" />
+            <Image src={video.creatorAvatar} alt={video.creator} width={40} height={40} className="w-10 h-10 rounded-full border-2 border-white/20" />
             <div>
               <p className="font-medium">{video.creator}</p>
               <p className="text-sm text-white/60">{video.views} views</p>

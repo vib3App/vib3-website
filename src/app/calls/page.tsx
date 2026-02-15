@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
 import { callsApi } from '@/services/api/calls';
+import { useVideoCall } from '@/hooks/useVideoCall';
 import { TopNav } from '@/components/ui/TopNav';
-import type { Call } from '@/types/call';
+import { VideoCallModal, IncomingCallModal } from '@/components/call';
+import type { Call, CallType } from '@/types/call';
 
 function formatCallTime(dateString: string): string {
   const date = new Date(dateString);
@@ -30,7 +32,7 @@ function formatDuration(seconds?: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-function CallItem({ call, currentUserId }: { call: Call; currentUserId: string }) {
+function CallItem({ call, currentUserId, onCallBack }: { call: Call; currentUserId: string; onCallBack: (receiverId: string, type: CallType) => void }) {
   const isOutgoing = call.callerId === currentUserId;
   const otherUser = isOutgoing
     ? { username: call.receiverUsername, avatar: call.receiverAvatar }
@@ -103,7 +105,13 @@ function CallItem({ call, currentUserId }: { call: Call; currentUserId: string }
       </div>
 
       {/* Call back button */}
-      <button className="w-10 h-10 rounded-full glass flex items-center justify-center text-green-400 hover:bg-white/10 transition-colors">
+      <button
+        onClick={() => {
+          const receiverId = isOutgoing ? call.receiverId : call.callerId;
+          onCallBack(receiverId, call.type);
+        }}
+        className="w-10 h-10 rounded-full glass flex items-center justify-center text-green-400 hover:bg-white/10 transition-colors"
+      >
         {call.type === 'video' ? (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -121,8 +129,13 @@ function CallItem({ call, currentUserId }: { call: Call; currentUserId: string }
 export default function CallsPage() {
   const router = useRouter();
   const { user, isAuthenticated, isAuthVerified } = useAuthStore();
+  const call = useVideoCall();
   const [calls, setCalls] = useState<Call[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handleCallBack = (receiverId: string, type: CallType) => {
+    call.startCall(receiverId, type);
+  };
 
   useEffect(() => {
     if (!isAuthVerified) return;
@@ -155,6 +168,34 @@ export default function CallsPage() {
 
   return (
     <div className="min-h-screen aurora-bg pb-20">
+      {/* Incoming Call Modal */}
+      {call.incomingCall && (
+        <IncomingCallModal
+          call={call.incomingCall}
+          onAnswer={call.answerCall}
+          onDecline={call.declineCall}
+        />
+      )}
+
+      {/* Active Call Modal */}
+      {call.activeCall && (
+        <VideoCallModal
+          call={call.activeCall}
+          isOutgoing={call.activeCall.callerId === user?.id}
+          localVideoRef={call.localVideoRef}
+          remoteVideoRef={call.remoteVideoRef}
+          isMuted={call.isMuted}
+          isVideoOff={call.isVideoOff}
+          isSpeakerOn={call.isSpeakerOn}
+          callDuration={call.formattedDuration}
+          onToggleMute={call.toggleMute}
+          onToggleVideo={call.toggleVideo}
+          onToggleSpeaker={call.toggleSpeaker}
+          onSwitchCamera={call.switchCamera}
+          onEndCall={call.endCall}
+        />
+      )}
+
       <TopNav />
 
       <div className="pt-20 md:pt-16">
@@ -187,8 +228,8 @@ export default function CallsPage() {
               </p>
             </div>
           ) : (
-            calls.map(call => (
-              <CallItem key={call.id} call={call} currentUserId={user?.id || ''} />
+            calls.map(c => (
+              <CallItem key={c.id} call={c} currentUserId={user?.id || ''} onCallBack={handleCallBack} />
             ))
           )}
         </div>

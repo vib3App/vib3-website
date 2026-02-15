@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
@@ -31,7 +32,7 @@ function TrackCard({ track, onPlay, isPlaying }: { track: MusicTrack; onPlay: ()
     >
       <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0">
         {track.coverUrl ? (
-          <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+          <Image src={track.coverUrl} alt={track.title} width={56} height={56} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <MusicIcon className="w-6 h-6 text-white" />

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import type { RemixType } from '@/types/collaboration';
 import type { Video } from '@/types';
 
@@ -51,9 +52,9 @@ function OriginalVideoInfo({ video }: { video: Video }) {
     <div className="bg-white/5 rounded-2xl p-4">
       <h2 className="font-semibold mb-3">Original Video</h2>
       <div className="flex gap-3">
-        <div className="w-20 aspect-[9/16] rounded-lg overflow-hidden bg-gray-800">
+        <div className="w-20 aspect-[9/16] rounded-lg overflow-hidden bg-gray-800 relative">
           {video.thumbnailUrl && (
-            <img src={video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+            <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
           )}
         </div>
         <div className="flex-1 min-w-0">

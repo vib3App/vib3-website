@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { soundsApi } from '@/services/api/sounds';
 import type { MusicTrack } from '@/types/sound';
@@ -79,7 +80,7 @@ export function AudioPanel({
         <div className="space-y-3">
           <div className="flex items-center gap-3 p-3 aurora-bg rounded-xl">
             {selectedMusic.coverUrl && (
-              <img src={selectedMusic.coverUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              <Image src={selectedMusic.coverUrl} alt="" width={40} height={40} className="w-10 h-10 rounded-lg object-cover" />
             )}
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">{selectedMusic.title}</p>

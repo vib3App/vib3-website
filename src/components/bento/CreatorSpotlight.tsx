@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { BentoItem } from './BentoItem';
 
 interface CreatorSpotlightProps {
@@ -18,9 +19,11 @@ export function CreatorSpotlight({ creator }: CreatorSpotlightProps) {
     <BentoItem size="sm" href={`/profile/${creator.id}`}>
       <div className="w-full h-full p-3 flex flex-col items-center justify-center text-center">
         <div className="relative mb-2">
-          <img
+          <Image
             src={creator.avatarUrl}
             alt={creator.name}
+            width={56}
+            height={56}
             className="w-14 h-14 rounded-full border-2 border-purple-500/50"
           />
           {creator.isVerified && (

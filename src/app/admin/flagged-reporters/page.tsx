@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { adminApi, type FlaggedReporter } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
@@ -105,9 +106,11 @@ export default function FlaggedReportersPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 bg-red-500/20 rounded-full flex items-center justify-center">
                     {reporter.profilePicture ? (
-                      <img
+                      <Image
                         src={reporter.profilePicture}
                         alt=""
+                        width={56}
+                        height={56}
                         className="w-14 h-14 rounded-full object-cover"
                       />
                     ) : (

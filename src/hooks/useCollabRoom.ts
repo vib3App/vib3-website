@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { collaborationApi } from '@/services/api';
+import { config } from '@/config/env';
 import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
@@ -153,7 +154,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       formData.append('clip', recordedBlob, `clip-${Date.now()}.webm`);
 
       const xhr = new XMLHttpRequest();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
+      const apiUrl = config.api.socketUrl;
 
       await new Promise<void>((resolve, reject) => {
         xhr.upload.onprogress = (e) => {

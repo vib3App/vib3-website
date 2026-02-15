@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import {
   XMarkIcon,
   ClipboardIcon,
@@ -116,7 +117,7 @@ export function CollabShareModal({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden flex-shrink-0">
             {user.avatar ? (
-              <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+              <Image src={user.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                 {(user.username || 'U')[0].toUpperCase()}

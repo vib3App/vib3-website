@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useState } from 'react';
 import { LiveKitRoom } from '@livekit/components-react';
 import { XMarkIcon, SignalIcon } from '@heroicons/react/24/solid';
@@ -58,7 +59,7 @@ function RoomContent({ streamTitle, hostName, hostAvatar, onLeave }: RoomContent
           <div className="flex items-center gap-3 mt-4">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center overflow-hidden">
               {hostAvatar ? (
-                <img src={hostAvatar} alt={hostName} className="w-full h-full object-cover" />
+                <Image src={hostAvatar} alt={hostName} width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-white font-bold">{hostName[0]?.toUpperCase()}</span>
               )}

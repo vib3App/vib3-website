@@ -90,7 +90,7 @@ export default function NotificationsPage() {
               </svg>
               <p className="text-white/50">No notifications yet</p>
               <p className="text-white/30 text-sm mt-1">
-                When you get notifications, they'll show up here
+                When you get notifications, they&apos;ll show up here
               </p>
             </div>
           ) : (

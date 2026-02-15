@@ -1,6 +1,6 @@
 'use client';
 
-
+import Image from 'next/image';
 import {
   PlusIcon,
   XMarkIcon,
@@ -69,7 +69,7 @@ export function VideoSlotCard({
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
               {slot.video.userAvatar ? (
-                <img src={slot.video.userAvatar} alt="" className="w-full h-full object-cover" />
+                <Image src={slot.video.userAvatar} alt="" width={24} height={24} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
                   {(slot.video.username || '?')[0].toUpperCase()}

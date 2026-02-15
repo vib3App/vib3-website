@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { forwardRef } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import type { LiveChatMessage } from '@/types';
@@ -56,7 +57,7 @@ function ChatMessage({ message }: { message: LiveChatMessage }) {
     <div className="flex gap-2">
       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex-shrink-0 overflow-hidden">
         {message.avatar ? (
-          <img src={message.avatar} alt="" className="w-full h-full object-cover" />
+          <Image src={message.avatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-xs font-bold">
             {message.username[0].toUpperCase()}

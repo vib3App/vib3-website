@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   UserGroupIcon,
   ClockIcon,
@@ -60,7 +61,7 @@ export function CollabRoomCard({ room }: CollabRoomCardProps) {
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
           {room.creatorAvatar ? (
-            <img src={room.creatorAvatar} alt="" className="w-full h-full object-cover" />
+            <Image src={room.creatorAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xs font-bold">
               {(room.creatorUsername || 'U')[0].toUpperCase()}
@@ -87,7 +88,7 @@ export function CollabRoomCard({ room }: CollabRoomCardProps) {
               style={{ zIndex: 5 - i }}
             >
               {p.avatar ? (
-                <img src={p.avatar} alt="" className="w-full h-full object-cover" />
+                <Image src={p.avatar} alt="" width={24} height={24} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
                   {(p.username || 'U')[0].toUpperCase()}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { soundsApi } from '@/services/api/sounds';
 import { MUSIC_CATEGORIES, type MusicTrack, type MusicCategory } from '@/types/sound';
 
@@ -183,7 +184,7 @@ export function SoundPicker({ isOpen, onClose, onSelect, selectedTrackId }: Soun
                 >
                   <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0">
                     {track.coverUrl ? (
-                      <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                      <Image src={track.coverUrl} alt={track.title} width={48} height={48} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <MusicIcon className="w-5 h-5 text-white" />

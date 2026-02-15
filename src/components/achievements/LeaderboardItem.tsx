@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import type { LeaderboardEntry } from '@/types/achievement';
 
 interface LeaderboardItemProps {
@@ -31,7 +32,7 @@ export function LeaderboardItem({ entry, isCurrentUser }: LeaderboardItemProps) 
 
       <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
         {entry.profilePicture ? (
-          <img src={entry.profilePicture} alt={entry.username} className="w-full h-full object-cover" />
+          <Image src={entry.profilePicture} alt={entry.username} width={40} height={40} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-white font-bold">
             {entry.username.charAt(0).toUpperCase()}

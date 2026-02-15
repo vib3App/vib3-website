@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import type { FeedCategory } from '@/types';
@@ -71,9 +72,9 @@ export function FeedCategoryDropdown({ isOpen, onToggle, onClose }: FeedCategory
         <div className="absolute top-full left-0 mt-2 w-[300px] bg-black/95 backdrop-blur-xl rounded-2xl border border-teal-500/30 shadow-2xl overflow-hidden z-[100] animate-in">
           <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
             <span className="text-white/50 text-xs">Categories</span>
-            <a href="/settings/categories" className="text-purple-400 text-xs hover:text-purple-300 transition-colors" onClick={() => onClose()}>
+            <Link href="/settings/categories" className="text-purple-400 text-xs hover:text-purple-300 transition-colors" onClick={() => onClose()}>
               Manage
-            </a>
+            </Link>
           </div>
 
           <div className="py-2 max-h-[50vh] overflow-y-auto">
@@ -114,18 +115,18 @@ export function FeedCategoryDropdown({ isOpen, onToggle, onClose }: FeedCategory
           </div>
 
           <div className="border-t border-white/10 py-2">
-            <a href="/discover" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors" onClick={() => onClose()}>
+            <Link href="/discover" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors" onClick={() => onClose()}>
               <div className="flex items-center gap-3">
                 <span className="text-lg">🔍</span>
                 <div><div className="font-medium text-sm">Discover</div><div className="text-xs text-white/40">Explore trending content</div></div>
               </div>
-            </a>
-            <a href="/live" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors" onClick={() => onClose()}>
+            </Link>
+            <Link href="/live" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors" onClick={() => onClose()}>
               <div className="flex items-center gap-3">
                 <span className="text-lg">📡</span>
                 <div><div className="font-medium text-sm">LIVE</div><div className="text-xs text-white/40">Watch live streams</div></div>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       )}

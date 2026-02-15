@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { XMarkIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import type { LiveGift } from '@/types';
 
@@ -33,7 +34,7 @@ export function GiftsModal({ isOpen, gifts, onClose, onSendGift }: GiftsModalPro
               onClick={() => onSendGift(gift.id)}
               className="flex flex-col items-center gap-2 p-3 hover:bg-white/10 rounded-xl transition"
             >
-              <img src={gift.iconUrl} alt={gift.name} className="w-12 h-12 object-contain" />
+              <Image src={gift.iconUrl} alt={gift.name} width={48} height={48} className="w-12 h-12 object-contain" />
               <div className="text-xs font-medium">{gift.name}</div>
               <div className="flex items-center gap-1 text-xs text-yellow-400">
                 <span>💰</span>
@@ -97,7 +98,7 @@ export function GuestRequestsModal({
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
                   {request.avatar ? (
-                    <img src={request.avatar} alt="" className="w-full h-full object-cover" />
+                    <Image src={request.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                       {request.username[0].toUpperCase()}

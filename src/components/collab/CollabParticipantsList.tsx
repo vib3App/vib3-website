@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { UserGroupIcon, CheckCircleIcon, ClipboardIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/24/solid';
 import type { CollabParticipant } from '@/types/collaboration';
@@ -68,7 +69,7 @@ function ParticipantCard({ participant }: { participant: CollabParticipant }) {
       <div className="relative">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
           {participant.avatar ? (
-            <img src={participant.avatar} alt="" className="w-full h-full object-cover" />
+            <Image src={participant.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-sm font-bold">
               {participant.username[0].toUpperCase()}

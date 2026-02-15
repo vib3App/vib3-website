@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   LockClosedIcon,
   BellIcon,
@@ -35,16 +36,18 @@ export function CapsuleCard({ capsule, isOwner, isSubscribed, onSubscribe }: Cap
       {/* Cover Image */}
       <div className="aspect-video bg-gray-800 relative overflow-hidden">
         {capsule.status === 'unlocked' && capsule.thumbnailUrl ? (
-          <img
+          <Image
             src={capsule.thumbnailUrl}
             alt=""
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : capsule.coverImageUrl ? (
-          <img
+          <Image
             src={capsule.coverImageUrl}
             alt=""
-            className="w-full h-full object-cover blur-sm opacity-50"
+            fill
+            className="object-cover blur-sm opacity-50"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/30 to-pink-500/30">
@@ -113,7 +116,7 @@ export function CapsuleCard({ capsule, isOwner, isSubscribed, onSubscribe }: Cap
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
             {capsule.creatorAvatar ? (
-              <img src={capsule.creatorAvatar} alt="" className="w-full h-full object-cover" />
+              <Image src={capsule.creatorAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xs font-bold">
                 {capsule.creatorUsername[0].toUpperCase()}

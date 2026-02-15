@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { SoundVisualizer } from '@/components/ui/Glass';
 import { BentoItem } from './BentoItem';
 
@@ -38,7 +39,7 @@ export function SoundWaveCard({ sounds }: SoundWaveCardProps) {
                 activeSound === i ? 'bg-white/10' : 'hover:bg-white/5'
               }`}
             >
-              <img src={sound.coverUrl} alt={sound.name} className="w-10 h-10 rounded-lg object-cover" />
+              <Image src={sound.coverUrl} alt={sound.name} width={40} height={40} className="w-10 h-10 rounded-lg object-cover" />
               <div className="flex-1 text-left min-w-0">
                 <p className="font-medium text-sm truncate">{sound.name}</p>
                 <p className="text-xs text-white/60 truncate">{sound.artist}</p>

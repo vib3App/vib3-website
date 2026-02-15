@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import type { AdminUser, UserRole } from '@/services/api';
 
 interface UsersTableProps {
@@ -87,7 +88,7 @@ export function UsersTable({
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-neutral-700 rounded-full flex items-center justify-center overflow-hidden">
                       {user.profilePicture ? (
-                        <img src={user.profilePicture} alt="" className="w-10 h-10 object-cover" />
+                        <Image src={user.profilePicture} alt="" width={40} height={40} className="w-10 h-10 object-cover" />
                       ) : (
                         <span className="text-white font-medium">{user.username?.[0]?.toUpperCase() || '?'}</span>
                       )}

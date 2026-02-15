@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -121,7 +122,7 @@ function LiveStreamContent() {
                   className="w-24 aspect-video bg-gray-800 rounded-lg overflow-hidden relative"
                 >
                   {guest.avatar ? (
-                    <img src={guest.avatar} alt="" className="w-full h-full object-cover" />
+                    <Image src={guest.avatar} alt="" fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs">
                       {guest.username}

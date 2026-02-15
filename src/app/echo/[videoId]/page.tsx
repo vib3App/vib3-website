@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -69,12 +70,13 @@ export default function EchoPage({ params }: { params: Promise<{ videoId: string
               href={`/video/${originalVideo.id}`}
               className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
             >
-              <div className="w-16 h-24 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+              <div className="w-16 h-24 rounded-lg overflow-hidden bg-white/10 flex-shrink-0 relative">
                 {originalVideo.thumbnailUrl ? (
-                  <img
+                  <Image
                     src={originalVideo.thumbnailUrl}
                     alt=""
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -122,10 +124,11 @@ export default function EchoPage({ params }: { params: Promise<{ videoId: string
                 className="aspect-[9/16] rounded-lg overflow-hidden bg-white/5 relative group"
               >
                 {echo.responseVideo?.thumbnailUrl ? (
-                  <img
+                  <Image
                     src={echo.responseVideo.thumbnailUrl}
                     alt=""
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

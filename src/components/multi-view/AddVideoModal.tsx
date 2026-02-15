@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { XMarkIcon, PlayIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { Video } from '@/types';
 
@@ -63,7 +64,7 @@ export function AddVideoModal({
                 >
                   <div className="w-20 aspect-video bg-gray-800 rounded overflow-hidden flex-shrink-0">
                     {video.thumbnailUrl ? (
-                      <img src={video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                      <Image src={video.thumbnailUrl} alt="" width={160} height={90} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <PlayIcon className="w-4 h-4 text-gray-600" />

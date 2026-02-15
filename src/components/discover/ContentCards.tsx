@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { GlassPill, SoundVisualizer } from '@/components/ui/Glass';
 import type { Challenge } from '@/types/challenge';
@@ -30,7 +31,7 @@ export function TrendingSoundsCard({ sounds, activeSound, isPlaying, onSoundSele
             className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all ${activeSound === i ? 'bg-white/10' : 'hover:bg-white/5'}`}
           >
             {sound.coverUrl ? (
-              <img src={sound.coverUrl} alt={sound.title || 'Sound'} className="w-10 h-10 rounded-lg object-cover" />
+              <Image src={sound.coverUrl} alt={sound.title || 'Sound'} width={40} height={40} className="w-10 h-10 rounded-lg object-cover" />
             ) : (
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-lg">🎵</div>
             )}

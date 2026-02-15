@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 
@@ -272,14 +273,15 @@ export function FloatingProfilePicture({
       }}
     >
       <div
-        className="rounded-[25px] bg-black overflow-hidden"
+        className="rounded-[25px] bg-black overflow-hidden relative"
         style={{ width: size, height: size }}
       >
         {src ? (
-          <img
+          <Image
             src={src}
             alt="Profile"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         ) : (
           <div

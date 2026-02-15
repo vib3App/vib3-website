@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/services/api';
@@ -48,19 +49,19 @@ export function ProfileDropdown({ isOpen, onToggle }: ProfileDropdownProps) {
                 <div className="text-white/50 text-sm">{user.email}</div>
               </div>
               <div className="py-2">
-                <a href="/profile" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                <Link href="/profile" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
                   <div className="flex items-center gap-3"><span>👤</span><span>Your Profile</span></div>
-                </a>
-                <a href="/settings" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                </Link>
+                <Link href="/settings" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
                   <div className="flex items-center gap-3"><span>⚙️</span><span>Settings</span></div>
-                </a>
-                <a href="/notifications" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
+                </Link>
+                <Link href="/notifications" className="block w-full px-4 py-3 text-white/70 hover:bg-white/5 hover:text-white transition-colors">
                   <div className="flex items-center gap-3"><span>🔔</span><span>Notifications</span></div>
-                </a>
+                </Link>
                 {isAdmin && (
-                  <a href="/admin" className="block w-full px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors">
+                  <Link href="/admin" className="block w-full px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors">
                     <div className="flex items-center gap-3"><span>🛡️</span><span>Admin Dashboard</span></div>
-                  </a>
+                  </Link>
                 )}
                 <div className="h-px bg-white/10 my-2" />
                 <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors text-left">
@@ -71,9 +72,9 @@ export function ProfileDropdown({ isOpen, onToggle }: ProfileDropdownProps) {
           ) : (
             <div className="p-4 text-center">
               <p className="text-white/50 text-sm mb-3">Sign in to access your account</p>
-              <a href="/login" className="inline-block w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white text-sm font-medium text-center">
+              <Link href="/login" className="inline-block w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white text-sm font-medium text-center">
                 Sign In
-              </a>
+              </Link>
             </div>
           )}
         </div>

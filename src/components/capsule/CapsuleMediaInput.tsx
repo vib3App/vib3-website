@@ -1,6 +1,7 @@
 'use client';
 
 import { RefObject } from 'react';
+import Image from 'next/image';
 import { VideoCameraIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface CapsuleMediaInputProps {
@@ -26,7 +27,7 @@ export function CapsuleMediaInput({ type, previewUrl, inputRef, onSelect, onClea
           {isVideo ? (
             <video src={previewUrl} controls className="w-full h-full object-contain" />
           ) : (
-            <img src={previewUrl} alt="Cover" className="w-full h-full object-cover" />
+            <Image src={previewUrl} alt="Cover" fill className="object-cover" />
           )}
           <button
             type="button"

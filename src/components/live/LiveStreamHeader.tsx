@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeftIcon, SignalIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import type { LiveStream } from '@/types';
@@ -20,7 +21,7 @@ export function LiveStreamHeader({ stream, viewerCount }: LiveStreamHeaderProps)
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
               {stream.hostAvatar ? (
-                <img src={stream.hostAvatar} alt="" className="w-full h-full object-cover" />
+                <Image src={stream.hostAvatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                   {stream.hostUsername[0].toUpperCase()}

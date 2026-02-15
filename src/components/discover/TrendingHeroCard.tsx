@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { GlassPill } from '@/components/ui/Glass';
 import type { Video } from '@/types';
@@ -44,7 +45,7 @@ export function TrendingHeroCard({ video }: TrendingHeroCardProps) {
             </h2>
             <div className="flex items-center gap-3">
               {video?.userAvatar ? (
-                <img src={video.userAvatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+                <Image src={video.userAvatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500" />
               )}

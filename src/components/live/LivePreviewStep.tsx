@@ -70,6 +70,7 @@ export function LivePreviewStep({
         </div>
         {thumbnailUrl && (
           <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={thumbnailUrl} alt="Thumbnail" className="w-24 aspect-video object-cover rounded-lg" />
             <div className="flex-1">
               <div className="text-sm font-medium">Custom Thumbnail</div>

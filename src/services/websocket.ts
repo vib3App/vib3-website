@@ -3,6 +3,7 @@
  * Uses Socket.IO client to match the backend's Socket.IO server
  */
 import { io, Socket } from 'socket.io-client';
+import { config } from '@/config/env';
 import type { Message, TypingIndicator } from '@/types';
 import type { IncomingCall, CallEndedEvent } from '@/types/call';
 
@@ -27,7 +28,7 @@ interface Notification {
   createdAt: string;
 }
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
+const SOCKET_URL = config.api.socketUrl;
 
 class WebSocketService {
   private socket: Socket | null = null;

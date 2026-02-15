@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import type { TopVideo } from '@/types/analytics';
 import { formatNumber } from './analyticsUtils';
 
@@ -37,7 +38,7 @@ export function TopVideosTable({ videos }: TopVideosTableProps) {
                           {index + 1}
                         </div>
                         {video.thumbnail && (
-                          <img src={video.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
+                          <Image src={video.thumbnail} alt="" width={48} height={48} className="w-12 h-12 rounded object-cover" />
                         )}
                         <span className="text-white line-clamp-1">{video.title}</span>
                       </Link>

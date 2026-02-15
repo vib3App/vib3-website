@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 
 interface ProfileButtonProps {
@@ -35,7 +36,7 @@ export function ProfileButton({
         style={{ transform: isPressed ? 'scale(1.05)' : 'scale(1)' }}
       >
         <div
-          className="w-[54px] h-[78px] rounded-[27px] flex items-center justify-center overflow-hidden"
+          className="w-[54px] h-[78px] rounded-[27px] flex items-center justify-center overflow-hidden relative"
           style={{
             background: userAvatar ? undefined : 'linear-gradient(135deg, #a855f7, #2dd4bf)',
             boxShadow: `
@@ -45,10 +46,11 @@ export function ProfileButton({
           }}
         >
           {userAvatar ? (
-            <img
+            <Image
               src={userAvatar}
               alt={username}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
           ) : (
             <span className="text-white text-2xl font-bold drop-shadow-md">

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { forwardRef } from 'react';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import type { WatchPartyChatMessage, WatchPartyParticipant } from '@/types/collaboration';
@@ -72,7 +73,7 @@ function ParticipantsList({ participants }: { participants: WatchPartyParticipan
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
               {participant.avatar ? (
-                <img src={participant.avatar} alt="" className="w-full h-full object-cover" />
+                <Image src={participant.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                   {participant.username[0].toUpperCase()}
@@ -119,7 +120,7 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(
             <div key={msg.id} className="flex gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex-shrink-0 overflow-hidden">
                 {msg.avatar ? (
-                  <img src={msg.avatar} alt="" className="w-full h-full object-cover" />
+                  <Image src={msg.avatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-bold">
                     {msg.username[0].toUpperCase()}

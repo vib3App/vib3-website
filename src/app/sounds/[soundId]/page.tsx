@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -125,7 +126,7 @@ export default function SoundDetailPage({ params }: { params: Promise<{ soundId:
         <div className="flex items-start gap-4 mb-6">
           <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex-shrink-0">
             {track.coverUrl ? (
-              <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+              <Image src={track.coverUrl} alt={track.title} width={96} height={96} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <MusicIcon className="w-10 h-10 text-white" />
@@ -223,10 +224,11 @@ export default function SoundDetailPage({ params }: { params: Promise<{ soundId:
                   className="aspect-[9/16] bg-white/5 rounded-lg overflow-hidden relative group"
                 >
                   {video.thumbnailUrl ? (
-                    <img
+                    <Image
                       src={video.thumbnailUrl}
                       alt=""
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

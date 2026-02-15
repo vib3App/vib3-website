@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { VideoCameraIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import type { CreatorVideo } from '@/types/creator';
 import { formatCount } from '@/utils/format';
@@ -50,7 +51,7 @@ export function ContentTab({ videos }: ContentTabProps) {
           >
             <div className="w-32 aspect-video bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
               {video.thumbnailUrl ? (
-                <img src={video.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <VideoCameraIcon className="w-6 h-6 text-gray-600" />
