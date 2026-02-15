@@ -10,6 +10,7 @@ import { websocketService } from '@/services/websocket';
 import type { Conversation, Message } from '@/types';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { logger } from '@/utils/logger';
 
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -92,7 +93,7 @@ export default function MessagesPage() {
       const response = await messagesApi.getConversations();
       setConversations(response.items);
     } catch (error) {
-      console.error('Failed to load conversations:', error);
+      logger.error('Failed to load conversations:', error);
     } finally {
       setIsLoading(false);
     }

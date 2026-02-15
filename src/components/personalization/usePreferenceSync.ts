@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 
 interface SyncStatus {
   lastSynced: Date | null;
@@ -45,7 +46,7 @@ export function usePreferenceSync() {
         };
         setPreferences(prefs);
       } catch (_e) {
-        console.error('Failed to load preferences');
+        logger.error('Failed to load preferences');
       }
     };
     loadPreferences();

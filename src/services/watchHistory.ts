@@ -4,6 +4,7 @@
  */
 
 import { videoApi } from './api';
+import { logger } from '@/utils/logger';
 
 export interface WatchHistoryEntry {
   videoId: string;
@@ -36,7 +37,7 @@ class WatchHistoryService {
         this.history = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Failed to load watch history:', error);
+      logger.error('Failed to load watch history:', error);
       this.history = [];
     }
   }
@@ -47,7 +48,7 @@ class WatchHistoryService {
       const trimmed = this.history.slice(0, MAX_HISTORY);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
     } catch (error) {
-      console.error('Failed to save watch history:', error);
+      logger.error('Failed to save watch history:', error);
     }
   }
 

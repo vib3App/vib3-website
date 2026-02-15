@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { adminApi, type FlaggedReporter } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
+import { logger } from '@/utils/logger';
 
 export default function FlaggedReportersPage() {
   const addToast = useToastStore(s => s.addToast);
@@ -25,7 +26,7 @@ export default function FlaggedReportersPage() {
       setReporters(users);
     } catch (err) {
       setError('Failed to load flagged reporters');
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }
@@ -38,7 +39,7 @@ export default function FlaggedReportersPage() {
       // Remove from list
       setReporters(reporters.filter((r) => r._id !== userId));
     } catch (err) {
-      console.error('Failed to clear flag:', err);
+      logger.error('Failed to clear flag:', err);
       addToast('Failed to clear flagged status');
     } finally {
       setActionLoading(null);
@@ -55,7 +56,7 @@ export default function FlaggedReportersPage() {
       setReporters(reporters.filter((r) => r._id !== userId));
       addToast('User banned successfully', 'success');
     } catch (err) {
-      console.error('Failed to ban user:', err);
+      logger.error('Failed to ban user:', err);
       addToast('Failed to ban user');
     } finally {
       setActionLoading(null);
@@ -108,7 +109,7 @@ export default function FlaggedReportersPage() {
                     {reporter.profilePicture ? (
                       <Image
                         src={reporter.profilePicture}
-                        alt=""
+                        alt={reporter.username + "'s avatar"}
                         width={56}
                         height={56}
                         className="w-14 h-14 rounded-full object-cover"

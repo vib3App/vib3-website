@@ -80,7 +80,7 @@ export function PlaylistHeader({
             Play All
           </button>
 
-          <button onClick={onShare} className="p-2.5 glass rounded-full hover:bg-white/10 transition">
+          <button onClick={onShare} className="p-2.5 glass rounded-full hover:bg-white/10 transition" aria-label="Share playlist">
             <ShareIcon className="w-5 h-5 text-white" />
           </button>
 
@@ -92,7 +92,7 @@ export function PlaylistHeader({
               >
                 <PencilIcon className="w-5 h-5 text-white" />
               </Link>
-              <button onClick={onDelete} className="p-2.5 glass rounded-full hover:bg-white/10 transition">
+              <button onClick={onDelete} className="p-2.5 glass rounded-full hover:bg-white/10 transition" aria-label="Delete playlist">
                 <TrashIcon className="w-5 h-5 text-red-400" />
               </button>
             </>

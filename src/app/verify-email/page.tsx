@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
+import { logger } from '@/utils/logger';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -52,7 +53,7 @@ function VerifyEmailContent() {
       await authApi.resendVerificationEmail();
       setResendSuccess(true);
     } catch (err) {
-      console.error('Failed to resend verification email:', err);
+      logger.error('Failed to resend verification email:', err);
     } finally {
       setIsResending(false);
     }

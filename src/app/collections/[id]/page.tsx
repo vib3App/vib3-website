@@ -8,6 +8,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { formatCount } from '@/utils/format';
 import type { Collection } from '@/types';
 import { collectionsApi } from '@/services/api';
+import { logger } from '@/utils/logger';
 
 function formatDuration(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -31,7 +32,7 @@ function EditPlaylistModal({ isOpen, onClose, collection, onUpdated }: { isOpen:
       const updated = await collectionsApi.updatePlaylist(collection.id, { name: name.trim(), description: description.trim() || undefined, isPrivate });
       onUpdated(updated);
       onClose();
-    } catch (error) { console.error('Failed to update playlist:', error); }
+    } catch (error) { logger.error('Failed to update playlist:', error); }
     finally { setIsSubmitting(false); }
   };
 
@@ -51,7 +52,7 @@ function EditPlaylistModal({ isOpen, onClose, collection, onUpdated }: { isOpen:
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full glass text-white px-4 py-3 rounded-xl outline-none resize-none" />
           </div>
           <label className="flex items-center gap-3 cursor-pointer">
-            <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isPrivate ? 'bg-purple-500' : 'glass border border-white/20'}`} onClick={() => setIsPrivate(!isPrivate)}>
+            <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isPrivate ? 'bg-purple-500' : 'glass border border-white/20'}`} onClick={() => setIsPrivate(!isPrivate)} role="checkbox" aria-checked={isPrivate} tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsPrivate(!isPrivate); } }}>
               {isPrivate && <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
             </div>
             <span className="text-white">Private playlist</span>
@@ -79,7 +80,7 @@ export default function CollectionPage() {
       <main className="pt-20 md:pt-16 pb-8">
         <header className="sticky top-0 z-40 glass-heavy border-b border-white/5">
           <div className="flex items-center gap-4 px-4 h-14">
-            <button onClick={c.goBack} className="p-2 -ml-2 text-white/50 hover:text-white">
+            <button onClick={c.goBack} className="p-2 -ml-2 text-white/50 hover:text-white" aria-label="Go back">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
             <h1 className="text-xl font-bold text-white flex-1 truncate">{c.collection?.name || 'Loading...'}</h1>

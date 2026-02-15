@@ -48,7 +48,3 @@ export interface NotificationSettings {
   systemUpdates: boolean;
 }
 
-export interface NotificationGroup {
-  date: string;
-  notifications: Notification[];
-}

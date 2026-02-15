@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { userApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { logger } from '@/utils/logger';
 
 interface BlockedUser {
   id: string;
@@ -88,7 +89,7 @@ export default function BlockedUsersPage() {
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load blocked users:', error);
+      logger.error('Failed to load blocked users:', error);
     } finally {
       setIsLoading(false);
     }
@@ -111,7 +112,7 @@ export default function BlockedUsersPage() {
       await userApi.unblockUser(userId);
       setUsers(prev => prev.filter(u => u.id !== userId));
     } catch (error) {
-      console.error('Failed to unblock user:', error);
+      logger.error('Failed to unblock user:', error);
     } finally {
       setUnblockingId(null);
     }

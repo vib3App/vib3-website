@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { uploadApi } from '@/services/api';
 import type { VideoDraft } from '@/types';
 import type { UploadStep } from './types';
+import { logger } from '@/utils/logger';
 
 interface DraftHandlers {
   setCaption: (caption: string) => void;
@@ -48,7 +49,7 @@ export function useUploadDrafts(
       const data = await uploadApi.getDrafts();
       setDrafts(data);
     } catch (err) {
-      console.error('Failed to load drafts:', err);
+      logger.error('Failed to load drafts:', err);
     }
   }, [setDrafts]);
 
@@ -73,7 +74,7 @@ export function useUploadDrafts(
       await loadDrafts();
       resetForm();
     } catch (err) {
-      console.error('Failed to save draft:', err);
+      logger.error('Failed to save draft:', err);
     } finally {
       setIsSavingDraft(false);
     }
@@ -103,7 +104,7 @@ export function useUploadDrafts(
       await uploadApi.deleteDraft(draftId);
       setDrafts(prev => prev.filter(d => d.id !== draftId));
     } catch (err) {
-      console.error('Failed to delete draft:', err);
+      logger.error('Failed to delete draft:', err);
     }
   }, [setDrafts]);
 

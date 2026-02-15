@@ -4,9 +4,9 @@
 
 export type ProductCategory = 'effects' | 'digital' | 'creator' | 'merch' | 'subscription' | 'bundle';
 
-export type ProductType = 'physical' | 'digital' | 'subscription' | 'service';
+type ProductType = 'physical' | 'digital' | 'subscription' | 'service';
 
-export type DigitalContentType =
+type DigitalContentType =
   | 'effect_pack'
   | 'filter_pack'
   | 'ar_filter'
@@ -16,27 +16,27 @@ export type DigitalContentType =
   | 'intro_template'
   | 'other';
 
-export interface ProductImage {
+interface ProductImage {
   url: string;
   alt?: string;
   isPrimary?: boolean;
 }
 
-export interface ProductDigital {
+interface ProductDigital {
   contentType?: DigitalContentType;
   itemCount?: number;
   contentId?: string;
   duration?: number; // 0 = permanent
 }
 
-export interface ProductStats {
+interface ProductStats {
   purchaseCount: number;
   viewCount: number;
   rating: number;
   reviewCount: number;
 }
 
-export interface ProductCreator {
+interface ProductCreator {
   _id: string;
   username: string;
   avatar?: string;
@@ -81,10 +81,10 @@ export interface CartItem {
   quantity: number;
 }
 
-export type OrderStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded' | 'cancelled';
+type OrderStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded' | 'cancelled';
 export type PaymentMethod = 'stripe' | 'coins' | 'free';
 
-export interface OrderItem {
+interface OrderItem {
   productId: string | Product;
   name: string;
   quantity: number;
@@ -94,7 +94,7 @@ export interface OrderItem {
   productType: string;
 }
 
-export interface ShippingAddress {
+interface ShippingAddress {
   name: string;
   line1: string;
   line2?: string;

@@ -39,6 +39,7 @@ export function FeedQueuePanel({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all"
+            aria-label="Close queue"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -66,7 +67,7 @@ export function FeedQueuePanel({
               {video.thumbnailUrl ? (
                 <Image
                   src={video.thumbnailUrl}
-                  alt=""
+                  alt={"@" + video.username + " video thumbnail"}
                   width={64}
                   height={40}
                   className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"

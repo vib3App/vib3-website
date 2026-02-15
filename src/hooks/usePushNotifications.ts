@@ -6,8 +6,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pushNotificationService, type NotificationPreferences } from '@/services/pushNotifications';
 import { useAuthStore } from '@/stores/authStore';
+import { logger } from '@/utils/logger';
 
-export interface UsePushNotificationsResult {
+interface UsePushNotificationsResult {
   isSupported: boolean;
   isLoading: boolean;
   isSubscribed: boolean;
@@ -52,7 +53,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
           setPreferences(prefs);
         }
       } catch (error) {
-        console.error('Failed to initialize push notifications:', error);
+        logger.error('Failed to initialize push notifications:', error);
       } finally {
         setIsLoading(false);
       }
@@ -78,7 +79,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
       return false;
     } catch (error) {
-      console.error('Failed to subscribe:', error);
+      logger.error('Failed to subscribe:', error);
       return false;
     } finally {
       setIsLoading(false);
@@ -100,7 +101,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
       return success;
     } catch (error) {
-      console.error('Failed to unsubscribe:', error);
+      logger.error('Failed to unsubscribe:', error);
       return false;
     } finally {
       setIsLoading(false);

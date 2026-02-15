@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { messagesApi } from '@/services/api';
 import { websocketService } from '@/services/websocket';
 import type { Message, Conversation, TypingIndicator } from '@/types';
+import { logger } from '@/utils/logger';
 
 export function useConversation() {
   const params = useParams();
@@ -39,7 +40,7 @@ export function useConversation() {
       setMessages(messagesData.items.reverse());
       await messagesApi.markAsRead(conversationId);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      logger.error('Failed to load messages:', error);
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +119,7 @@ export function useConversation() {
       setMessages(prev => prev.map(m => m.id === optimisticMessage.id ? sent : m));
       websocketService.sendTyping(conversationId, false);
     } catch (error) {
-      console.error('Failed to send message:', error);
+      logger.error('Failed to send message:', error);
       setMessages(prev => prev.map(m =>
         m.id === optimisticMessage.id ? { ...m, status: 'failed' as const } : m
       ));

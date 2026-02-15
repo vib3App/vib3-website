@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { adminApi, type ContentReport, type ModerationAction } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
 import { ReportCard } from '@/components/admin';
+import { logger } from '@/utils/logger';
 
 interface ReportWithUsers extends ContentReport {
   reporter?: { _id: string; username: string; email: string; profilePicture?: string; unfoundedReportCount?: number };
@@ -46,7 +47,7 @@ export default function ReportsPage() {
         if (!cancelled) {
           setError('Failed to load reports');
         }
-        console.error(err);
+        logger.error(err);
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -64,7 +65,7 @@ export default function ReportsPage() {
       setRefreshKey(k => k + 1);
       addToast(`Action "${action}" completed successfully`, 'success');
     } catch (err) {
-      console.error('Action failed:', err);
+      logger.error('Action failed:', err);
       addToast('Failed to take action. Please try again.');
     } finally {
       setActionLoading(false);

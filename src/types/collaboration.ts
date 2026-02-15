@@ -65,22 +65,6 @@ export interface Remix {
   createdAt: string;
 }
 
-export interface CreateRemixInput {
-  type: RemixType;
-  originalVideoId: string;
-  videoFile: File;
-  title?: string;
-  description?: string;
-  splitPosition?: number; // For duet/stitch: 0-100 percentage
-}
-
-export interface RemixSettings {
-  allowEcho: boolean;
-  allowDuet: boolean;
-  allowStitch: boolean;
-  allowRemix: boolean;
-}
-
 // ========== Watch Parties ==========
 
 export type WatchPartyStatus = 'waiting' | 'playing' | 'paused' | 'ended';

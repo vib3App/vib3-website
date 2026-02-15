@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/authStore';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
+import { logger } from '@/utils/logger';
 
 // Vibe types matching Flutter app
 type VibeType = 'Energetic' | 'Chill' | 'Creative' | 'Social' | 'Focused';
@@ -106,7 +107,7 @@ export default function VibeMeterPage() {
       // Navigate to feed with vibe param — backend filters via ?vibe= query
       router.push('/?vibe=' + encodeURIComponent(currentVibe));
     } catch (error) {
-      console.error('Failed to apply vibe:', error);
+      logger.error('Failed to apply vibe:', error);
     } finally {
       setIsApplying(false);
     }

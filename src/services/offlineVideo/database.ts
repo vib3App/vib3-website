@@ -1,4 +1,5 @@
 import { DB_NAME, DB_VERSION, VIDEOS_STORE, METADATA_STORE, type OfflineVideoMetadata } from './types';
+import { logger } from '@/utils/logger';
 
 let db: IDBDatabase | null = null;
 let isInitialized = false;
@@ -15,7 +16,7 @@ export async function initializeDb(): Promise<boolean> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      console.error('Failed to open IndexedDB');
+      logger.error('Failed to open IndexedDB');
       resolve(false);
     };
 

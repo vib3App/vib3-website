@@ -3,6 +3,7 @@
 import { useCallback, useRef } from 'react';
 import { uploadApi, TusUploadManager } from '@/services/api';
 import type { UploadStep } from './types';
+import { logger } from '@/utils/logger';
 
 interface UploadProcessState {
   videoFile: File | null;
@@ -109,7 +110,7 @@ export function useUploadProcess(
       handlers.setThumbnailOptions(prev => [thumbnailUrl, ...prev]);
       return thumbnailUrl;
     } catch (err) {
-      console.error('Failed to upload thumbnail:', err);
+      logger.error('Failed to upload thumbnail:', err);
       return null;
     }
   }, [handlers]);

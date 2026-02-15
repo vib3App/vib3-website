@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import type { FeedCategory } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface FollowCategoryPickerProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export function FollowCategoryPicker({
         const userCategoryIds = await getUserCategories(followedUserId);
         setSelectedCategories(new Set(userCategoryIds));
       } catch (error) {
-        console.error('Failed to load user categories:', error);
+        logger.error('Failed to load user categories:', error);
       } finally {
         setIsLoading(false);
       }
@@ -79,7 +80,7 @@ export function FollowCategoryPicker({
         });
       }
     } catch (error) {
-      console.error('Failed to toggle category:', error);
+      logger.error('Failed to toggle category:', error);
     } finally {
       setLoadingCategories(prev => {
         const newSet = new Set(prev);

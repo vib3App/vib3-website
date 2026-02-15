@@ -13,7 +13,6 @@ import type { Video } from '@/types';
 
 // Watch history stored in localStorage
 const HISTORY_KEY = 'vib3_watch_history';
-const MAX_HISTORY_ITEMS = 100;
 
 interface WatchHistoryItem {
   video: Video;
@@ -35,21 +34,6 @@ function getWatchHistory(): WatchHistoryItem[] {
   }
 }
 
-export function addToWatchHistory(video: Video): void {
-  if (typeof window === 'undefined' || !video?.id) return;
-  try {
-    const history = getWatchHistory();
-    // Remove if already exists (will re-add at top)
-    const filtered = history.filter(item => item?.video?.id && item.video.id !== video.id);
-    // Add to beginning
-    filtered.unshift({ video, watchedAt: new Date().toISOString() });
-    // Limit size
-    const trimmed = filtered.slice(0, MAX_HISTORY_ITEMS);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
-  } catch {
-    // Ignore localStorage errors
-  }
-}
 
 export function clearWatchHistory(): void {
   if (typeof window === 'undefined') return;

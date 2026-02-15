@@ -42,6 +42,7 @@ export const LiveStreamChat = forwardRef<HTMLDivElement, LiveStreamChatProps>(
               type="submit"
               disabled={!chatMessage.trim()}
               className="p-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-full transition"
+              aria-label="Send message"
             >
               <PaperAirplaneIcon className="w-5 h-5" />
             </button>
@@ -57,7 +58,7 @@ function ChatMessage({ message }: { message: LiveChatMessage }) {
     <div className="flex gap-2">
       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex-shrink-0 overflow-hidden">
         {message.avatar ? (
-          <Image src={message.avatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
+          <Image src={message.avatar} alt={message.username + "'s avatar"} width={32} height={32} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-xs font-bold">
             {message.username[0].toUpperCase()}

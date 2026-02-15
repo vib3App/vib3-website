@@ -8,6 +8,7 @@ import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { useAuthStore } from '@/stores/authStore';
 import type { Video } from '@/types';
 import type { FeedTab, VibeType } from '@/components/feed/FeedHeader';
+import { logger } from '@/utils/logger';
 
 // Stable empty array to prevent re-renders when no videos
 const EMPTY_VIDEOS: Video[] = [];
@@ -103,7 +104,7 @@ export function useFeed() {
 
       response.items.slice(0, 3).forEach(video => preloadVideo(video.videoUrl));
     } catch (err) {
-      console.error('Failed to load videos:', err);
+      logger.error('Failed to load videos:', err);
       // Track this category as errored to prevent retry loops
       const errorKey = `${activeTab}-${selectedVibe}-${selectedCategory?.id}`;
       erroredCategoriesRef.current.add(errorKey);

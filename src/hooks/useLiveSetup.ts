@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { liveApi } from '@/services/api';
 import type { CreateLiveStreamInput, LiveKitCredentials } from '@/types';
+import { logger } from '@/utils/logger';
 
 export type StreamMode = 'camera' | 'screen' | 'both';
 export type SetupStep = 'setup' | 'preview' | 'starting' | 'live';
@@ -44,7 +45,7 @@ export function useLiveSetup() {
         setCameras(devices.filter(d => d.kind === 'videoinput'));
         setMics(devices.filter(d => d.kind === 'audioinput'));
       } catch (err) {
-        console.error('Failed to get devices:', err);
+        logger.error('Failed to get devices:', err);
         setError('Camera/microphone access denied. Please grant permissions.');
       }
     };
@@ -85,7 +86,7 @@ export function useLiveSetup() {
       setStep('preview');
       setError(null);
     } catch (err) {
-      console.error('Failed to start preview:', err);
+      logger.error('Failed to start preview:', err);
       setError('Failed to access camera/screen. Please try again.');
     }
   }, [streamMode, selectedCamera, selectedMic, mediaStream]);
@@ -152,7 +153,7 @@ export function useLiveSetup() {
         }
       }
     } catch (err: unknown) {
-      console.error('Failed to create stream:', err);
+      logger.error('Failed to create stream:', err);
       const axiosErr = err as { response?: { status?: number; data?: { error?: string } } };
       if (axiosErr?.response?.status === 401) {
         setError('Please login to start a live stream.');
@@ -170,7 +171,7 @@ export function useLiveSetup() {
       try {
         await liveApi.endStream(streamId);
       } catch (err) {
-        console.error('Failed to end stream:', err);
+        logger.error('Failed to end stream:', err);
       }
     }
     // Stop media tracks

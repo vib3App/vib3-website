@@ -11,6 +11,7 @@ import { persist } from 'zustand/middleware';
 import { feedCategoryApi } from '@/services/api';
 import type { FeedCategory, FeedCategorySettings } from '@/types';
 import { getDefaultCategories, MAX_CUSTOM_CATEGORIES, isAssignableCategory } from '@/types';
+import { logger } from '@/utils/logger';
 
 // Get defaults once at module load
 const DEFAULT_CATEGORIES = getDefaultCategories();
@@ -89,7 +90,7 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
             ...(selectedStillExists ? {} : { selectedCategory: categories[0] }),
           });
         } catch (error) {
-          console.error('Failed to load categories:', error);
+          logger.error('Failed to load categories:', error);
           set({ error: 'Failed to load categories', isLoading: false });
         }
       },
@@ -117,7 +118,7 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
           set({ error: 'Failed to create category', isLoading: false });
           return null;
         } catch (error) {
-          console.error('Failed to create category:', error);
+          logger.error('Failed to create category:', error);
           set({ error: 'Failed to create category', isLoading: false });
           return null;
         }
@@ -141,7 +142,7 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
           set({ error: 'Failed to update category', isLoading: false });
           return false;
         } catch (error) {
-          console.error('Failed to update category:', error);
+          logger.error('Failed to update category:', error);
           set({ error: 'Failed to update category', isLoading: false });
           return false;
         }
@@ -173,7 +174,7 @@ export const useFeedCategoryStore = create<FeedCategoryState>()(
           set({ error: 'Failed to delete category', isLoading: false });
           return false;
         } catch (error) {
-          console.error('Failed to delete category:', error);
+          logger.error('Failed to delete category:', error);
           set({ error: 'Failed to delete category', isLoading: false });
           return false;
         }

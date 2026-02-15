@@ -2,6 +2,7 @@
 
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import { logger } from '@/utils/logger';
 
 let ffmpeg: FFmpeg | null = null;
 let ffmpegLoaded = false;
@@ -106,7 +107,7 @@ export async function mergeVideoClips(
     return outputBlob;
 
   } catch (error) {
-    console.error('FFmpeg merge error:', error);
+    logger.error('FFmpeg merge error:', error);
     throw new Error('Failed to merge video clips');
   }
 }

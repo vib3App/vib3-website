@@ -10,6 +10,7 @@ import { messagesApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import type { Conversation } from '@/types';
+import { logger } from '@/utils/logger';
 
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
@@ -122,7 +123,7 @@ export default function MessageRequestsPage() {
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load message requests:', error);
+      logger.error('Failed to load message requests:', error);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +148,7 @@ export default function MessageRequestsPage() {
       // Optionally navigate to the conversation
       router.push(`/messages/${conversationId}`);
     } catch (error) {
-      console.error('Failed to accept request:', error);
+      logger.error('Failed to accept request:', error);
     } finally {
       setProcessingId(null);
     }
@@ -159,7 +160,7 @@ export default function MessageRequestsPage() {
       await messagesApi.declineRequest(conversationId);
       setRequests(prev => prev.filter(r => r.id !== conversationId));
     } catch (error) {
-      console.error('Failed to decline request:', error);
+      logger.error('Failed to decline request:', error);
     } finally {
       setProcessingId(null);
     }

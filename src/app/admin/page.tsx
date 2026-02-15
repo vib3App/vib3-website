@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { adminApi, type ReportStats } from '@/services/api';
 import Link from 'next/link';
+import { logger } from '@/utils/logger';
 
 interface DashboardStats {
   reports: ReportStats;
@@ -35,7 +36,7 @@ export default function AdminDashboard() {
       });
     } catch (err) {
       setError('Failed to load dashboard stats');
-      console.error(err);
+      logger.error(err);
     } finally {
       setLoading(false);
     }

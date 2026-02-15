@@ -31,7 +31,7 @@ export function TierEditorCard({
     <div className="glass rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-white/50 text-sm">Tier {index + 1}</span>
-        <button onClick={onRemove} className="p-1 hover:bg-red-500/20 rounded transition">
+        <button onClick={onRemove} className="p-1 hover:bg-red-500/20 rounded transition" aria-label="Remove tier">
           <TrashIcon className="w-4 h-4 text-red-400" />
         </button>
       </div>

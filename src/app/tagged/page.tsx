@@ -11,6 +11,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 function VideoThumbnail({ video }: { video: Video }) {
   return (
@@ -70,7 +71,7 @@ export default function TaggedVideosPage() {
       setHasMore(response.pagination?.hasMore || false);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load tagged videos:', error);
+      logger.error('Failed to load tagged videos:', error);
     } finally {
       setIsLoading(false);
     }

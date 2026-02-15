@@ -19,7 +19,7 @@ export function TopSupportersSection({ supporters }: TopSupportersSectionProps) 
             <div className="relative inline-block mb-3">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
                 {supporter.avatar ? (
-                  <Image src={supporter.avatar} alt="" width={64} height={64} className="w-full h-full object-cover" />
+                  <Image src={supporter.avatar} alt={supporter.username + "'s avatar"} width={64} height={64} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xl font-bold">
                     {supporter.username[0].toUpperCase()}

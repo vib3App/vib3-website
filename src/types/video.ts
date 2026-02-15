@@ -56,7 +56,7 @@ export interface PaginatedResponse<T> {
   total?: number;
 }
 
-export interface MusicInfo {
+interface MusicInfo {
   id: string;
   title: string;
   artist: string;
@@ -67,13 +67,6 @@ export interface VideoFeedResponse {
   videos: Video[];
   nextCursor?: string;
   hasMore: boolean;
-}
-
-export interface VideoStats {
-  viewCount: number;
-  likeCount: number;
-  commentCount: number;
-  shareCount: number;
 }
 
 export type VideoQuality = 'auto' | '1080p' | '720p' | '480p' | '360p';

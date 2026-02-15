@@ -25,7 +25,7 @@ export interface Message {
   status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 }
 
-export interface MessageReaction {
+interface MessageReaction {
   emoji: string;
   userId: string;
   username: string;
@@ -45,7 +45,7 @@ export interface Conversation {
   updatedAt: string;
 }
 
-export interface ConversationParticipant {
+interface ConversationParticipant {
   userId: string;
   username: string;
   avatar?: string;

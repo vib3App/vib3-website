@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type { Achievement, AchievementStats, LeaderboardEntry } from '@/types/achievement';
+import { logger } from '@/utils/logger';
 
 interface UserAchievementsResponse {
   achievements: Achievement[];
@@ -13,7 +14,7 @@ export const achievementsApi = {
       const response = await apiClient.get('/achievements');
       return response.data.achievements || response.data || [];
     } catch (error) {
-      console.error('Failed to get achievements:', error);
+      logger.error('Failed to get achievements:', error);
       return [];
     }
   },
@@ -27,7 +28,7 @@ export const achievementsApi = {
         stats: response.data.stats,
       };
     } catch (error) {
-      console.error('Failed to get user achievements:', error);
+      logger.error('Failed to get user achievements:', error);
       return { achievements: [] };
     }
   },
@@ -41,7 +42,7 @@ export const achievementsApi = {
         stats: response.data.stats,
       };
     } catch (error) {
-      console.error('Failed to get other user achievements:', error);
+      logger.error('Failed to get other user achievements:', error);
       return { achievements: [] };
     }
   },
@@ -52,7 +53,7 @@ export const achievementsApi = {
       const response = await apiClient.post('/achievements/check');
       return response.data.newlyUnlocked || [];
     } catch (error) {
-      console.error('Failed to check achievements:', error);
+      logger.error('Failed to check achievements:', error);
       return [];
     }
   },
@@ -65,7 +66,7 @@ export const achievementsApi = {
       });
       return response.data.entries || response.data || [];
     } catch (error) {
-      console.error('Failed to get leaderboard:', error);
+      logger.error('Failed to get leaderboard:', error);
       return [];
     }
   },

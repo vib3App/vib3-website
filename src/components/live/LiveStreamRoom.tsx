@@ -22,6 +22,7 @@ import {
   MicrophoneIcon as MicOffIcon,
   VideoCameraIcon as VideoOffIcon,
 } from '@heroicons/react/24/outline';
+import { logger } from '@/utils/logger';
 
 interface LiveStreamRoomProps {
   token: string;
@@ -192,7 +193,7 @@ export function LiveStreamRoom({
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const handleError = useCallback((error: Error) => {
-    console.error('LiveKit error:', error);
+    logger.error('LiveKit error:', error);
     setConnectionError(error.message);
   }, []);
 

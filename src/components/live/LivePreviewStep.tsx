@@ -54,16 +54,16 @@ export function LivePreviewStep({
             </div>
           )}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3">
-            <button onClick={onToggleAudio} className={`p-3 rounded-full transition ${audioEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`}>
+            <button onClick={onToggleAudio} className={`p-3 rounded-full transition ${audioEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`} aria-label={audioEnabled ? "Mute microphone" : "Unmute microphone"}>
               <MicrophoneIcon className="w-5 h-5" />
             </button>
-            <button onClick={onToggleVideo} className={`p-3 rounded-full transition ${videoEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`}>
+            <button onClick={onToggleVideo} className={`p-3 rounded-full transition ${videoEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`} aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}>
               <VideoCameraIcon className="w-5 h-5" />
             </button>
-            <button onClick={onCaptureThumbnail} className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition" title="Capture thumbnail">
+            <button onClick={onCaptureThumbnail} className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition" title="Capture thumbnail" aria-label="Capture thumbnail">
               <PhotoIcon className="w-5 h-5" />
             </button>
-            <button onClick={onBackToSetup} className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition">
+            <button onClick={onBackToSetup} className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition" aria-label="Back to setup">
               <Cog6ToothIcon className="w-5 h-5" />
             </button>
           </div>

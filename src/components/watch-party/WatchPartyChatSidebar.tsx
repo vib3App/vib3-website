@@ -73,7 +73,7 @@ function ParticipantsList({ participants }: { participants: WatchPartyParticipan
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
               {participant.avatar ? (
-                <Image src={participant.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
+                <Image src={participant.avatar} alt={participant.username + "'s avatar"} width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                   {participant.username[0].toUpperCase()}
@@ -120,7 +120,7 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(
             <div key={msg.id} className="flex gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex-shrink-0 overflow-hidden">
                 {msg.avatar ? (
-                  <Image src={msg.avatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
+                  <Image src={msg.avatar} alt={msg.username + "'s avatar"} width={32} height={32} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-xs font-bold">
                     {msg.username[0].toUpperCase()}
@@ -152,6 +152,7 @@ const ChatMessages = forwardRef<HTMLDivElement, ChatMessagesProps>(
               type="submit"
               disabled={!chatMessage.trim()}
               className="p-2 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-full transition"
+              aria-label="Send message"
             >
               <PaperAirplaneIcon className="w-5 h-5" />
             </button>

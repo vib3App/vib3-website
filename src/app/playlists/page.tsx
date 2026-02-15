@@ -10,6 +10,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { PlaylistCard, CreatePlaylistModal } from '@/components/playlists';
 import type { Playlist } from '@/types/playlist';
+import { logger } from '@/utils/logger';
 
 export default function PlaylistsPage() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function PlaylistsPage() {
       const data = await playlistsApi.getUserPlaylists();
       setPlaylists(data);
     } catch (error) {
-      console.error('Failed to load playlists:', error);
+      logger.error('Failed to load playlists:', error);
     } finally {
       setIsLoading(false);
     }

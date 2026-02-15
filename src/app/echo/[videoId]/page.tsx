@@ -9,6 +9,7 @@ import { BottomNav } from '@/components/ui/BottomNav';
 import { echoApi, type Echo } from '@/services/api/echo';
 import { videoApi } from '@/services/api/video';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 export default function EchoPage({ params }: { params: Promise<{ videoId: string }> }) {
   const { videoId } = use(params);
@@ -31,7 +32,7 @@ export default function EchoPage({ params }: { params: Promise<{ videoId: string
           setEchoes(echoData.echoes);
         }
       } catch (error) {
-        console.error('Failed to load data:', error);
+        logger.error('Failed to load data:', error);
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -79,7 +80,7 @@ export default function EchoPage({ params }: { params: Promise<{ videoId: string
                 {originalVideo.thumbnailUrl ? (
                   <Image
                     src={originalVideo.thumbnailUrl}
-                    alt=""
+                    alt={(originalVideo.caption || "Video") + " thumbnail"}
                     fill
                     className="object-cover"
                   />
@@ -131,7 +132,7 @@ export default function EchoPage({ params }: { params: Promise<{ videoId: string
                 {echo.responseVideo?.thumbnailUrl ? (
                   <Image
                     src={echo.responseVideo.thumbnailUrl}
-                    alt=""
+                    alt={"Echo response by @" + (echo.responseVideo?.username || "user")}
                     fill
                     className="object-cover"
                   />

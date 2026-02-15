@@ -12,6 +12,7 @@ import type {
   CreateCapsuleInput,
   CapsuleReveal,
 } from '@/types/capsule';
+import { logger } from '@/utils/logger';
 
 interface BackendCapsule {
   id?: string;
@@ -100,7 +101,7 @@ export const capsuleApi = {
         hasMore: data.pagination ? data.pagination.page < data.pagination.pages : false,
       };
     } catch (error) {
-      console.error('Error fetching upcoming capsules:', error);
+      logger.error('Error fetching upcoming capsules:', error);
       return { capsules: [], hasMore: false };
     }
   },
@@ -119,7 +120,7 @@ export const capsuleApi = {
         hasMore: data.pagination ? data.pagination.page < data.pagination.pages : false,
       };
     } catch (error) {
-      console.error('Error fetching unlocked capsules:', error);
+      logger.error('Error fetching unlocked capsules:', error);
       return { capsules: [], hasMore: false };
     }
   },
@@ -132,7 +133,7 @@ export const capsuleApi = {
       const { data } = await apiClient.get<{ capsules: BackendCapsule[] }>('/capsules/my');
       return (data.capsules || []).map(transformCapsule);
     } catch (error) {
-      console.error('Error fetching my capsules:', error);
+      logger.error('Error fetching my capsules:', error);
       return [];
     }
   },
@@ -148,7 +149,7 @@ export const capsuleApi = {
       });
       return (data.capsules || []).map(transformCapsule);
     } catch (error) {
-      console.error('Error fetching received capsules:', error);
+      logger.error('Error fetching received capsules:', error);
       return [];
     }
   },

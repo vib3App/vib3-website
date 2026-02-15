@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { capsuleApi } from '@/services/api/capsule';
 import type { TimeCapsule } from '@/types/capsule';
+import { logger } from '@/utils/logger';
 
 export type CapsuleTab = 'upcoming' | 'unlocked' | 'my' | 'received';
 
@@ -35,7 +36,7 @@ export function useCapsules() {
         }
         setCapsules(data);
       } catch (err) {
-        console.error('Failed to fetch capsules:', err);
+        logger.error('Failed to fetch capsules:', err);
       } finally {
         setLoading(false);
       }
@@ -58,7 +59,7 @@ export function useCapsules() {
         setSubscribedIds(prev => new Set([...prev, capsuleId]));
       }
     } catch (err) {
-      console.error('Failed to toggle subscription:', err);
+      logger.error('Failed to toggle subscription:', err);
     }
   };
 

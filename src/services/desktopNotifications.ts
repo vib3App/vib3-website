@@ -3,6 +3,7 @@
  * Handles browser push notifications
  */
 import type { Notification as AppNotification } from '@/types';
+import { logger } from '@/utils/logger';
 
 class DesktopNotificationsService {
   private isSupported: boolean;
@@ -41,7 +42,7 @@ class DesktopNotificationsService {
       this.permission = await Notification.requestPermission();
       return this.permission;
     } catch (error) {
-      console.error('Failed to request notification permission:', error);
+      logger.error('Failed to request notification permission:', error);
       return 'denied';
     }
   }
@@ -83,7 +84,7 @@ class DesktopNotificationsService {
         desktopNotification.close();
       }, 5000);
     } catch (error) {
-      console.error('Failed to show notification:', error);
+      logger.error('Failed to show notification:', error);
     }
   }
 
@@ -139,7 +140,7 @@ class DesktopNotificationsService {
       const registration = await navigator.serviceWorker.register('/sw.js');
       return registration;
     } catch (error) {
-      console.error('Service worker registration failed:', error);
+      logger.error('Service worker registration failed:', error);
       return null;
     }
   }
@@ -166,7 +167,7 @@ class DesktopNotificationsService {
       });
       return subscription;
     } catch (error) {
-      console.error('Failed to subscribe to push:', error);
+      logger.error('Failed to subscribe to push:', error);
       return null;
     }
   }
@@ -184,7 +185,7 @@ class DesktopNotificationsService {
       }
       return false;
     } catch (error) {
-      console.error('Failed to unsubscribe from push:', error);
+      logger.error('Failed to unsubscribe from push:', error);
       return false;
     }
   }

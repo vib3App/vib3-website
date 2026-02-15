@@ -1,6 +1,7 @@
 import { apiClient } from '../client';
 import type { UserProfile } from './types';
 import { profileApi } from './profile';
+import { logger } from '@/utils/logger';
 
 export const followApi = {
   async followUser(userId: string): Promise<{ following: boolean }> {
@@ -28,7 +29,7 @@ export const followApi = {
       }
       return data.followedUserIds || [];
     } catch (error) {
-      console.error('Failed to get followed users:', error);
+      logger.error('Failed to get followed users:', error);
       return [];
     }
   },
@@ -79,7 +80,7 @@ export const followApi = {
 
       return { users, hasMore: followingIds.length > limit };
     } catch (error) {
-      console.error('Failed to get following:', error);
+      logger.error('Failed to get following:', error);
       return { users: [], hasMore: false };
     }
   },

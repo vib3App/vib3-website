@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { feedApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 function formatCount(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -35,7 +36,7 @@ export default function HashtagPage() {
           setTotalViews(response.items.reduce((sum, v) => sum + (v.viewsCount || 0), 0));
         }
       } catch (error) {
-        console.error('Failed to load hashtag videos:', error);
+        logger.error('Failed to load hashtag videos:', error);
       } finally {
         if (!cancelled) {
           setIsLoading(false);

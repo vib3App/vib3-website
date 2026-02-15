@@ -91,7 +91,7 @@ function VoiceMessage({ url, duration, isOwn }: { url: string; duration?: number
 
   return (
     <div className={`flex items-center gap-2 px-3 py-2 rounded-2xl ${isOwn ? 'bg-purple-500' : 'glass'}`}>
-      <button onClick={togglePlay} className="w-8 h-8 flex items-center justify-center">
+      <button onClick={togglePlay} className="w-8 h-8 flex items-center justify-center" aria-label={isPlaying ? "Pause voice message" : "Play voice message"}>
         {isPlaying ? (
           <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" /></svg>
         ) : (

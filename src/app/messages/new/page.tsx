@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { userApi, messagesApi } from '@/services/api';
+import { logger } from '@/utils/logger';
 
 interface UserResult {
   _id: string;
@@ -47,7 +48,7 @@ export default function NewMessagePage() {
           isVerified: u.isVerified,
         })));
       } catch (error) {
-        console.error('Failed to search users:', error);
+        logger.error('Failed to search users:', error);
       } finally {
         setIsSearching(false);
       }
@@ -65,7 +66,7 @@ export default function NewMessagePage() {
       const conversation = await messagesApi.getOrCreateConversation(userId);
       router.push(`/messages/${conversation.id}`);
     } catch (error) {
-      console.error('Failed to create conversation:', error);
+      logger.error('Failed to create conversation:', error);
       setIsCreating(false);
     }
   };

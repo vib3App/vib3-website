@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { collectionsApi } from '@/services/api';
 import { useConfirmStore } from '@/stores/confirmStore';
 import type { Collection } from '@/types';
+import { logger } from '@/utils/logger';
 
 export type CollectionTabType = 'playlists' | 'saved' | 'liked' | 'history';
 
@@ -24,7 +25,7 @@ export function useCollections() {
       const collections = await collectionsApi.getCollections('playlist');
       setPlaylists(collections);
     } catch (error) {
-      console.error('Failed to load collections:', error);
+      logger.error('Failed to load collections:', error);
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +50,7 @@ export function useCollections() {
       await collectionsApi.deletePlaylist(id);
       setPlaylists(prev => prev.filter(p => p.id !== id));
     } catch (error) {
-      console.error('Failed to delete playlist:', error);
+      logger.error('Failed to delete playlist:', error);
     }
   };
 

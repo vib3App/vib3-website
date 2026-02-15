@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { logger } from '@/utils/logger';
 
 // Pre-generate waveform heights for playback visualization
 function generateWaveformHeights(count: number): number[] {
@@ -83,7 +84,7 @@ export function VoiceRecorder({
         });
       }, 1000);
     } catch (err) {
-      console.error('Failed to start recording:', err);
+      logger.error('Failed to start recording:', err);
       setError('Microphone access denied. Please allow microphone access to record voice comments.');
     }
   }, [maxDuration, stopRecording]);

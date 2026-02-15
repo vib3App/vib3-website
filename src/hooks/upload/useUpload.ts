@@ -6,6 +6,7 @@ import type { VideoDraft } from '@/types';
 import type { UploadStep } from './types';
 import { useUploadDrafts } from './useUploadDrafts';
 import { useUploadProcess } from './useUploadProcess';
+import { logger } from '@/utils/logger';
 
 export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
   const searchParams = useSearchParams();
@@ -118,7 +119,7 @@ export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
           setThumbnailOptions([thumbnail]);
         };
       } catch (err) {
-        console.error('Failed to load recorded video:', err);
+        logger.error('Failed to load recorded video:', err);
         setError('Failed to load recorded video');
       }
     };

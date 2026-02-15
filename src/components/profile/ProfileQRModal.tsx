@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { logger } from '@/utils/logger';
 
 interface ProfileQRModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export function ProfileQRModal({
         const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}&bgcolor=1A1F2E&color=ffffff`;
         setQrDataUrl(qrApiUrl);
       } catch (err) {
-        console.error('Failed to generate QR code:', err);
+        logger.error('Failed to generate QR code:', err);
       }
     };
 
@@ -49,7 +50,7 @@ export function ProfileQRModal({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy:', err);
     }
   };
 
@@ -63,7 +64,7 @@ export function ProfileQRModal({
         });
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
-          console.error('Share failed:', err);
+          logger.error('Share failed:', err);
         }
       }
     } else {

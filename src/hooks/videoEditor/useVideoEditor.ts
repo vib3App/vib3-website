@@ -7,6 +7,7 @@ import { EDITOR_FILTERS, type EditMode, type TextOverlay } from './types';
 import { useEditorTimeline } from './useEditorTimeline';
 import { useEditorOverlays } from './useEditorOverlays';
 import type { MusicTrack } from '@/types/sound';
+import { logger } from '@/utils/logger';
 
 export function useVideoEditor() {
   const searchParams = useSearchParams();
@@ -116,7 +117,7 @@ export function useVideoEditor() {
         router.push('/upload?from=edit');
       }
     } catch (error) {
-      console.error('Processing error:', error);
+      logger.error('Processing error:', error);
       setProcessingProgress({ stage: 'error', percent: 0, message: 'Processing failed' });
       setTimeout(() => {
         saveSettings(overlays.texts);

@@ -51,7 +51,7 @@ export function ContentTab({ videos }: ContentTabProps) {
           >
             <div className="w-32 aspect-video bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
               {video.thumbnailUrl ? (
-                <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
+                <Image src={video.thumbnailUrl} alt={video.title + " thumbnail"} fill className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <VideoCameraIcon className="w-6 h-6 text-gray-600" />
@@ -86,7 +86,7 @@ export function ContentTab({ videos }: ContentTabProps) {
               </div>
             </div>
 
-            <button className="p-2 hover:bg-white/10 rounded-full transition">
+            <button className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Video settings">
               <Cog6ToothIcon className="w-5 h-5" />
             </button>
           </div>

@@ -38,7 +38,7 @@ export function CapsuleCard({ capsule, isOwner, isSubscribed, onSubscribe }: Cap
         {capsule.status === 'unlocked' && capsule.thumbnailUrl ? (
           <Image
             src={capsule.thumbnailUrl}
-            alt=""
+            alt={capsule.title + " thumbnail"}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -49,6 +49,7 @@ export function CapsuleCard({ capsule, isOwner, isSubscribed, onSubscribe }: Cap
             fill
             className="object-cover blur-sm opacity-50"
           />
+
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/30 to-pink-500/30">
             <LockClosedIcon className="w-16 h-16 text-purple-400 opacity-50" />
@@ -116,7 +117,7 @@ export function CapsuleCard({ capsule, isOwner, isSubscribed, onSubscribe }: Cap
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 overflow-hidden">
             {capsule.creatorAvatar ? (
-              <Image src={capsule.creatorAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
+              <Image src={capsule.creatorAvatar} alt={capsule.creatorUsername + "'s avatar"} width={32} height={32} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xs font-bold">
                 {capsule.creatorUsername[0].toUpperCase()}

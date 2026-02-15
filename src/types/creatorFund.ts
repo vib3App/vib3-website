@@ -4,9 +4,9 @@
 
 export type CreatorFundTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
 
-export type MembershipStatus = 'pending' | 'active' | 'suspended' | 'rejected' | 'withdrawn';
+type MembershipStatus = 'pending' | 'active' | 'suspended' | 'rejected' | 'withdrawn';
 
-export type EarningStatus = 'calculating' | 'pending' | 'approved' | 'paid' | 'disputed' | 'cancelled';
+type EarningStatus = 'calculating' | 'pending' | 'approved' | 'paid' | 'disputed' | 'cancelled';
 
 export interface TierInfo {
   id: string;

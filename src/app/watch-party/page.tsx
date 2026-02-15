@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { WatchPartyCard, CreatePartyModal } from '@/components/watch-party';
 import type { WatchParty } from '@/types/collaboration';
+import { logger } from '@/utils/logger';
 
 export default function WatchPartiesPage() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function WatchPartiesPage() {
       else setParties(prev => [...prev, ...data.parties]);
       setHasMore(data.hasMore);
     } catch (error) {
-      console.error('Failed to fetch watch parties:', error);
+      logger.error('Failed to fetch watch parties:', error);
     } finally {
       if (isMountedRef.current) setLoading(false);
     }
@@ -68,7 +69,7 @@ export default function WatchPartiesPage() {
       setCreateIsPrivate(false);
       router.push(`/watch-party/${party.id}`);
     } catch (error) {
-      console.error('Failed to create watch party:', error);
+      logger.error('Failed to create watch party:', error);
       addToast('Failed to create watch party. Please try again.');
     } finally {
       setCreating(false);

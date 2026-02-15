@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 export interface Echo {
   id: string;
@@ -21,7 +22,7 @@ export const echoApi = {
         hasMore: response.data.hasMore ?? false,
       };
     } catch (error) {
-      console.error('Failed to get echoes:', error);
+      logger.error('Failed to get echoes:', error);
       return { echoes: [], hasMore: false };
     }
   },
@@ -35,7 +36,7 @@ export const echoApi = {
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to create echo:', error);
+      logger.error('Failed to create echo:', error);
       return null;
     }
   },
@@ -50,7 +51,7 @@ export const echoApi = {
         hasMore: response.data.hasMore ?? false,
       };
     } catch (error) {
-      console.error('Failed to get user echoes:', error);
+      logger.error('Failed to get user echoes:', error);
       return { echoes: [], hasMore: false };
     }
   },
@@ -61,7 +62,7 @@ export const echoApi = {
       await apiClient.delete(`/echoes/${echoId}`);
       return true;
     } catch (error) {
-      console.error('Failed to delete echo:', error);
+      logger.error('Failed to delete echo:', error);
       return false;
     }
   },

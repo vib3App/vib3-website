@@ -140,7 +140,7 @@ export function ActionButtons({
         >
           <GiftIcon className="w-6 h-6" />
         </button>
-        <button className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition">
+        <button className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition" aria-label="Share">
           <ShareIcon className="w-6 h-6" />
         </button>
       </div>

@@ -32,7 +32,7 @@ export function AddVideoModal({
       <div className="w-full max-w-md bg-gray-900 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">Add Video</h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition">
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Close">
             <XMarkIcon className="w-5 h-5 text-white" />
           </button>
         </div>
@@ -64,7 +64,7 @@ export function AddVideoModal({
                 >
                   <div className="w-20 aspect-video bg-gray-800 rounded overflow-hidden flex-shrink-0">
                     {video.thumbnailUrl ? (
-                      <Image src={video.thumbnailUrl} alt="" width={160} height={90} className="w-full h-full object-cover" />
+                      <Image src={video.thumbnailUrl} alt={(video.title || video.caption || "Video") + " thumbnail"} width={160} height={90} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <PlayIcon className="w-4 h-4 text-gray-600" />

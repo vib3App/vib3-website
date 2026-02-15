@@ -54,7 +54,7 @@ function OriginalVideoInfo({ video }: { video: Video }) {
       <div className="flex gap-3">
         <div className="w-20 aspect-[9/16] rounded-lg overflow-hidden bg-gray-800 relative">
           {video.thumbnailUrl && (
-            <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
+            <Image src={video.thumbnailUrl} alt={(video.title || "Original video") + " thumbnail"} fill className="object-cover" />
           )}
         </div>
         <div className="flex-1 min-w-0">

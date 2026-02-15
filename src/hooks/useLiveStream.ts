@@ -6,6 +6,7 @@ import { liveApi } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
 import type { LiveStream, LiveChatMessage, LiveGift, LiveKitCredentials } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface FloatingReaction {
   id: string;
@@ -62,7 +63,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
 
         setLoading(false);
       } catch (err) {
-        console.error('Failed to join stream:', err);
+        logger.error('Failed to join stream:', err);
         // Try to just fetch the stream info
         try {
           const data = await liveApi.getLiveStream(streamId);
@@ -92,7 +93,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
         const msgs = await liveApi.getChatMessages(streamId);
         setMessages(msgs);
       } catch (err) {
-        console.error('Failed to fetch messages:', err);
+        logger.error('Failed to fetch messages:', err);
       }
     };
     fetchMessages();
@@ -107,7 +108,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
         const data = await liveApi.getGifts();
         setGifts(data);
       } catch (err) {
-        console.error('Failed to fetch gifts:', err);
+        logger.error('Failed to fetch gifts:', err);
       }
     };
     fetchGifts();
@@ -121,7 +122,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
         const requests = await liveApi.getGuestRequests(streamId);
         setGuestRequests(requests);
       } catch (err) {
-        console.error('Failed to fetch guest requests:', err);
+        logger.error('Failed to fetch guest requests:', err);
       }
     };
     fetchRequests();
@@ -144,7 +145,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       setMessages(prev => [...prev, msg]);
       setChatMessage('');
     } catch (err) {
-      console.error('Failed to send message:', err);
+      logger.error('Failed to send message:', err);
     }
   }, [streamId, chatMessage]);
 
@@ -158,7 +159,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       }, 2000);
       setShowReactions(false);
     } catch (err) {
-      console.error('Failed to send reaction:', err);
+      logger.error('Failed to send reaction:', err);
     }
   }, [streamId]);
 
@@ -167,7 +168,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       await liveApi.sendGift(streamId, giftId, 1);
       setShowGifts(false);
     } catch (err) {
-      console.error('Failed to send gift:', err);
+      logger.error('Failed to send gift:', err);
     }
   }, [streamId]);
 
@@ -184,7 +185,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       await liveApi.requestToJoin(streamId);
       addToast('Join request sent!', 'success');
     } catch (err) {
-      console.error('Failed to request to join:', err);
+      logger.error('Failed to request to join:', err);
     }
   }, [streamId, addToast]);
 
@@ -193,7 +194,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       await liveApi.acceptGuest(streamId, requestId);
       setGuestRequests(prev => prev.filter(r => r.requestId !== requestId));
     } catch (err) {
-      console.error('Failed to accept guest:', err);
+      logger.error('Failed to accept guest:', err);
     }
   }, [streamId]);
 
@@ -202,7 +203,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       await liveApi.rejectGuest(streamId, requestId);
       setGuestRequests(prev => prev.filter(r => r.requestId !== requestId));
     } catch (err) {
-      console.error('Failed to reject guest:', err);
+      logger.error('Failed to reject guest:', err);
     }
   }, [streamId]);
 
@@ -213,7 +214,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
       await liveApi.endStream(streamId);
       router.push('/live');
     } catch (err) {
-      console.error('Failed to end stream:', err);
+      logger.error('Failed to end stream:', err);
     }
   }, [streamId, router, confirmDialog]);
 

@@ -9,6 +9,7 @@ import { useVideoCall } from '@/hooks/useVideoCall';
 import { TopNav } from '@/components/ui/TopNav';
 import { VideoCallModal, IncomingCallModal } from '@/components/call';
 import type { Call, CallType } from '@/types/call';
+import { logger } from '@/utils/logger';
 
 function formatCallTime(dateString: string): string {
   const date = new Date(dateString);
@@ -152,7 +153,7 @@ export default function CallsPage() {
       const { calls: callList } = await callsApi.getCallHistory();
       setCalls(callList);
     } catch (error) {
-      console.error('Failed to load calls:', error);
+      logger.error('Failed to load calls:', error);
     } finally {
       setIsLoading(false);
     }

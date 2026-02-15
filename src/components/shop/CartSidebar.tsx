@@ -40,7 +40,7 @@ export function CartSidebar({
       <div className="relative w-full max-w-md bg-gray-900 h-full overflow-y-auto">
         <div className="sticky top-0 bg-gray-900 border-b border-white/10 p-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Your Cart</h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition">
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Close cart">
             <XMarkIcon className="w-6 h-6 text-white" />
           </button>
         </div>

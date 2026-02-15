@@ -30,7 +30,7 @@ export function CreatePartyModal({
       <div className="w-full max-w-md bg-gray-900 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Create Watch Party</h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition">
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Close">
             <PlusIcon className="w-5 h-5 rotate-45" />
           </button>
         </div>

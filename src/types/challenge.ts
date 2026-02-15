@@ -14,17 +14,17 @@ export type ChallengeCategory =
   | 'art'
   | 'other';
 
-export type ChallengeDifficulty = 'easy' | 'medium' | 'hard';
+type ChallengeDifficulty = 'easy' | 'medium' | 'hard';
 
-export type ChallengeStatus = 'draft' | 'active' | 'ended' | 'cancelled';
+type ChallengeStatus = 'draft' | 'active' | 'ended' | 'cancelled';
 
-export interface ChallengeCreator {
+interface ChallengeCreator {
   _id: string;
   username: string;
   avatar?: string;
 }
 
-export interface ChallengeStats {
+interface ChallengeStats {
   participantCount: number;
   videoCount: number;
   viewCount: number;

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
 import { userApi, videoApi } from '@/services/api';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 export interface UserProfile {
   _id: string;
@@ -111,14 +112,14 @@ export function useProfile() {
         }
         setVideos(videosData.videos || []);
       } catch (videoErr) {
-        console.error('[useProfile] Failed to fetch videos:', videoErr);
+        logger.error('[useProfile] Failed to fetch videos:', videoErr);
         setVideos([]);
       }
 
       // Note: followed users are loaded in separate useEffect to avoid infinite loop
     } catch (err: unknown) {
       const error = err as { message?: string; response?: { status: number } };
-      console.error('Profile load error:', error);
+      logger.error('Profile load error:', error);
       if (error.response?.status === 404) {
         setError('User not found');
       } else if (error.response?.status === 400) {
@@ -159,7 +160,7 @@ export function useProfile() {
         });
       }
     } catch (err) {
-      console.error('Failed to follow/unfollow:', err);
+      logger.error('Failed to follow/unfollow:', err);
     } finally {
       setIsFollowLoading(false);
     }
@@ -187,7 +188,7 @@ export function useProfile() {
         });
       }
     } catch (err) {
-      console.error('Failed to delete video:', err);
+      logger.error('Failed to delete video:', err);
       throw err;
     }
   }, [profile]);

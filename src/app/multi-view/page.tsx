@@ -58,7 +58,7 @@ function MultiViewContent() {
               } ${!slot.video ? 'opacity-50' : ''}`}
             >
               {slot.video?.thumbnailUrl ? (
-                <Image src={slot.video.thumbnailUrl} alt="" width={48} height={48} className="w-full h-full object-cover" />
+                <Image src={slot.video.thumbnailUrl} alt={(slot.video.title || slot.video.caption || "Video") + " thumbnail"} width={48} height={48} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-gray-800 flex items-center justify-center">
                   <span className="text-xs">{i + 1}</span>

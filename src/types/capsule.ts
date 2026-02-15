@@ -43,14 +43,6 @@ export interface CreateCapsuleInput {
   notifyOnUnlock?: boolean;
 }
 
-export interface CapsuleSubscription {
-  capsuleId: string;
-  userId: string;
-  notifyEmail: boolean;
-  notifyPush: boolean;
-  subscribedAt: string;
-}
-
 export interface CapsuleReveal {
   capsuleId: string;
   capsuleTitle: string;

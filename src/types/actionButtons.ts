@@ -26,7 +26,7 @@ export interface ActionButtonPreferences {
   containerPosition: Position;             // For other layouts (single container position)
 }
 
-export interface VideoActionState {
+interface VideoActionState {
   id: string;
   isLiked?: boolean;
   isFavorited?: boolean;
@@ -64,7 +64,7 @@ export interface LayoutProps {
   onOpenSettings: () => void;
 }
 
-export const DEFAULT_BUTTONS: ButtonConfig[] = [
+const DEFAULT_BUTTONS: ButtonConfig[] = [
   { id: 'like', visible: true, order: 0 },
   { id: 'comment', visible: true, order: 1 },
   { id: 'save', visible: true, order: 2 },

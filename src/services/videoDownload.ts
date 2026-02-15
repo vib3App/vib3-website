@@ -1,3 +1,4 @@
+import { logger } from '@/utils/logger';
 /**
  * Video Download Service
  * Handles downloading videos to the user's device
@@ -92,7 +93,7 @@ class VideoDownloadService {
         // Download cancelled
         return false;
       }
-      console.error('Download failed:', error);
+      logger.error('Download failed:', error);
       throw error;
     } finally {
       this.activeDownloads.delete(videoId);

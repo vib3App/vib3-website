@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { collaborationApi } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
 import type { CollabRoom } from '@/types/collaboration';
+import { logger } from '@/utils/logger';
 
-export type CollabTab = 'discover' | 'my';
+type CollabTab = 'discover' | 'my';
 
 export function useCollabRooms() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export function useCollabRooms() {
           setMyRooms(data);
         }
       } catch (err) {
-        console.error('Failed to fetch collab rooms:', err);
+        logger.error('Failed to fetch collab rooms:', err);
       } finally {
         setLoading(false);
       }
@@ -66,7 +67,7 @@ export function useCollabRooms() {
       });
       router.push(`/collab/${room.id}`);
     } catch (err: unknown) {
-      console.error('Failed to create room:', err);
+      logger.error('Failed to create room:', err);
       const axiosErr = err as { status?: number; message?: string };
       if (axiosErr?.status === 401) {
         addToast('Please login to create a collab room');
@@ -89,7 +90,7 @@ export function useCollabRooms() {
       const room = await collaborationApi.joinByInviteCode(inviteCode.trim());
       router.push(`/collab/${room.id}`);
     } catch (err) {
-      console.error('Failed to join room:', err);
+      logger.error('Failed to join room:', err);
       addToast('Invalid invite code');
     } finally {
       setJoining(false);

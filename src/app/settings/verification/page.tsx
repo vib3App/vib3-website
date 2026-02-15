@@ -10,6 +10,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { StatusCards, VerificationSteps } from '@/components/verification';
 import type { VerificationStatus, VerificationRequest, VerificationFormData } from '@/components/verification';
+import { logger } from '@/utils/logger';
 
 export default function VerificationRequestPage() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function VerificationRequestPage() {
       });
       setStatus('pending');
     } catch (error) {
-      console.error('Failed to submit verification request:', error);
+      logger.error('Failed to submit verification request:', error);
       addToast('Failed to submit request. Please try again.');
     } finally {
       setIsSubmitting(false);

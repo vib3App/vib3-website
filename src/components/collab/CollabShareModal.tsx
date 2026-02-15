@@ -10,6 +10,7 @@ import {
   CheckIcon,
 } from '@heroicons/react/24/outline';
 import { userApi } from '@/services/api';
+import { logger } from '@/utils/logger';
 
 interface ShareUser {
   id: string;
@@ -52,7 +53,7 @@ export function CollabShareModal({
         const friendsList = await userApi.getFriends();
         setFriends(friendsList);
       } catch (err) {
-        console.error('Failed to load friends:', err);
+        logger.error('Failed to load friends:', err);
       }
     };
     loadFriends();
@@ -82,7 +83,7 @@ export function CollabShareModal({
           }));
         setSearchResults(results);
       } catch (err) {
-        console.error('Search failed:', err);
+        logger.error('Search failed:', err);
       } finally {
         setLoading(false);
       }
@@ -99,7 +100,7 @@ export function CollabShareModal({
       await onInviteUser(user.id);
       setInvitedUsers(prev => new Set([...prev, user.id]));
     } catch (err) {
-      console.error('Failed to invite user:', err);
+      logger.error('Failed to invite user:', err);
     } finally {
       setInvitingUser(null);
     }
@@ -117,7 +118,7 @@ export function CollabShareModal({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden flex-shrink-0">
             {user.avatar ? (
-              <Image src={user.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
+              <Image src={user.avatar} alt={user.username + "'s avatar"} width={40} height={40} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                 {(user.username || 'U')[0].toUpperCase()}
@@ -176,7 +177,7 @@ export function CollabShareModal({
         {/* Header */}
         <div className="p-4 border-b border-white/10 flex items-center justify-between flex-shrink-0">
           <h2 className="text-lg font-semibold">Share Collab</h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition">
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Close">
             <XMarkIcon className="w-5 h-5" />
           </button>
         </div>

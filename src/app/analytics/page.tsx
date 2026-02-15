@@ -7,6 +7,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { analyticsApi } from '@/services/api';
 import { OverviewStats, ViewsChart, TopVideosTable, AudienceInsights } from '@/components/analytics';
 import type { AnalyticsDashboard, AnalyticsPeriod } from '@/types/analytics';
+import { logger } from '@/utils/logger';
 
 const PERIOD_OPTIONS: { value: AnalyticsPeriod; label: string }[] = [
   { value: 7, label: 'Last 7 days' },
@@ -28,7 +29,7 @@ export default function AnalyticsPage() {
       const data = await analyticsApi.getCreatorAnalytics(period);
       setAnalytics(data);
     } catch (err) {
-      console.error('Failed to fetch analytics:', err);
+      logger.error('Failed to fetch analytics:', err);
       setError('Failed to load analytics. Please try again.');
     } finally {
       setLoading(false);

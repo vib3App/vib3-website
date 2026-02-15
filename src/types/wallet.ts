@@ -15,7 +15,7 @@ export interface WalletCoinPackage {
   bonus: number;
 }
 
-export type TransactionType =
+type TransactionType =
   | 'purchase'
   | 'spend'
   | 'gift'

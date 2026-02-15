@@ -102,7 +102,7 @@ function SuggestionIcon({ suggestion }: { suggestion: SearchSuggestion }) {
   if (suggestion.type === 'user' && suggestion.avatar) {
     return (
       <div className="w-8 h-8 rounded-full overflow-hidden glass">
-        <Image src={suggestion.avatar} alt="" width={32} height={32} className="object-cover" />
+        <Image src={suggestion.avatar} alt={suggestion.text + "'s avatar"} width={32} height={32} className="object-cover" />
       </div>
     );
   }

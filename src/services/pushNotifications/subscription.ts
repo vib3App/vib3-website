@@ -1,12 +1,13 @@
 import { apiClient } from '../api/client';
 import { urlBase64ToUint8Array } from './types';
+import { logger } from '@/utils/logger';
 
 export async function getVapidPublicKey(): Promise<string | null> {
   try {
     const { data } = await apiClient.get<{ publicKey: string }>('/notifications/vapid-public-key');
     return data.publicKey;
   } catch (error) {
-    console.error('Failed to get VAPID key:', error);
+    logger.error('Failed to get VAPID key:', error);
     return process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || null;
   }
 }
@@ -42,7 +43,7 @@ export async function createPushSubscription(
   try {
     const vapidKey = await getVapidPublicKey();
     if (!vapidKey) {
-      console.error('Failed to get VAPID public key');
+      logger.error('Failed to get VAPID public key');
       return null;
     }
 
@@ -54,7 +55,7 @@ export async function createPushSubscription(
     await sendSubscriptionToServer(subscription);
     return subscription;
   } catch (error) {
-    console.error('Failed to subscribe to push notifications:', error);
+    logger.error('Failed to subscribe to push notifications:', error);
     return null;
   }
 }
@@ -65,7 +66,7 @@ export async function removePushSubscription(subscription: PushSubscription): Pr
     await subscription.unsubscribe();
     return true;
   } catch (error) {
-    console.error('Failed to unsubscribe:', error);
+    logger.error('Failed to unsubscribe:', error);
     return false;
   }
 }

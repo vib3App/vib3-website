@@ -4,7 +4,7 @@
  */
 import { create } from 'zustand';
 
-export type ToastType = 'error' | 'success' | 'info';
+type ToastType = 'error' | 'success' | 'info';
 
 export interface Toast {
   id: string;

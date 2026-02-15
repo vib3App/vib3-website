@@ -1,6 +1,7 @@
 import { apiClient } from '../client';
 import type { Video } from '@/types';
 import type { UserVideosResponse, BackendVideo } from './types';
+import { logger } from '@/utils/logger';
 
 function transformVideo(v: BackendVideo, fallbackUserId?: string): Video {
   return {
@@ -34,7 +35,7 @@ export const userVideosApi = {
 
       return { videos };
     } catch (error) {
-      console.error('Failed to fetch user videos:', error);
+      logger.error('Failed to fetch user videos:', error);
       return { videos: [] };
     }
   },
@@ -65,7 +66,7 @@ export const userVideosApi = {
 
       return { videos };
     } catch (error) {
-      console.error('Failed to fetch liked videos:', error);
+      logger.error('Failed to fetch liked videos:', error);
       return { videos: [] };
     }
   },

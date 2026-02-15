@@ -22,6 +22,7 @@ import {
 import type { Video } from '@/types';
 import type { Challenge } from '@/types/challenge';
 import type { MusicTrack } from '@/types/sound';
+import { logger } from '@/utils/logger';
 
 export default function DiscoverPage() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function DiscoverPage() {
         setFeaturedChallenge(challengesResponse[0]);
       }
     } catch (error) {
-      console.error('Failed to load discover content:', error);
+      logger.error('Failed to load discover content:', error);
     } finally {
       setIsLoading(false);
     }

@@ -7,6 +7,7 @@ import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
 import Link from 'next/link';
 import { RoleSection, TeamMemberCard } from '@/components/admin';
+import { logger } from '@/utils/logger';
 
 export default function TeamPage() {
   const { user: currentUser } = useAuthStore();
@@ -26,7 +27,7 @@ export default function TeamPage() {
       const { team: teamData } = await adminApi.getTeam();
       setTeam(teamData);
     } catch (err) {
-      console.error('Failed to load team:', err);
+      logger.error('Failed to load team:', err);
     } finally {
       setLoading(false);
     }

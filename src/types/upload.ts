@@ -11,7 +11,7 @@ export type UploadStatus =
   | 'failed'
   | 'scheduled';
 
-export type DraftStatus = 'draft' | 'ready' | 'discarded';
+type DraftStatus = 'draft' | 'ready' | 'discarded';
 
 export interface VideoUpload {
   id: string;
@@ -77,8 +77,3 @@ export interface ThumbnailGenerationResult {
   defaultIndex: number;
 }
 
-export interface ScheduleOptions {
-  date: string;
-  time: string;
-  timezone: string;
-}

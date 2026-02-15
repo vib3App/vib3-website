@@ -160,6 +160,9 @@ export function VerificationSteps({ onSubmit, isSubmitting }: VerificationStepsP
           </p>
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
           <div onClick={() => fileInputRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
             className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center cursor-pointer hover:border-purple-500 transition">
             {idPreview ? (
               <div className="relative w-48 h-32 mx-auto">

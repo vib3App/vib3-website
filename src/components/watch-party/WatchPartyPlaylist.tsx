@@ -61,7 +61,7 @@ export function WatchPartyPlaylist({
               >
                 <div className="w-16 aspect-video bg-gray-800 rounded overflow-hidden flex-shrink-0">
                   {video.videoThumbnail ? (
-                    <Image src={video.videoThumbnail} alt="" width={128} height={72} className="w-full h-full object-cover" />
+                    <Image src={video.videoThumbnail} alt={video.videoTitle + " thumbnail"} width={128} height={72} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <PlayIcon className="w-4 h-4 text-gray-600" />

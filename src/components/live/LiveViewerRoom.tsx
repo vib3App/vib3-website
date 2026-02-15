@@ -7,6 +7,7 @@ import { XMarkIcon, SignalIcon } from '@heroicons/react/24/solid';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ViewerCount, LiveIndicator, HostVideo, ViewerActions } from './LiveViewerHelpers';
+import { logger } from '@/utils/logger';
 
 interface LiveViewerRoomProps {
   token: string;
@@ -103,7 +104,7 @@ export function LiveViewerRoom({
   const [streamEnded, setStreamEnded] = useState(false);
 
   const handleError = useCallback((error: Error) => {
-    console.error('LiveKit error:', error);
+    logger.error('LiveKit error:', error);
     setConnectionError(error.message);
   }, []);
 

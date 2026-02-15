@@ -7,8 +7,9 @@ import { notificationsApi } from '@/services/api';
 import { websocketService } from '@/services/websocket';
 import { desktopNotifications } from '@/services/desktopNotifications';
 import type { Notification } from '@/types';
+import { logger } from '@/utils/logger';
 
-export type NotificationTab = 'all' | 'mentions';
+type NotificationTab = 'all' | 'mentions';
 
 export function useNotifications() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export function useNotifications() {
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load notifications:', error);
+      logger.error('Failed to load notifications:', error);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +77,7 @@ export function useNotifications() {
         prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
       );
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      logger.error('Failed to mark notification as read:', error);
     }
   };
 
@@ -85,7 +86,7 @@ export function useNotifications() {
       await notificationsApi.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     } catch (error) {
-      console.error('Failed to mark all as read:', error);
+      logger.error('Failed to mark all as read:', error);
     }
   };
 

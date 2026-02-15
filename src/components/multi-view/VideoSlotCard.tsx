@@ -69,7 +69,7 @@ export function VideoSlotCard({
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
               {slot.video.userAvatar ? (
-                <Image src={slot.video.userAvatar} alt="" width={24} height={24} className="w-full h-full object-cover" />
+                <Image src={slot.video.userAvatar} alt={(slot.video.username || "User") + "'s avatar"} width={24} height={24} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
                   {(slot.video.username || '?')[0].toUpperCase()}
@@ -78,20 +78,20 @@ export function VideoSlotCard({
             </div>
             <span className="text-sm font-medium">@{slot.video.username || 'user'}</span>
           </div>
-          <button onClick={onRemove} className="p-1.5 bg-black/50 hover:bg-black/70 rounded-full transition">
+          <button onClick={onRemove} className="p-1.5 bg-black/50 hover:bg-black/70 rounded-full transition" aria-label="Remove video">
             <XMarkIcon className="w-4 h-4" />
           </button>
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center">
-          <button onClick={onTogglePlay} className="p-4 bg-black/50 hover:bg-black/70 rounded-full transition">
+          <button onClick={onTogglePlay} className="p-4 bg-black/50 hover:bg-black/70 rounded-full transition" aria-label={slot.isPlaying ? "Pause" : "Play"}>
             {slot.isPlaying ? <PauseIcon className="w-8 h-8" /> : <PlayIcon className="w-8 h-8" />}
           </button>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
           <div className="text-sm truncate max-w-[70%]">{slot.video.title || slot.video.caption}</div>
-          <button onClick={onToggleMute} className="p-1.5 bg-black/50 hover:bg-black/70 rounded-full transition">
+          <button onClick={onToggleMute} className="p-1.5 bg-black/50 hover:bg-black/70 rounded-full transition" aria-label={slot.isMuted ? "Unmute" : "Mute"}>
             {slot.isMuted ? <SpeakerXMarkIcon className="w-4 h-4" /> : <SpeakerWaveIcon className="w-4 h-4" />}
           </button>
         </div>

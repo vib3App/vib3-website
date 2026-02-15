@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import type { CameraFacing } from './types';
+import { logger } from '@/utils/logger';
 
 export function useCameraStream() {
   const [cameraFacing, setCameraFacing] = useState<CameraFacing>('user');
@@ -38,7 +39,7 @@ export function useCameraStream() {
 
       setError(null);
     } catch (err) {
-      console.error('Failed to access camera:', err);
+      logger.error('Failed to access camera:', err);
       setError('Unable to access camera. Please check permissions.');
     }
   }, [cameraFacing]);
@@ -64,7 +65,7 @@ export function useCameraStream() {
       });
       setFlashOn(newFlashState);
     } catch (err) {
-      console.error('Failed to toggle flash:', err);
+      logger.error('Failed to toggle flash:', err);
     }
   }, [flashOn, torchSupported]);
 

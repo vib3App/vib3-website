@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
 import { UserStatsCards, UserFilters, UsersTable } from '@/components/admin';
+import { logger } from '@/utils/logger';
 
 const LIMIT = 20;
 
@@ -42,7 +43,7 @@ export default function UserManagementPage() {
       setTotal(usersResponse.total);
       if (statsResponse) setStats(statsResponse);
     } catch (err) {
-      console.error('Failed to load users:', err);
+      logger.error('Failed to load users:', err);
     } finally {
       setLoading(false);
     }

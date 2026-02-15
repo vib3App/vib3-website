@@ -91,7 +91,7 @@ export function DownloadedVideoCard({ offlineVideo, onDelete, onPlay }: Download
       </div>
 
       <div className="flex items-center gap-2">
-        <button onClick={handleDelete} disabled={isDeleting} className="p-2 hover:bg-red-500/20 rounded-full transition disabled:opacity-50">
+        <button onClick={handleDelete} disabled={isDeleting} className="p-2 hover:bg-red-500/20 rounded-full transition disabled:opacity-50" aria-label="Delete download">
           {isDeleting ? (
             <div className="w-5 h-5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
           ) : (

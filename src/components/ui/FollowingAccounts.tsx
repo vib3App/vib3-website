@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
 import { userApi } from '@/services/api/user';
 import { liveApi } from '@/services/api/live';
+import { logger } from '@/utils/logger';
 
 interface FollowingUser {
   id: string;
@@ -52,7 +53,7 @@ export function FollowingAccounts() {
         loadFollowedUsers();
       }
     } catch (error) {
-      console.error('Failed to load following:', error);
+      logger.error('Failed to load following:', error);
       setFollowing([]);
     } finally {
       setIsLoading(false);

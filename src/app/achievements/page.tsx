@@ -12,6 +12,7 @@ import {
   type AchievementCategory,
   type LeaderboardEntry,
 } from '@/types/achievement';
+import { logger } from '@/utils/logger';
 
 type TabType = 'achievements' | 'leaderboard';
 
@@ -38,7 +39,7 @@ export default function AchievementsPage() {
       setStats(userAchievements.stats || null);
       setLeaderboard(leaderboardData);
     } catch (error) {
-      console.error('Failed to load achievements:', error);
+      logger.error('Failed to load achievements:', error);
     } finally {
       setIsLoading(false);
     }

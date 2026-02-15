@@ -102,15 +102,3 @@ export const MUSIC_CATEGORIES: MusicCategory[] = [
   'Love',
 ];
 
-export interface SoundSearchResult {
-  sounds: Sound[];
-  hasMore: boolean;
-  total?: number;
-}
-
-export interface MusicSearchResult {
-  tracks: MusicTrack[];
-  hasMore: boolean;
-  page: number;
-  total?: number;
-}

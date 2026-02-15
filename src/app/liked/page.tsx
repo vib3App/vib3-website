@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { userApi } from '@/services/api';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 function VideoThumbnail({ video }: { video: Video }) {
   return (
@@ -79,7 +80,7 @@ export default function LikedVideosPage() {
         const response = await userApi.getLikedVideos();
         setVideos(response.videos || []);
       } catch (err) {
-        console.error('Error fetching liked videos:', err);
+        logger.error('Error fetching liked videos:', err);
         setError('Failed to load liked videos');
       } finally {
         setLoading(false);

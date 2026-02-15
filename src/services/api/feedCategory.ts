@@ -5,6 +5,7 @@
 import { apiClient } from './client';
 import type { FeedCategory, FeedCategorySettings } from '@/types';
 import { getDefaultCategories, DEFAULT_CATEGORY_SETTINGS } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface CategoryApiResponse {
   _id: string;
@@ -83,7 +84,7 @@ export const feedCategoryApi = {
       cacheTimestamp = Date.now();
       return merged;
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      logger.error('Failed to fetch categories:', error);
       // Return defaults on error
       return getDefaultCategories();
     }
@@ -120,7 +121,7 @@ export const feedCategoryApi = {
       clearCache();
       return transformCategory(data);
     } catch (error) {
-      console.error('Failed to create category:', error);
+      logger.error('Failed to create category:', error);
       return null;
     }
   },
@@ -142,7 +143,7 @@ export const feedCategoryApi = {
       clearCache();
       return transformCategory(data);
     } catch (error) {
-      console.error('Failed to update category:', error);
+      logger.error('Failed to update category:', error);
       return null;
     }
   },
@@ -156,7 +157,7 @@ export const feedCategoryApi = {
       clearCache();
       return true;
     } catch (error) {
-      console.error('Failed to delete category:', error);
+      logger.error('Failed to delete category:', error);
       return false;
     }
   },
@@ -172,7 +173,7 @@ export const feedCategoryApi = {
       clearCache();
       return data.categories?.map(transformCategory) || null;
     } catch (error) {
-      console.error('Failed to reorder categories:', error);
+      logger.error('Failed to reorder categories:', error);
       return null;
     }
   },
@@ -185,7 +186,7 @@ export const feedCategoryApi = {
       const { data } = await apiClient.get<CategoryStatsResponse>('/feed-categories/stats');
       return data;
     } catch (error) {
-      console.error('Failed to get category stats:', error);
+      logger.error('Failed to get category stats:', error);
       return null;
     }
   },
@@ -216,7 +217,7 @@ export const feedCategoryApi = {
       clearCache();
       return true;
     } catch (error) {
-      console.error('Failed to assign user to categories:', error);
+      logger.error('Failed to assign user to categories:', error);
       return false;
     }
   },
@@ -232,7 +233,7 @@ export const feedCategoryApi = {
       clearCache();
       return true;
     } catch (error) {
-      console.error('Failed to add user to category:', error);
+      logger.error('Failed to add user to category:', error);
       return false;
     }
   },
@@ -246,7 +247,7 @@ export const feedCategoryApi = {
       clearCache();
       return true;
     } catch (error) {
-      console.error('Failed to remove user from category:', error);
+      logger.error('Failed to remove user from category:', error);
       return false;
     }
   },

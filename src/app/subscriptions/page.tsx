@@ -89,7 +89,7 @@ function PageHeader({ activeCount, onBack }: { activeCount: number; onBack: () =
   return (
     <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10 mx-4 mb-6">
       <div className="flex items-center gap-4 px-4 h-14">
-        <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition">
+        <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Go back">
           <ArrowLeftIcon className="w-5 h-5 text-white" />
         </button>
         <div>

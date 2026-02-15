@@ -7,6 +7,7 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 import { challengesApi } from '@/services/api';
 import type { Challenge } from '@/types/challenge';
+import { logger } from '@/utils/logger';
 
 function formatCount(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -42,7 +43,7 @@ export default function MyChallengesPage() {
         const challenges = await challengesApi.getMyChallenges();
         setChallenges(challenges || []);
       } catch (err) {
-        console.error('Error fetching my challenges:', err);
+        logger.error('Error fetching my challenges:', err);
         setError('Failed to load your challenges');
       } finally {
         setLoading(false);

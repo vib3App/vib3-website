@@ -29,7 +29,7 @@ export function TopVideosSection({ videos, onViewAll }: TopVideosSectionProps) {
             <span className="w-6 text-center font-bold text-gray-400">{i + 1}</span>
             <div className="w-16 aspect-video bg-gray-800 rounded-lg overflow-hidden flex-shrink-0 relative">
               {video.thumbnailUrl ? (
-                <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
+                <Image src={video.thumbnailUrl} alt={video.title + " thumbnail"} fill className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <VideoCameraIcon className="w-4 h-4 text-gray-600" />

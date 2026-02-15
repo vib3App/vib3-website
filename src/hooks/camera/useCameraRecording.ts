@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { CAMERA_SPEEDS, type RecordingState } from './types';
-import { mergeVideoClips, applyVideoSpeed, preloadFFmpeg } from '@/utils/videoMerge';
+import type { RecordingState } from './types';
+import { preloadFFmpeg } from '@/utils/videoMerge';
+import { useCanvasPipeline } from './useCanvasPipeline';
+import { useClipManagement } from './useClipManagement';
 
 export interface RecordedClip {
   id: string;
@@ -17,20 +19,19 @@ interface RecordingConfig {
   effectsCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   maxDuration: number;
   selectedSpeed: number;
-  activeFilter: string; // CSS filter string e.g. 'sepia(0.5)' or 'none'
+  activeFilter: string;
 }
 
 const MAX_CLIPS = 8;
 
-export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxDuration, selectedSpeed, activeFilter }: RecordingConfig) {
+export function useCameraRecording({
+  streamRef, videoRef, effectsCanvasRef,
+  maxDuration, selectedSpeed, activeFilter,
+}: RecordingConfig) {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [recordedClips, setRecordedClips] = useState<RecordedClip[]>([]);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [timerMode, setTimerMode] = useState<0 | 3 | 10>(0);
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [isCombining, setIsCombining] = useState(false);
-  const [mergeProgress, setMergeProgress] = useState(0);
 
   const previewVideoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -38,85 +39,38 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clipStartTimeRef = useRef<number>(0);
 
-  // Canvas pipeline refs for filter recording
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const animFrameRef = useRef<number | null>(null);
+  const pipeline = useCanvasPipeline();
+  const clips = useClipManagement(selectedSpeed);
 
-  const stopCanvasPipeline = useCallback(() => {
-    if (animFrameRef.current !== null) {
-      cancelAnimationFrame(animFrameRef.current);
-      animFrameRef.current = null;
-    }
-    canvasRef.current = null;
-  }, []);
+  const remainingDuration = maxDuration - clips.totalClipsDuration;
 
-  // Preload FFmpeg in background when component mounts
-  useEffect(() => {
-    preloadFFmpeg();
-  }, []);
-
-  // Calculate total duration of all clips
-  const totalClipsDuration = recordedClips.reduce((acc, clip) => acc + clip.duration, 0);
-  const remainingDuration = maxDuration - totalClipsDuration;
+  useEffect(() => { preloadFFmpeg(); }, []);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state !== 'inactive') {
       mediaRecorderRef.current?.stop();
     }
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-    stopCanvasPipeline();
-  }, [stopCanvasPipeline]);
+    pipeline.stopCanvasPipeline();
+  }, [pipeline]);
 
   const startRecording = useCallback(() => {
     if (!streamRef.current) return;
-    if (recordedClips.length >= MAX_CLIPS) return;
+    if (clips.recordedClips.length >= MAX_CLIPS) return;
 
     chunksRef.current = [];
     clipStartTimeRef.current = Date.now();
 
-    // Use canvas pipeline when filter or particle effects are active
     const hasFilter = activeFilter && activeFilter !== 'none';
     const hasEffects = effectsCanvasRef.current !== null;
-    const useCanvasPipeline = (hasFilter || hasEffects) && videoRef.current;
+    const useCanvasCapture = (hasFilter || hasEffects) && videoRef.current;
     let recordStream: MediaStream;
 
-    if (useCanvasPipeline) {
-      const video = videoRef.current!;
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth || 1080;
-      canvas.height = video.videoHeight || 1920;
-      canvasRef.current = canvas;
-
-      const ctx = canvas.getContext('2d')!;
-
-      // Start requestAnimationFrame drawing loop
-      const draw = () => {
-        if (!canvasRef.current) return; // pipeline was stopped
-
-        // Draw filtered video frame
-        if (hasFilter) {
-          ctx.save();
-          ctx.filter = activeFilter;
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        } else {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        }
-
-        // Composite particle effects overlay on top
-        const effCanvas = effectsCanvasRef.current;
-        if (effCanvas && effCanvas.width > 0 && effCanvas.height > 0) {
-          ctx.drawImage(effCanvas, 0, 0, canvas.width, canvas.height);
-        }
-
-        animFrameRef.current = requestAnimationFrame(draw);
-      };
-      draw();
-
-      // Get filtered video stream from canvas at 30fps
+    if (useCanvasCapture) {
+      const canvas = pipeline.startCanvasPipeline(
+        videoRef.current!, activeFilter, effectsCanvasRef,
+      );
       const canvasStream = canvas.captureStream(30);
-
-      // Combine canvas video track with original audio tracks
       const audioTracks = streamRef.current.getAudioTracks();
       recordStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
@@ -138,19 +92,11 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
     };
 
     recorder.onstop = () => {
-      stopCanvasPipeline();
+      pipeline.stopCanvasPipeline();
       const blob = new Blob(chunksRef.current, { type: 'video/webm' });
       const clipDuration = Math.round((Date.now() - clipStartTimeRef.current) / 1000);
       const url = URL.createObjectURL(blob);
-
-      const newClip: RecordedClip = {
-        id: `clip-${Date.now()}`,
-        blob,
-        url,
-        duration: clipDuration,
-      };
-
-      setRecordedClips(prev => [...prev, newClip]);
+      clips.addClip({ id: `clip-${Date.now()}`, blob, url, duration: clipDuration });
       setRecordingState('idle');
       setRecordingDuration(0);
     };
@@ -163,7 +109,6 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
     recordingTimerRef.current = setInterval(() => {
       setRecordingDuration(prev => {
         const newDuration = prev + 1;
-        // Stop if we exceed remaining duration
         if (newDuration >= remainingDuration) {
           stopRecording();
           return prev;
@@ -171,7 +116,7 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
         return newDuration;
       });
     }, 1000);
-  }, [streamRef, videoRef, effectsCanvasRef, activeFilter, stopRecording, stopCanvasPipeline, remainingDuration, recordedClips.length]);
+  }, [streamRef, videoRef, effectsCanvasRef, activeFilter, stopRecording, pipeline, clips, remainingDuration]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') {
@@ -223,78 +168,22 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
     }
   }, [recordingState, timerMode, startRecording, stopRecording, resumeRecording]);
 
-  const removeLastClip = useCallback(() => {
-    setRecordedClips(prev => {
-      if (prev.length === 0) return prev;
-      const lastClip = prev[prev.length - 1];
-      URL.revokeObjectURL(lastClip.url);
-      return prev.slice(0, -1);
-    });
-  }, []);
-
   const discardAllClips = useCallback(() => {
-    recordedClips.forEach(clip => URL.revokeObjectURL(clip.url));
-    setRecordedClips([]);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
+    clips.discardAllClips();
     setRecordingState('idle');
     setRecordingDuration(0);
-  }, [recordedClips, previewUrl]);
-
-  // Combine all clips into a single blob for upload using FFmpeg
-  const combineClips = useCallback(async (): Promise<Blob | null> => {
-    if (recordedClips.length === 0) return null;
-
-    setIsCombining(true);
-    setMergeProgress(0);
-
-    try {
-      let resultBlob: Blob;
-
-      if (recordedClips.length === 1) {
-        resultBlob = recordedClips[0].blob;
-      } else {
-        const allBlobs = recordedClips.map(clip => clip.blob);
-        resultBlob = await mergeVideoClips(allBlobs, (progress) => {
-          setMergeProgress(progress.percent * 0.6);
-        });
-      }
-
-      // Apply speed adjustment if needed
-      const speed = CAMERA_SPEEDS[selectedSpeed]?.value || 1;
-      if (speed !== 1) {
-        resultBlob = await applyVideoSpeed(resultBlob, speed, (progress) => {
-          setMergeProgress(60 + progress.percent * 0.4);
-        });
-      }
-
-      const url = URL.createObjectURL(resultBlob);
-      setPreviewUrl(url);
-      setRecordingState('preview');
-      return resultBlob;
-    } catch (error) {
-      console.error('Failed to process clips:', error);
-      const url = URL.createObjectURL(recordedClips[0].blob);
-      setPreviewUrl(url);
-      setRecordingState('preview');
-      return recordedClips[0].blob;
-    } finally {
-      setIsCombining(false);
-      setMergeProgress(0);
-    }
-  }, [recordedClips, selectedSpeed]);
+  }, [clips]);
 
   const goToPreview = useCallback(async () => {
-    if (recordedClips.length === 0) return;
-    await combineClips();
-  }, [recordedClips.length, combineClips]);
+    if (clips.recordedClips.length === 0) return;
+    await clips.combineClips();
+    setRecordingState('preview');
+  }, [clips]);
 
   const discardRecording = useCallback(() => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    // Go back to clip recording mode, keep existing clips
+    clips.discardPreview();
     setRecordingState('idle');
-  }, [previewUrl]);
+  }, [clips]);
 
   const cycleTimer = useCallback(() => {
     setTimerMode(prev => prev === 0 ? 3 : prev === 3 ? 10 : 0);
@@ -304,37 +193,28 @@ export function useCameraRecording({ streamRef, videoRef, effectsCanvasRef, maxD
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
   }, []);
 
-  // Get combined blob for upload (from preview state)
-  const getRecordedBlob = useCallback((): Blob | null => {
-    if (recordedClips.length === 0) return null;
-    if (recordedClips.length === 1) return recordedClips[0].blob;
-    // Return combined blob
-    const allBlobs = recordedClips.map(clip => clip.blob);
-    return new Blob(allBlobs, { type: 'video/webm' });
-  }, [recordedClips]);
-
   return {
     recordingState,
     recordingDuration,
-    recordedClips,
-    clipCount: recordedClips.length,
-    totalClipsDuration,
+    recordedClips: clips.recordedClips,
+    clipCount: clips.recordedClips.length,
+    totalClipsDuration: clips.totalClipsDuration,
     remainingDuration,
     maxClips: MAX_CLIPS,
-    canAddMoreClips: recordedClips.length < MAX_CLIPS && remainingDuration > 0,
-    previewUrl,
+    canAddMoreClips: clips.recordedClips.length < MAX_CLIPS && remainingDuration > 0,
+    previewUrl: clips.previewUrl,
     timerMode,
     countdown,
-    isCombining,
-    mergeProgress,
+    isCombining: clips.isCombining,
+    mergeProgress: clips.mergeProgress,
     previewVideoRef,
     handleRecordButton,
     pauseRecording,
-    removeLastClip,
+    removeLastClip: clips.removeLastClip,
     discardAllClips,
     discardRecording,
     goToPreview,
-    getRecordedBlob,
+    getRecordedBlob: clips.getRecordedBlob,
     cycleTimer,
     cleanupTimer,
   };

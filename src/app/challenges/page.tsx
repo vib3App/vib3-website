@@ -13,6 +13,7 @@ import {
   CreateChallengeModal,
 } from '@/components/challenges';
 import type { Challenge, ChallengeCategory, CreateChallengeInput } from '@/types/challenge';
+import { logger } from '@/utils/logger';
 
 export default function ChallengesPage() {
   const addToast = useToastStore(s => s.addToast);
@@ -53,7 +54,7 @@ export default function ChallengesPage() {
           setPage(1);
         }
       } catch (err) {
-        console.error('Error fetching challenges:', err);
+        logger.error('Error fetching challenges:', err);
         if (!cancelled) {
           setError('Failed to load challenges');
         }
@@ -79,7 +80,7 @@ export default function ChallengesPage() {
       setChallenges((prev) => [...prev, ...response.challenges]);
       setHasMore(response.hasMore);
     } catch (err) {
-      console.error('Error fetching challenges:', err);
+      logger.error('Error fetching challenges:', err);
       setError('Failed to load challenges');
     } finally {
       setLoading(false);
@@ -125,7 +126,7 @@ export default function ChallengesPage() {
       resetForm();
       setRefreshKey(k => k + 1);
     } catch (err) {
-      console.error('Error creating challenge:', err);
+      logger.error('Error creating challenge:', err);
       addToast('Failed to create challenge. Please try again.');
     } finally {
       setCreating(false);
@@ -150,7 +151,7 @@ export default function ChallengesPage() {
         )
       );
     } catch (err) {
-      console.error('Error joining/leaving challenge:', err);
+      logger.error('Error joining/leaving challenge:', err);
     } finally {
       setJoiningId(null);
     }

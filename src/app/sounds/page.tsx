@@ -7,6 +7,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { soundsApi } from '@/services/api/sounds';
 import { MUSIC_CATEGORIES, type MusicTrack, type MusicCategory } from '@/types/sound';
+import { logger } from '@/utils/logger';
 
 function MusicIcon({ className }: { className?: string }) {
   return (
@@ -106,7 +107,7 @@ export default function SoundsPage() {
         setTracks(result.data);
       }
     } catch (error) {
-      console.error('Failed to load tracks:', error);
+      logger.error('Failed to load tracks:', error);
     } finally {
       setIsLoading(false);
     }

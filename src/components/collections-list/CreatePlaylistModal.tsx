@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { collectionsApi } from '@/services/api';
 import type { Collection } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface CreatePlaylistModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ export function CreatePlaylistModal({ isOpen, onClose, onCreated }: CreatePlayli
       setIsPrivate(false);
       onClose();
     } catch (error) {
-      console.error('Failed to create playlist:', error);
+      logger.error('Failed to create playlist:', error);
     } finally {
       setIsSubmitting(false);
     }

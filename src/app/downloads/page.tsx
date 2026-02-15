@@ -17,6 +17,7 @@ import { offlineVideoService } from '@/services/offlineVideo';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { DownloadedVideoCard, type OfflineVideo } from '@/components/downloads';
+import { logger } from '@/utils/logger';
 
 export default function DownloadsPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function DownloadsPage() {
         const usage = await offlineVideoService.getStorageUsage();
         if (!cancelled) setStorageUsage(usage);
       } catch (error) {
-        console.error('Failed to load downloads:', error);
+        logger.error('Failed to load downloads:', error);
       }
       if (!cancelled) setIsLoading(false);
     };
@@ -138,7 +139,7 @@ function DownloadsHeader({ count, storageUsed, isOnline, onBack }: {
     <header className="sticky top-0 z-40 glass-heavy rounded-b-2xl border-b border-white/10 mx-4 mb-6">
       <div className="flex items-center justify-between px-4 h-14">
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition">
+          <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Go back">
             <ArrowLeftIcon className="w-5 h-5 text-white" />
           </button>
           <div>

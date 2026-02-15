@@ -80,13 +80,13 @@ export function AudioPanel({
         <div className="space-y-3">
           <div className="flex items-center gap-3 p-3 aurora-bg rounded-xl">
             {selectedMusic.coverUrl && (
-              <Image src={selectedMusic.coverUrl} alt="" width={40} height={40} className="w-10 h-10 rounded-lg object-cover" />
+              <Image src={selectedMusic.coverUrl} alt={selectedMusic.title + " cover"} width={40} height={40} className="w-10 h-10 rounded-lg object-cover" />
             )}
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">{selectedMusic.title}</p>
               <p className="text-white/50 text-xs truncate">{selectedMusic.artist}</p>
             </div>
-            <button onClick={() => onMusicSelect?.(null)} className="text-white/40 hover:text-red-400 p-1">
+            <button onClick={() => onMusicSelect?.(null)} className="text-white/40 hover:text-red-400 p-1" aria-label="Remove music">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>

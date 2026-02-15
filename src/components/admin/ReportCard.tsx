@@ -95,7 +95,7 @@ function UserInfoCard({ label, user, fallbackId, warningType }: { label: string;
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-neutral-700 rounded-full flex items-center justify-center">
           {user?.profilePicture ? (
-            <Image src={user.profilePicture} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
+            <Image src={user.profilePicture} alt={(user.username || "User") + "'s avatar"} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
           ) : (
             <span className="text-white font-medium">{user?.username?.[0]?.toUpperCase() || '?'}</span>
           )}

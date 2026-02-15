@@ -21,7 +21,7 @@ export function LiveStreamHeader({ stream, viewerCount }: LiveStreamHeaderProps)
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
               {stream.hostAvatar ? (
-                <Image src={stream.hostAvatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
+                <Image src={stream.hostAvatar} alt={stream.hostUsername + "'s avatar"} width={40} height={40} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                   {stream.hostUsername[0].toUpperCase()}

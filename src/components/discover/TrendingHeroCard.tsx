@@ -45,7 +45,7 @@ export function TrendingHeroCard({ video }: TrendingHeroCardProps) {
             </h2>
             <div className="flex items-center gap-3">
               {video?.userAvatar ? (
-                <Image src={video.userAvatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
+                <Image src={video.userAvatar} alt={(video.username || "Creator") + "'s avatar"} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
               ) : (
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-teal-500" />
               )}

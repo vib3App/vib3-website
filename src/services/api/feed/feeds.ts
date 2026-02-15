@@ -1,6 +1,7 @@
 import { apiClient } from '../client';
 import type { Video, PaginatedResponse, FeedOrder } from '@/types';
 import { FeedResponse, FeedVideoResponse, FeedType, VibeType, transformFeedResponse, transformVideo } from './types';
+import { logger } from '@/utils/logger';
 
 const _vibeHashtags: Record<string, string> = {
   'Energetic': 'hype', 'Chill': 'chill', 'Creative': 'creative', 'Social': 'friends',
@@ -13,7 +14,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'foryou' } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get ForYou feed:', error);
+      logger.error('Failed to get ForYou feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -23,7 +24,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'following' } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get Following feed:', error);
+      logger.error('Failed to get Following feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -33,7 +34,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/trending', { params: { page, limit } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get Trending feed:', error);
+      logger.error('Failed to get Trending feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -43,7 +44,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'discover' } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get Discover feed:', error);
+      logger.error('Failed to get Discover feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -53,7 +54,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'friends' } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get Friends feed:', error);
+      logger.error('Failed to get Friends feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -63,7 +64,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/user/videos', { params: { page, limit } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get self feed:', error);
+      logger.error('Failed to get self feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -73,7 +74,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>(`/videos/category/${categoryId}`, { params: { page, limit, order: feedOrder } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get category feed:', error);
+      logger.error('Failed to get category feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -86,7 +87,7 @@ export const feedsApi = {
       }
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get user videos:', error);
+      logger.error('Failed to get user videos:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -96,7 +97,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>(`/videos/hashtag/${encodeURIComponent(hashtag)}`, { params: { page, limit } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get hashtag feed:', error);
+      logger.error('Failed to get hashtag feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -106,7 +107,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, vibe } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to get vibe feed:', error);
+      logger.error('Failed to get vibe feed:', error);
       return { items: [], page, hasMore: false };
     }
   },
@@ -116,7 +117,7 @@ export const feedsApi = {
       const { data } = await apiClient.get<FeedResponse>('/search/videos', { params: { q: query, page, limit } });
       return transformFeedResponse(data);
     } catch (error) {
-      console.error('Failed to search videos:', error);
+      logger.error('Failed to search videos:', error);
       return { items: [], page, hasMore: false };
     }
   },

@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useConfirmStore } from '@/stores/confirmStore';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import type { TimeCapsule } from '@/types/capsule';
+import { logger } from '@/utils/logger';
 
 function formatCountdown(unlockAt: string): string {
   const now = new Date().getTime();
@@ -48,7 +49,7 @@ export default function CapsuleDetailPage() {
         const data = await capsuleApi.getCapsule(capsuleId);
         setCapsule(data);
       } catch (err) {
-        console.error('Failed to fetch capsule:', err);
+        logger.error('Failed to fetch capsule:', err);
         setError('Capsule not found');
       } finally {
         setLoading(false);
@@ -92,7 +93,7 @@ export default function CapsuleDetailPage() {
       await capsuleApi.deleteCapsule(capsuleId);
       router.push('/capsule');
     } catch (err) {
-      console.error('Failed to delete:', err);
+      logger.error('Failed to delete:', err);
     }
   };
 
@@ -123,7 +124,7 @@ export default function CapsuleDetailPage() {
 
       {/* Header */}
       <header className="relative z-20 flex items-center justify-between px-4 pt-12 pb-4">
-        <button onClick={() => router.back()} className="p-2 hover:bg-white/10 rounded-full transition">
+        <button onClick={() => router.back()} className="p-2 hover:bg-white/10 rounded-full transition" aria-label="Go back">
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -196,7 +197,7 @@ export default function CapsuleDetailPage() {
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-full overflow-hidden aurora-bg flex-shrink-0">
               {capsule.creatorAvatar ? (
-                <Image src={capsule.creatorAvatar} alt="" width={32} height={32} className="object-cover" />
+                <Image src={capsule.creatorAvatar} alt={capsule.creatorUsername + "'s avatar"} width={32} height={32} className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white/50 text-sm font-bold">
                   {capsule.creatorUsername?.charAt(0).toUpperCase() || '?'}

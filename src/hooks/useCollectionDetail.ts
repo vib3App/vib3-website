@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { collectionsApi } from '@/services/api';
 import { useConfirmStore } from '@/stores/confirmStore';
 import type { Collection, CollectionVideo } from '@/types';
+import { logger } from '@/utils/logger';
 
 export function useCollectionDetail() {
   const params = useParams();
@@ -29,7 +30,7 @@ export function useCollectionDetail() {
       const data = await collectionsApi.getCollection(collectionId);
       setCollection(data);
     } catch (error) {
-      console.error('Failed to load collection:', error);
+      logger.error('Failed to load collection:', error);
     }
   }, [collectionId]);
 
@@ -44,7 +45,7 @@ export function useCollectionDetail() {
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load videos:', error);
+      logger.error('Failed to load videos:', error);
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +71,7 @@ export function useCollectionDetail() {
         setCollection({ ...collection, videoCount: collection.videoCount - 1 });
       }
     } catch (error) {
-      console.error('Failed to remove video:', error);
+      logger.error('Failed to remove video:', error);
     }
   }, [collectionId, collection]);
 
@@ -81,7 +82,7 @@ export function useCollectionDetail() {
       await collectionsApi.deletePlaylist(collectionId);
       router.push('/collections');
     } catch (error) {
-      console.error('Failed to delete playlist:', error);
+      logger.error('Failed to delete playlist:', error);
     }
   }, [collectionId, router, confirmDialog]);
 

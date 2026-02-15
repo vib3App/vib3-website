@@ -17,6 +17,7 @@ import {
   EarnMoreTips,
 } from '@/components/creator-fund';
 import type { DashboardData, EligibilityResponse, EarningPeriod, EarningsSummary } from '@/types/creatorFund';
+import { logger } from '@/utils/logger';
 
 export default function CreatorFundPage() {
   const addToast = useToastStore(s => s.addToast);
@@ -56,7 +57,7 @@ export default function CreatorFundPage() {
         setEligibility(eligibilityData);
       }
     } catch (err) {
-      console.error('Error fetching creator fund data:', err);
+      logger.error('Error fetching creator fund data:', err);
       setError('Failed to load creator fund data');
     } finally {
       setLoading(false);
@@ -107,7 +108,7 @@ export default function CreatorFundPage() {
       setShowPaymentModal(false);
       await fetchData();
     } catch (err) {
-      console.error('Error saving payment method:', err);
+      logger.error('Error saving payment method:', err);
       addToast('Failed to save payment method');
     } finally {
       setSavingPayment(false);

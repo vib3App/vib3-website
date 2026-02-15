@@ -5,6 +5,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { userApi } from '@/services/api/user';
+import { logger } from '@/utils/logger';
 
 interface SocialState {
   followedUserIds: Set<string>;
@@ -66,7 +67,7 @@ export const useSocialStore = create<SocialStore>()(
             lastFetched: now,
           });
         } catch (error) {
-          console.error('[SocialStore] Failed to load followed users:', error);
+          logger.error('[SocialStore] Failed to load followed users:', error);
           set({ isLoading: false });
         }
       },
@@ -83,7 +84,7 @@ export const useSocialStore = create<SocialStore>()(
           }));
           return true;
         } catch (error) {
-          console.error('Failed to follow user:', error);
+          logger.error('Failed to follow user:', error);
           return false;
         }
       },
@@ -98,7 +99,7 @@ export const useSocialStore = create<SocialStore>()(
           });
           return false;
         } catch (error) {
-          console.error('Failed to unfollow user:', error);
+          logger.error('Failed to unfollow user:', error);
           return true;
         }
       },

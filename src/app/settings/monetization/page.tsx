@@ -13,6 +13,7 @@ import {
   EarningsCard,
   type TierEditor,
 } from '@/components/monetization';
+import { logger } from '@/utils/logger';
 
 export default function MonetizationPage() {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function MonetizationPage() {
         }
       }
     } catch (err) {
-      console.error('Failed to load monetization status:', err);
+      logger.error('Failed to load monetization status:', err);
       setError('Failed to load monetization settings');
     } finally {
       setIsLoading(false);
@@ -92,7 +93,7 @@ export default function MonetizationPage() {
       const { connectUrl } = await creatorApi.connectStripe();
       window.location.href = connectUrl;
     } catch (err) {
-      console.error('Failed to connect Stripe:', err);
+      logger.error('Failed to connect Stripe:', err);
       setError('Failed to start Stripe connection');
     } finally {
       setIsConnecting(false);
@@ -163,7 +164,7 @@ export default function MonetizationPage() {
       });
       await loadStatus();
     } catch (err) {
-      console.error('Failed to save tiers:', err);
+      logger.error('Failed to save tiers:', err);
       setError('Failed to save subscription tiers');
     } finally {
       setIsSavingTiers(false);

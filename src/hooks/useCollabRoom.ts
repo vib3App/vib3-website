@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
 import type { CollabRoom } from '@/types/collaboration';
+import { logger } from '@/utils/logger';
 
 interface UseCollabRoomReturn {
   room: CollabRoom | null;
@@ -80,7 +81,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
           }
         }
       } catch (err) {
-        console.error('Failed to fetch room:', err);
+        logger.error('Failed to fetch room:', err);
         setError('Room not found');
       } finally {
         setLoading(false);
@@ -110,7 +111,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.error('Failed to get media:', err);
+      logger.error('Failed to get media:', err);
       addToast('Failed to access camera/microphone');
     }
   }, [addToast]);
@@ -180,7 +181,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       setUploadProgress(100);
       setTimeout(() => setUploadProgress(0), 1000);
     } catch (err) {
-      console.error('Failed to submit clip:', err);
+      logger.error('Failed to submit clip:', err);
       addToast('Failed to submit clip');
       setUploadProgress(0);
     }
@@ -191,7 +192,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       await collaborationApi.setReady(roomId, !isReady);
       setIsReady(!isReady);
     } catch (err) {
-      console.error('Failed to set ready:', err);
+      logger.error('Failed to set ready:', err);
     }
   }, [roomId, isReady]);
 
@@ -199,7 +200,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     try {
       await collaborationApi.startRecording(roomId);
     } catch (err) {
-      console.error('Failed to start session:', err);
+      logger.error('Failed to start session:', err);
     }
   }, [roomId]);
 
@@ -208,7 +209,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       const result = await collaborationApi.finalizeCollab(roomId);
       router.push(`/video/${result.videoId}`);
     } catch (err) {
-      console.error('Failed to finalize:', err);
+      logger.error('Failed to finalize:', err);
       addToast('Failed to finalize collab');
     }
   }, [roomId, router, addToast]);
@@ -220,7 +221,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       await collaborationApi.leaveCollabRoom(roomId);
       router.push('/collab');
     } catch (err) {
-      console.error('Failed to leave:', err);
+      logger.error('Failed to leave:', err);
     }
   }, [roomId, router, confirmDialog]);
 
@@ -247,7 +248,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
     try {
       await collaborationApi.inviteUser(roomId, inviteUserId);
     } catch (err: unknown) {
-      console.error('Failed to invite user:', err);
+      logger.error('Failed to invite user:', err);
       const message = (err as Error)?.message || 'Failed to send invite';
       throw new Error(message);
     }

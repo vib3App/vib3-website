@@ -14,6 +14,7 @@ import {
   GiftCoinsModal,
 } from '@/components/coins';
 import type { Wallet, WalletCoinPackage, Transaction } from '@/types/wallet';
+import { logger } from '@/utils/logger';
 
 export default function CoinsPage() {
   const { isAuthenticated, isAuthVerified } = useAuthStore();
@@ -54,7 +55,7 @@ export default function CoinsPage() {
       setPackages(packagesData);
       setTransactions(transactionsData);
     } catch (err) {
-      console.error('Failed to fetch wallet data:', err);
+      logger.error('Failed to fetch wallet data:', err);
       setError('Failed to load wallet data. Please try again.');
     } finally {
       setLoading(false);
@@ -94,7 +95,7 @@ export default function CoinsPage() {
       const results = await searchApi.search(query, { type: 'users' });
       setSearchResults(results.users?.slice(0, 5) || []);
     } catch (err) {
-      console.error('Search failed:', err);
+      logger.error('Search failed:', err);
     }
   };
 
@@ -150,7 +151,7 @@ export default function CoinsPage() {
         setPurchaseError('Failed to create checkout session');
       }
     } catch (err: unknown) {
-      console.error('Purchase error:', err);
+      logger.error('Purchase error:', err);
       const axiosErr = err as { response?: { data?: { error?: string } } };
       setPurchaseError(axiosErr.response?.data?.error || 'Failed to start purchase. Please try again.');
     } finally {

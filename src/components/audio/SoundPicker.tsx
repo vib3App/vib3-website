@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { soundsApi } from '@/services/api/sounds';
 import { MUSIC_CATEGORIES, type MusicTrack, type MusicCategory } from '@/types/sound';
+import { logger } from '@/utils/logger';
 
 interface SoundPickerProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export function SoundPicker({ isOpen, onClose, onSelect, selectedTrackId }: Soun
         setTracks(result.data);
       }
     } catch (error) {
-      console.error('Failed to load tracks:', error);
+      logger.error('Failed to load tracks:', error);
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +102,7 @@ export function SoundPicker({ isOpen, onClose, onSelect, selectedTrackId }: Soun
       <div className="bg-[#1a1a2e] w-full max-h-[85vh] rounded-t-3xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
-          <button onClick={onClose} className="text-white/60 hover:text-white">
+          <button onClick={onClose} className="text-white/60 hover:text-white" aria-label="Close">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>

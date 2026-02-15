@@ -2,6 +2,7 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import type { ProcessingProgress, VideoEdits } from './types';
 import { buildFFmpegArgs, renderOverlaysToImage } from './filters';
+import { logger } from '@/utils/logger';
 
 export class VideoProcessorService {
   private ffmpeg: FFmpeg | null = null;
@@ -37,7 +38,7 @@ export class VideoProcessorService {
         this.isLoaded = true;
         onProgress?.({ stage: 'loading', percent: 100, message: 'Processor ready' });
       } catch (error) {
-        console.error('Failed to load FFmpeg:', error);
+        logger.error('Failed to load FFmpeg:', error);
         onProgress?.({ stage: 'error', percent: 0, message: 'Failed to load processor' });
         throw error;
       }
@@ -86,7 +87,7 @@ export class VideoProcessorService {
           await this.ffmpeg!.writeFile('music.mp3', musicData);
           hasMusic = true;
         } catch (e) {
-          console.error('Failed to fetch music track:', e);
+          logger.error('Failed to fetch music track:', e);
         }
       }
 
@@ -117,7 +118,7 @@ export class VideoProcessorService {
       onProgress?.({ stage: 'complete', percent: 100, message: 'Processing complete!' });
       return blob;
     } catch (error) {
-      console.error('Video processing failed:', error);
+      logger.error('Video processing failed:', error);
       onProgress?.({ stage: 'error', percent: 0, message: 'Processing failed' });
       return null;
     }
@@ -151,7 +152,7 @@ export class VideoProcessorService {
 
       return URL.createObjectURL(blob);
     } catch (error) {
-      console.error('Thumbnail generation failed:', error);
+      logger.error('Thumbnail generation failed:', error);
       return null;
     }
   }

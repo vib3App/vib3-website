@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { logger } from '@/utils/logger';
 
 interface ARCapabilities {
   isSupported: boolean;
@@ -107,7 +108,7 @@ export function useAR() {
 
       return true;
     } catch (e) {
-      console.error('Failed to start camera:', e);
+      logger.error('Failed to start camera:', e);
       return false;
     }
   }, [capabilities.hasCamera]);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect, useCallback, RefObject } from 'react';
+import { logger } from '@/utils/logger';
 
 interface UseVideoUIOptions {
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -63,7 +64,7 @@ export function useVideoUI({ videoRef, onMiniPlayerToggle }: UseVideoUIOptions) 
         onMiniPlayerToggle?.(true);
       }
     } catch (err) {
-      console.error('PiP error:', err);
+      logger.error('PiP error:', err);
     }
   }, [videoRef, onMiniPlayerToggle]);
 
@@ -78,7 +79,7 @@ export function useVideoUI({ videoRef, onMiniPlayerToggle }: UseVideoUIOptions) 
         await container.requestFullscreen();
       }
     } catch (err) {
-      console.error('Fullscreen error:', err);
+      logger.error('Fullscreen error:', err);
     }
   }, []);
 

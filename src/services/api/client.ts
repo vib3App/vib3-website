@@ -5,6 +5,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { config } from '@/config/env';
 import { useToastStore } from '@/stores/toastStore';
+import { logger } from '@/utils/logger';
 
 // Track if we're currently refreshing to avoid multiple simultaneous refreshes
 let isRefreshing = false;
@@ -47,7 +48,7 @@ async function refreshAuthToken(): Promise<string | null> {
 
     return token;
   } catch (error) {
-    console.error('Token refresh failed:', error);
+    logger.error('Token refresh failed:', error);
     // Clear tokens on refresh failure
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token');

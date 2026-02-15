@@ -13,13 +13,13 @@ export interface Achievement {
   progress?: AchievementProgress;
 }
 
-export interface AchievementTier {
+interface AchievementTier {
   order: number;
   color: string;
   name: string;
 }
 
-export interface AchievementProgress {
+interface AchievementProgress {
   current: number;
   target: number;
   percentage: number;
@@ -56,7 +56,7 @@ export type AchievementCategory =
   | 'special'
   | 'all';
 
-export type AchievementTierLevel = 'bronze' | 'silver' | 'gold' | 'diamond';
+type AchievementTierLevel = 'bronze' | 'silver' | 'gold' | 'diamond';
 
 export const ACHIEVEMENT_CATEGORIES: { id: AchievementCategory; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🏆' },
@@ -76,9 +76,3 @@ export const TIER_COLORS: Record<AchievementTierLevel, string> = {
   diamond: '#00CED1',
 };
 
-export const TIER_ORDER: Record<AchievementTierLevel, number> = {
-  bronze: 1,
-  silver: 2,
-  gold: 3,
-  diamond: 4,
-};

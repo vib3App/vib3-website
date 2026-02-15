@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Hls from 'hls.js';
 import { videoApi, searchApi } from '@/services/api';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 type LayoutMode = 'grid' | 'focus' | 'pip';
 
@@ -42,7 +43,7 @@ export function useMultiView() {
           const video = await videoApi.getVideo(videoId);
           loadedSlots.push({ id: `slot-${loadedSlots.length}`, video, isPlaying: true, isMuted: true, volume: 0.5 });
         } catch (err) {
-          console.error(`Failed to load video ${videoId}:`, err);
+          logger.error(`Failed to load video ${videoId}:`, err);
         }
       }
       while (loadedSlots.length < MAX_VIDEOS) {
@@ -98,7 +99,7 @@ export function useMultiView() {
       const results = await searchApi.searchVideos(searchQuery);
       setSearchResults(results.items || []);
     } catch (err) {
-      console.error('Failed to search:', err);
+      logger.error('Failed to search:', err);
     } finally {
       setSearching(false);
     }

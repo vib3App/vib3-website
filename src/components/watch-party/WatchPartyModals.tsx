@@ -31,6 +31,7 @@ export function ShareModal({
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-full transition"
+            aria-label="Close"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -97,6 +98,7 @@ export function AddVideoModal({
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-full transition"
+            aria-label="Close"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -131,7 +133,7 @@ export function AddVideoModal({
                 >
                   <div className="w-16 aspect-video bg-gray-800 rounded overflow-hidden flex-shrink-0">
                     {video.thumbnail ? (
-                      <Image src={video.thumbnail} alt="" width={128} height={72} className="w-full h-full object-cover" />
+                      <Image src={video.thumbnail} alt={video.title + " thumbnail"} width={128} height={72} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <PlayIcon className="w-4 h-4 text-gray-600" />

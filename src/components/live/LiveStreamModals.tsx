@@ -22,6 +22,7 @@ export function GiftsModal({ isOpen, gifts, onClose, onSendGift }: GiftsModalPro
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-full transition"
+            aria-label="Close"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -80,6 +81,7 @@ export function GuestRequestsModal({
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-full transition"
+            aria-label="Close"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -98,7 +100,7 @@ export function GuestRequestsModal({
               >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
                   {request.avatar ? (
-                    <Image src={request.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
+                    <Image src={request.avatar} alt={request.username + "'s avatar"} width={40} height={40} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-sm font-bold">
                       {request.username[0].toUpperCase()}
@@ -113,12 +115,14 @@ export function GuestRequestsModal({
                   <button
                     onClick={() => onReject(request.requestId)}
                     className="p-2 hover:bg-white/10 rounded-full transition text-red-400"
+                    aria-label="Reject request"
                   >
                     <XMarkIcon className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => onAccept(request.requestId)}
                     className="p-2 bg-green-500 hover:bg-green-600 rounded-full transition"
+                    aria-label="Accept request"
                   >
                     <UserPlusIcon className="w-5 h-5" />
                   </button>

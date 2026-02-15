@@ -13,6 +13,7 @@ import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { VideoRow, PlaylistHeader } from '@/components/playlists';
 import type { Playlist } from '@/types/playlist';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 export default function PlaylistDetailPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function PlaylistDetailPage() {
       setPlaylist(playlistData);
       setVideos(videosData);
     } catch (error) {
-      console.error('Failed to load playlist:', error);
+      logger.error('Failed to load playlist:', error);
     } finally {
       setIsLoading(false);
     }

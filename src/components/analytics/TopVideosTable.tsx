@@ -38,7 +38,7 @@ export function TopVideosTable({ videos }: TopVideosTableProps) {
                           {index + 1}
                         </div>
                         {video.thumbnail && (
-                          <Image src={video.thumbnail} alt="" width={48} height={48} className="w-12 h-12 rounded object-cover" />
+                          <Image src={video.thumbnail} alt={video.title + " thumbnail"} width={48} height={48} className="w-12 h-12 rounded object-cover" />
                         )}
                         <span className="text-white line-clamp-1">{video.title}</span>
                       </Link>

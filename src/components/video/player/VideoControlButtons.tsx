@@ -9,7 +9,7 @@ interface PlayPauseButtonProps {
 
 export function PlayPauseButton({ isPlaying, onToggle }: PlayPauseButtonProps) {
   return (
-    <button onClick={onToggle} className="text-white hover:text-white/80">
+    <button onClick={onToggle} className="text-white hover:text-white/80" aria-label={isPlaying ? "Pause" : "Play"}>
       {isPlaying ? (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
@@ -30,7 +30,7 @@ interface SkipButtonProps {
 
 export function SkipButton({ direction, onSkip }: SkipButtonProps) {
   return (
-    <button onClick={onSkip} className="text-white hover:text-white/80 hidden sm:block">
+    <button onClick={onSkip} className="text-white hover:text-white/80 hidden sm:block" aria-label={direction === 'backward' ? "Skip backward" : "Skip forward"}>
       {direction === 'backward' ? (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1.1 11H10v-3.3L9 13v-.7l1.8-.6h.1V16z" />
@@ -69,7 +69,7 @@ export function VolumeControl({
       onMouseEnter={onShowSlider}
       onMouseLeave={onHideSlider}
     >
-      <button onClick={onToggleMute} className="text-white hover:text-white/80">
+      <button onClick={onToggleMute} className="text-white hover:text-white/80" aria-label={isMuted || volume === 0 ? "Unmute" : "Mute"}>
         {isMuted || volume === 0 ? (
           <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
@@ -147,7 +147,7 @@ interface FullscreenButtonProps {
 
 export function FullscreenButton({ isFullscreen, onToggle }: FullscreenButtonProps) {
   return (
-    <button onClick={onToggle} className="text-white hover:text-white/80">
+    <button onClick={onToggle} className="text-white hover:text-white/80" aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
       {isFullscreen ? (
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
           <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z" />
@@ -167,7 +167,7 @@ interface SettingsButtonProps {
 
 export function SettingsButton({ onToggle }: SettingsButtonProps) {
   return (
-    <button onClick={onToggle} className="text-white hover:text-white/80">
+    <button onClick={onToggle} className="text-white hover:text-white/80" aria-label="Settings">
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
         <path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
       </svg>
@@ -184,7 +184,7 @@ export function ChaptersButton({ hasChapters, onToggle }: ChaptersButtonProps) {
   if (!hasChapters) return null;
 
   return (
-    <button onClick={onToggle} className="text-white hover:text-white/80 hidden sm:flex items-center gap-1">
+    <button onClick={onToggle} className="text-white hover:text-white/80 hidden sm:flex items-center gap-1" aria-label="Chapters">
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
         <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
       </svg>

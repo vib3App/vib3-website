@@ -49,7 +49,7 @@ export function CollabParticipantsList({
             <code className="flex-1 px-3 py-2 bg-black/50 rounded-lg text-lg tracking-widest font-mono text-center">
               {inviteCode}
             </code>
-            <button onClick={onCopyCode} className="p-2 hover:bg-white/10 rounded-lg transition">
+            <button onClick={onCopyCode} className="p-2 hover:bg-white/10 rounded-lg transition" aria-label={copied ? "Copied" : "Copy invite code"}>
               {copied ? (
                 <CheckIcon className="w-5 h-5 text-green-400" />
               ) : (
@@ -69,7 +69,7 @@ function ParticipantCard({ participant }: { participant: CollabParticipant }) {
       <div className="relative">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
           {participant.avatar ? (
-            <Image src={participant.avatar} alt="" width={40} height={40} className="w-full h-full object-cover" />
+            <Image src={participant.avatar} alt={participant.username + "'s avatar"} width={40} height={40} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-sm font-bold">
               {participant.username[0].toUpperCase()}

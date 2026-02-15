@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { logger } from '@/utils/logger';
 
 interface WalletInfo {
   address: string;
@@ -235,7 +236,7 @@ export function useCryptoPayments() {
 
       return txHash;
     } catch (e) {
-      console.error('Transaction failed:', e);
+      logger.error('Transaction failed:', e);
       return null;
     } finally {
       setIsProcessing(false);

@@ -9,6 +9,7 @@ import { liveApi } from '@/services/api';
 import type { LiveStream } from '@/types';
 import { TopNav } from '@/components/ui/TopNav';
 import { LiveStreamCard, WhyGoLiveSection } from '@/components/live';
+import { logger } from '@/utils/logger';
 
 export default function LivePage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function LivePage() {
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load streams:', error);
+      logger.error('Failed to load streams:', error);
       hasErroredRef.current = true;
     } finally {
       setIsLoading(false);
@@ -45,7 +46,7 @@ export default function LivePage() {
       const data = await liveApi.getFollowingLive();
       setFollowingStreams(data);
     } catch (error) {
-      console.error('Failed to load following streams:', error);
+      logger.error('Failed to load following streams:', error);
     }
   }, [isAuthenticated]);
 

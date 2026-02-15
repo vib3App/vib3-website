@@ -9,6 +9,7 @@ import { BottomNav } from '@/components/ui/BottomNav';
 import { soundsApi } from '@/services/api/sounds';
 import type { MusicTrack } from '@/types/sound';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 function MusicIcon({ className }: { className?: string }) {
   return (
@@ -40,7 +41,7 @@ export default function SoundDetailPage({ params }: { params: Promise<{ soundId:
         setIsSaved(trackData?.isSaved || false);
         setVideos(videosData.data);
       } catch (error) {
-        console.error('Failed to load sound:', error);
+        logger.error('Failed to load sound:', error);
       } finally {
         setIsLoading(false);
       }
@@ -176,6 +177,7 @@ export default function SoundDetailPage({ params }: { params: Promise<{ soundId:
           </button>
           <button
             onClick={handleSave}
+            aria-label={isSaved ? "Unsave sound" : "Save sound"}
             className={`px-4 py-3 rounded-xl transition-colors ${
               isSaved ? 'bg-purple-500/20 text-purple-400' : 'bg-white/10 text-white'
             }`}
@@ -194,7 +196,7 @@ export default function SoundDetailPage({ params }: { params: Promise<{ soundId:
               />
             </svg>
           </button>
-          <button className="px-4 py-3 bg-white/10 text-white rounded-xl">
+          <button className="px-4 py-3 bg-white/10 text-white rounded-xl" aria-label="Share">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -226,7 +228,7 @@ export default function SoundDetailPage({ params }: { params: Promise<{ soundId:
                   {video.thumbnailUrl ? (
                     <Image
                       src={video.thumbnailUrl}
-                      alt=""
+                      alt={(video.caption || "Video") + " thumbnail"}
                       fill
                       className="object-cover"
                     />

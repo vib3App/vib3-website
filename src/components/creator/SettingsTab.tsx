@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { creatorSettingsApi, type CreatorMonetizationSettings, type StripeConnectStatus } from '@/services/api';
+import { logger } from '@/utils/logger';
 
 const defaultSettings: CreatorMonetizationSettings = {
   giftsEnabled: true,
@@ -53,7 +54,7 @@ export function SettingsTab() {
       setSettings(settingsData);
       setStripeStatus(stripeData);
     } catch (e) {
-      console.error('Failed to load settings:', e);
+      logger.error('Failed to load settings:', e);
       setError('Failed to load settings');
     } finally {
       setLoading(false);
@@ -78,7 +79,7 @@ export function SettingsTab() {
       // Revert on error
       setSettings(settings);
       setError('Failed to save setting');
-      console.error('Failed to update setting:', e);
+      logger.error('Failed to update setting:', e);
     } finally {
       setSaving(false);
     }
@@ -95,7 +96,7 @@ export function SettingsTab() {
     } catch (e) {
       setSettings(settings);
       setError('Failed to save setting');
-      console.error('Failed to update setting:', e);
+      logger.error('Failed to update setting:', e);
     } finally {
       setSaving(false);
     }
@@ -130,7 +131,7 @@ export function SettingsTab() {
       // Redirect to Stripe onboarding
       window.location.href = onboardingUrl;
     } catch (e) {
-      console.error('Stripe connect error:', e);
+      logger.error('Stripe connect error:', e);
       setError('Failed to connect Stripe. Please try again.');
     } finally {
       setConnectingStripe(false);

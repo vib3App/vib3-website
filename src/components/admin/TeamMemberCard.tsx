@@ -56,7 +56,7 @@ export function TeamMemberCard({ member, role, isOwner, actionLoading, onDemote,
           {ROLE_ICONS[role]}
           <div className={`${avatarSize} bg-neutral-700 rounded-full flex items-center justify-center overflow-hidden`}>
             {member.profilePicture ? (
-              <Image src={member.profilePicture} alt="" width={isOwnerCard ? 56 : 48} height={isOwnerCard ? 56 : 48} className={`${avatarSize} object-cover`} />
+              <Image src={member.profilePicture} alt={member.username + "'s avatar"} width={isOwnerCard ? 56 : 48} height={isOwnerCard ? 56 : 48} className={`${avatarSize} object-cover`} />
             ) : (
               <span className={`text-white font-bold ${isOwnerCard ? 'text-xl' : ''}`}>
                 {member.username?.[0]?.toUpperCase()}

@@ -3,7 +3,7 @@
  * Mirrors Flutter app's feed category system
  */
 
-export type FeedCategoryType = 'system' | 'default' | 'custom';
+type FeedCategoryType = 'system' | 'default' | 'custom';
 
 export type FeedOrder = 'algorithmic' | 'chronological';
 
@@ -26,7 +26,7 @@ export interface FeedCategory {
 }
 
 // Default system categories
-export const SYSTEM_CATEGORIES: FeedCategory[] = [
+const SYSTEM_CATEGORIES: FeedCategory[] = [
   {
     id: 'foryou',
     name: 'For You',
@@ -81,17 +81,6 @@ export const DEFAULT_CATEGORIES: FeedCategory[] = [
     settings: { feedOrder: 'chronological', notifications: true, vibeMeter: true },
   },
 ];
-
-export const SELF_CATEGORY: FeedCategory = {
-  id: 'self',
-  name: 'My Vib3s',
-  type: 'system',
-  icon: '🎬',
-  color: '#9932CC', // Purple
-  order: 2,
-  isDeletable: false,
-  settings: { feedOrder: 'chronological', notifications: false, vibeMeter: false },
-};
 
 // Reserved category names that users cannot use
 export const RESERVED_NAMES = ['for you', 'following', 'friends', 'family', 'coworkers', 'my videos', 'my vib3s', 'self'];

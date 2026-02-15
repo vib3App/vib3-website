@@ -2,7 +2,7 @@
  * Live streaming types
  */
 
-export type LiveStreamStatus = 'scheduled' | 'starting' | 'live' | 'ended' | 'cancelled';
+type LiveStreamStatus = 'scheduled' | 'starting' | 'live' | 'ended' | 'cancelled';
 
 export interface LiveStream {
   id: string;
@@ -50,11 +50,6 @@ export interface LiveChatMessage {
   giftName?: string;
   giftValue?: number;
   createdAt: string;
-}
-
-export interface LiveReaction {
-  type: 'like' | 'heart' | 'fire' | 'laugh' | 'wow' | 'clap';
-  count: number;
 }
 
 export interface LiveGift {

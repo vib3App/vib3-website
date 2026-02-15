@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { searchApi, SearchFilters, SearchSuggestion, SearchUser, SearchHashtag, SearchSound } from '@/services/api';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 export type SearchTab = 'top' | 'users' | 'videos' | 'sounds' | 'hashtags' | 'transcripts';
 
@@ -142,7 +143,7 @@ export function useSearch(): UseSearchReturn {
       setSounds(soundsResult);
       setTranscriptMatches(transcriptsResult.items);
     } catch (error) {
-      console.error('Search failed:', error);
+      logger.error('Search failed:', error);
     } finally {
       setIsLoading(false);
     }

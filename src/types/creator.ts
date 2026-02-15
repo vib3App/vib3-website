@@ -11,7 +11,7 @@ export interface CreatorAnalytics {
   revenueBreakdown: RevenueBreakdown;
 }
 
-export interface AnalyticsOverview {
+interface AnalyticsOverview {
   totalViews: number;
   totalLikes: number;
   totalComments: number;
@@ -55,7 +55,7 @@ export interface AudienceInsights {
   topInterests: string[];
 }
 
-export interface RevenueBreakdown {
+interface RevenueBreakdown {
   total: number;
   gifts: number;
   subscriptions: number;

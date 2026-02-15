@@ -61,13 +61,14 @@ export function MultiViewHeader({
             </button>
           </div>
 
-          <button onClick={onMasterMuteToggle} className="p-2 hover:bg-white/10 rounded-full transition">
+          <button onClick={onMasterMuteToggle} className="p-2 hover:bg-white/10 rounded-full transition" aria-label={masterMuted ? "Unmute all" : "Mute all"}>
             {masterMuted ? <SpeakerXMarkIcon className="w-5 h-5" /> : <SpeakerWaveIcon className="w-5 h-5" />}
           </button>
 
           <button
             onClick={anyPlaying ? onPauseAll : onPlayAll}
             className="p-2 hover:bg-white/10 rounded-full transition"
+            aria-label={anyPlaying ? "Pause all" : "Play all"}
           >
             {anyPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
           </button>

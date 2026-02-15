@@ -9,8 +9,10 @@ import { FeedVideoItem } from '@/components/feed';
 import { CommentSheet } from '@/components/video/CommentSheet';
 import { ShareSheet } from '@/components/video/ShareSheet';
 import { useAuthStore } from '@/stores/authStore';
+import { useSocialStore } from '@/stores/socialStore';
 import { videoApi, userApi } from '@/services/api';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 export default function VideoPlayerPage() {
   return (
@@ -81,7 +83,7 @@ function VideoPlayerContent() {
               }
             }
           } catch (apiErr) {
-            console.error('Failed to fetch video:', apiErr);
+            logger.error('Failed to fetch video:', apiErr);
             throw new Error('Could not load video. Try again.');
           }
         }
@@ -93,7 +95,7 @@ function VideoPlayerContent() {
         setVideos(allVideos);
         setCurrentIndex(0);
       } catch (err: unknown) {
-        console.error('Failed to load video:', err);
+        logger.error('Failed to load video:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load video';
         setError(errorMessage);
       } finally {
@@ -150,7 +152,7 @@ function VideoPlayerContent() {
         i === index ? { ...v, isLiked: result.liked, likesCount: result.likesCount } : v
       ));
     } catch (err) {
-      console.error('Failed to like:', err);
+      logger.error('Failed to like:', err);
     }
   }, [videos, isAuthenticated]);
 
@@ -163,24 +165,54 @@ function VideoPlayerContent() {
         i === index ? { ...v, isFavorited: result.favorited } : v
       ));
     } catch (err) {
-      console.error('Failed to save:', err);
+      logger.error('Failed to save:', err);
     }
   }, [videos, isAuthenticated]);
 
-  const handleFollow = useCallback(async (_index: number) => {
-    // Follow logic - would need user API
-    // TODO: Wire follow API
-  }, []);
+  const handleFollow = useCallback(async (index: number) => {
+    if (!isAuthenticated) return;
+    const video = videos[index];
+    if (!video) return;
+
+    const { toggleFollow, isFollowing } = useSocialStore.getState();
+    const wasFollowing = isFollowing(video.userId);
+
+    // Optimistically update video state for all videos by the same user
+    setVideos(prev => prev.map(v =>
+      v.userId === video.userId ? { ...v, isFollowing: !wasFollowing } : v
+    ));
+
+    try {
+      await toggleFollow(video.userId);
+    } catch (err) {
+      // Revert on error
+      setVideos(prev => prev.map(v =>
+        v.userId === video.userId ? { ...v, isFollowing: wasFollowing } : v
+      ));
+      logger.error('Failed to toggle follow:', err);
+    }
+  }, [videos, isAuthenticated]);
+
+  const selectedVideo = videos[currentIndex];
 
   const handleComment = useCallback((_id: string) => {
     setCommentsOpen(true);
   }, []);
 
+  const handleCommentAdded = useCallback(() => {
+    if (!selectedVideo) return;
+    setVideos(prev => prev.map(v =>
+      v.id === selectedVideo.id ? {
+        ...v,
+        hasCommented: true,
+        commentsCount: (v.commentsCount || 0) + 1,
+      } : v
+    ));
+  }, [selectedVideo]);
+
   const handleShare = useCallback((_id: string) => {
     setShareOpen(true);
   }, []);
-
-  const selectedVideo = videos[currentIndex];
 
   if (isLoading) {
     return (
@@ -256,6 +288,7 @@ function VideoPlayerContent() {
             videoId={selectedVideo.id}
             isOpen={commentsOpen}
             onClose={() => setCommentsOpen(false)}
+            onCommentAdded={handleCommentAdded}
           />
           <ShareSheet
             videoId={selectedVideo.id}

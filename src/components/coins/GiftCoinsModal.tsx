@@ -73,7 +73,7 @@ export function GiftCoinsModal({
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
                     {user.avatar ? (
-                      <Image src={user.avatar} alt="" width={32} height={32} className="w-full h-full rounded-full object-cover" />
+                      <Image src={user.avatar} alt={user.username + "'s avatar"} width={32} height={32} className="w-full h-full rounded-full object-cover" />
                     ) : (
                       user.username[0].toUpperCase()
                     )}

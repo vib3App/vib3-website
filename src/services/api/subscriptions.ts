@@ -5,6 +5,7 @@
 
 import { apiClient } from './client';
 import type { SubscriptionTier } from '@/types/creator';
+import { logger } from '@/utils/logger';
 
 export interface CreatorTiersResponse {
   creatorId: string;
@@ -77,7 +78,7 @@ export const subscriptionsApi = {
       );
       return { success: true, checkoutUrl: data.checkoutUrl };
     } catch (error: unknown) {
-      console.error('Failed to subscribe:', error);
+      logger.error('Failed to subscribe:', error);
       const message = error instanceof Error ? error.message : 'Failed to subscribe';
       return { success: false, error: message };
     }
@@ -91,7 +92,7 @@ export const subscriptionsApi = {
       await apiClient.post(`/subscriptions/cancel`, { subscriptionId });
       return true;
     } catch (error) {
-      console.error('Failed to cancel subscription:', error);
+      logger.error('Failed to cancel subscription:', error);
       return false;
     }
   },
@@ -118,7 +119,7 @@ export const subscriptionsApi = {
       await apiClient.post('/subscriptions/enable', { tiers });
       return true;
     } catch (error) {
-      console.error('Failed to enable subscriptions:', error);
+      logger.error('Failed to enable subscriptions:', error);
       return false;
     }
   },
@@ -131,7 +132,7 @@ export const subscriptionsApi = {
       await apiClient.post('/subscriptions/disable');
       return true;
     } catch (error) {
-      console.error('Failed to disable subscriptions:', error);
+      logger.error('Failed to disable subscriptions:', error);
       return false;
     }
   },

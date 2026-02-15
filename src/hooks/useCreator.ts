@@ -11,6 +11,7 @@ import type {
   CoinBalance,
 } from '@/types/creator';
 import type { CreatorTab } from '@/components/creator';
+import { logger } from '@/utils/logger';
 
 export type Period = '7d' | '30d' | '90d' | '1y';
 
@@ -87,7 +88,7 @@ export function useCreator(): UseCreatorReturn {
         if (results[3].status === 'fulfilled') setTopSupporters(results[3].value);
         if (results[4].status === 'fulfilled') setCoinBalance(results[4].value);
       } catch (err) {
-        console.error('Failed to fetch creator data:', err);
+        logger.error('Failed to fetch creator data:', err);
       } finally {
         if (isMountedRef.current) {
           setLoading(false);

@@ -6,6 +6,7 @@ import { collaborationApi, videoApi } from '@/services/api';
 import { useToastStore } from '@/stores/toastStore';
 import type { RemixType } from '@/types/collaboration';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface RemixPermissions {
   allowEcho: boolean;
@@ -59,7 +60,7 @@ export function useRemix() {
         setOriginalVideo(video);
         setPermissions(perms);
       } catch (err) {
-        console.error('Failed to fetch video:', err);
+        logger.error('Failed to fetch video:', err);
       } finally {
         setLoading(false);
       }
@@ -75,7 +76,7 @@ export function useRemix() {
         cameraVideoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.error('Failed to start camera:', err);
+      logger.error('Failed to start camera:', err);
       addToast('Failed to access camera/microphone');
     }
   }, [addToast]);
@@ -142,7 +143,7 @@ export function useRemix() {
       });
       router.push(`/video/${remix.id}`);
     } catch (err) {
-      console.error('Failed to create remix:', err);
+      logger.error('Failed to create remix:', err);
       addToast('Failed to create remix');
     } finally {
       setUploading(false);

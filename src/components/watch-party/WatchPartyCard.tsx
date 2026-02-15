@@ -33,7 +33,7 @@ export function WatchPartyCard({ party }: WatchPartyCardProps) {
     >
       <div className="aspect-video bg-gray-800 relative">
         {party.playlist.length > 0 && party.playlist[0].videoThumbnail ? (
-          <Image src={party.playlist[0].videoThumbnail} alt="" fill className="object-cover" />
+          <Image src={party.playlist[0].videoThumbnail} alt={party.title + " thumbnail"} fill className="object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <TvIcon className="w-12 h-12 text-gray-600" />
@@ -69,7 +69,7 @@ export function WatchPartyCard({ party }: WatchPartyCardProps) {
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 overflow-hidden">
             {party.hostAvatar ? (
-              <Image src={party.hostAvatar} alt="" width={32} height={32} className="w-full h-full object-cover" />
+              <Image src={party.hostAvatar} alt={party.hostUsername + "'s avatar"} width={32} height={32} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-xs font-bold">
                 {party.hostUsername[0].toUpperCase()}
@@ -96,7 +96,7 @@ export function WatchPartyCard({ party }: WatchPartyCardProps) {
                 style={{ zIndex: 5 - i }}
               >
                 {p.avatar ? (
-                  <Image src={p.avatar} alt="" width={24} height={24} className="w-full h-full object-cover" />
+                  <Image src={p.avatar} alt={p.username + "'s avatar"} width={24} height={24} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] font-bold">
                     {p.username[0].toUpperCase()}

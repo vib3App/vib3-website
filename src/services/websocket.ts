@@ -6,6 +6,7 @@ import { io, Socket } from 'socket.io-client';
 import { config } from '@/config/env';
 import type { Message, TypingIndicator } from '@/types';
 import type { IncomingCall, CallEndedEvent } from '@/types/call';
+import { logger } from '@/utils/logger';
 
 type MessageHandler = (message: Message) => void;
 type TypingHandler = (indicator: TypingIndicator) => void;
@@ -82,7 +83,7 @@ class WebSocketService {
       });
 
       this.socket.on('connect_error', (error) => {
-        console.error('Socket.IO connection error:', error.message);
+        logger.error('Socket.IO connection error:', error.message);
       });
 
       // Message events
@@ -143,7 +144,7 @@ class WebSocketService {
       });
 
     } catch (error) {
-      console.error('Failed to create Socket.IO connection:', error);
+      logger.error('Failed to create Socket.IO connection:', error);
     }
   }
 

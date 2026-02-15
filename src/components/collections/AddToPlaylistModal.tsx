@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { collectionsApi } from '@/services/api';
 import type { Collection } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface AddToPlaylistModalProps {
   isOpen: boolean;
@@ -36,7 +37,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
         setSelectedPlaylists(inPlaylists);
         setInitialPlaylists(inPlaylists);
       } catch (error) {
-        console.error('Failed to load playlists:', error);
+        logger.error('Failed to load playlists:', error);
       } finally {
         setIsLoading(false);
       }
@@ -72,7 +73,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
 
       onClose();
     } catch (error) {
-      console.error('Failed to save:', error);
+      logger.error('Failed to save:', error);
     } finally {
       setIsSaving(false);
     }
@@ -93,7 +94,7 @@ export function AddToPlaylistModal({ isOpen, onClose, videoId }: AddToPlaylistMo
       setNewPlaylistName('');
       setShowCreate(false);
     } catch (error) {
-      console.error('Failed to create playlist:', error);
+      logger.error('Failed to create playlist:', error);
     } finally {
       setIsCreating(false);
     }

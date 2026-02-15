@@ -26,7 +26,7 @@ export function CollabRoomCard({ room }: CollabRoomCardProps) {
         <div className="flex-1 flex items-center justify-center">
           <div className="flex -space-x-2">
             {room.participants.slice(0, 4).map((p, i) => (
-              <Image key={i} src={p.avatarUrl} alt="" width={32} height={32} className="w-8 h-8 rounded-full border-2 border-black" />
+              <Image key={i} src={p.avatarUrl} alt="Participant avatar" width={32} height={32} className="w-8 h-8 rounded-full border-2 border-black" />
             ))}
             {room.participants.length > 4 && (
               <div className="w-8 h-8 rounded-full bg-white/10 border-2 border-black flex items-center justify-center text-xs">

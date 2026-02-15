@@ -2,7 +2,7 @@
  * AI feature types
  */
 
-export interface AICaption {
+interface AICaption {
   id: string;
   startTime: number;
   endTime: number;
@@ -28,7 +28,7 @@ export interface ContentModerationResult {
   moderatedAt: string;
 }
 
-export interface ModerationFlag {
+interface ModerationFlag {
   type: 'violence' | 'adult' | 'hate_speech' | 'spam' | 'misinformation' | 'copyright';
   confidence: number;
   description: string;
@@ -69,7 +69,7 @@ export interface AIFilter {
   parameters?: Record<string, number | string>;
 }
 
-export interface FaceDetection {
+interface FaceDetection {
   x: number;
   y: number;
   width: number;
@@ -84,7 +84,7 @@ export interface FaceDetection {
   };
 }
 
-export interface ObjectDetection {
+interface ObjectDetection {
   label: string;
   confidence: number;
   boundingBox: {
@@ -105,7 +105,7 @@ export interface VideoAnalysis {
   audioAnalysis?: AudioAnalysis;
 }
 
-export interface SceneAnalysis {
+interface SceneAnalysis {
   startTime: number;
   endTime: number;
   description: string;

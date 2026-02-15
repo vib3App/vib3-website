@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { searchApi } from '@/services/api/search';
 import { userApi } from '@/services/api/user';
+import { logger } from '@/utils/logger';
 
 interface SearchResult {
   id: string;
@@ -62,7 +63,7 @@ export function SidebarSearch() {
             });
           });
         } catch (err) {
-          console.error('User search error:', err);
+          logger.error('User search error:', err);
         }
       }
 
@@ -80,13 +81,13 @@ export function SidebarSearch() {
             });
           });
         } catch (err) {
-          console.error('Hashtag search error:', err);
+          logger.error('Hashtag search error:', err);
         }
       }
 
       setResults(searchResults);
     } catch (error) {
-      console.error('Search error:', error);
+      logger.error('Search error:', error);
       setResults([]);
     } finally {
       setIsLoading(false);

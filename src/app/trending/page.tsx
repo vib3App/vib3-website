@@ -9,6 +9,7 @@ import { soundsApi } from '@/services/api/sounds';
 import { TopNav } from '@/components/ui/TopNav';
 import type { Video } from '@/types';
 import type { MusicTrack } from '@/types/sound';
+import { logger } from '@/utils/logger';
 
 function formatCount(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -64,7 +65,7 @@ export default function TrendingPage() {
           setHashtags(sortedTags);
         }
       } catch (error) {
-        console.error('Failed to load trending:', error);
+        logger.error('Failed to load trending:', error);
       } finally {
         if (!cancelled) {
           setIsLoading(false);

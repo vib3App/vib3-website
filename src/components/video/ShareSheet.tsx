@@ -156,7 +156,7 @@ export function ShareSheet({ videoId, videoUrl, isOpen, onClose, onShareComplete
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-4 border-b border-white/5">
           <h2 className="text-white font-semibold">Share</h2>
-          <button onClick={onClose} className="text-white/50 hover:text-white">
+          <button onClick={onClose} className="text-white/50 hover:text-white" aria-label="Close">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>

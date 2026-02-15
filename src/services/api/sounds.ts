@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import type { Sound, MusicTrack, MusicCategory, OriginalSound } from '@/types/sound';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface PaginatedResponse<T> {
   data: T[];
@@ -16,7 +17,7 @@ export const soundsApi = {
       const response = await apiClient.get('/search/sounds', { params: { q: query } });
       return response.data.sounds || [];
     } catch (error) {
-      console.error('Failed to search sounds:', error);
+      logger.error('Failed to search sounds:', error);
       return [];
     }
   },
@@ -31,7 +32,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to get trending music:', error);
+      logger.error('Failed to get trending music:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -46,7 +47,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to search music:', error);
+      logger.error('Failed to search music:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -63,7 +64,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to get music by category:', error);
+      logger.error('Failed to get music by category:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -74,7 +75,7 @@ export const soundsApi = {
       const response = await apiClient.get('/music/saved');
       return response.data.tracks || response.data || [];
     } catch (error) {
-      console.error('Failed to get saved music:', error);
+      logger.error('Failed to get saved music:', error);
       return [];
     }
   },
@@ -85,7 +86,7 @@ export const soundsApi = {
       await apiClient.post(`/music/save/${trackId}`);
       return true;
     } catch (error) {
-      console.error('Failed to save track:', error);
+      logger.error('Failed to save track:', error);
       return false;
     }
   },
@@ -96,7 +97,7 @@ export const soundsApi = {
       const response = await apiClient.get(`/music/track/${trackId}`);
       return response.data;
     } catch (error) {
-      console.error('Failed to get track:', error);
+      logger.error('Failed to get track:', error);
       return null;
     }
   },
@@ -111,7 +112,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to get videos by sound:', error);
+      logger.error('Failed to get videos by sound:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -122,7 +123,7 @@ export const soundsApi = {
       await apiClient.post(`/sounds/${soundId}/favorite`);
       return true;
     } catch (error) {
-      console.error('Failed to favorite sound:', error);
+      logger.error('Failed to favorite sound:', error);
       return false;
     }
   },
@@ -132,7 +133,7 @@ export const soundsApi = {
       await apiClient.delete(`/sounds/${soundId}/favorite`);
       return true;
     } catch (error) {
-      console.error('Failed to unfavorite sound:', error);
+      logger.error('Failed to unfavorite sound:', error);
       return false;
     }
   },
@@ -147,7 +148,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to get trending original sounds:', error);
+      logger.error('Failed to get trending original sounds:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -161,7 +162,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to search original sounds:', error);
+      logger.error('Failed to search original sounds:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -171,7 +172,7 @@ export const soundsApi = {
       const response = await apiClient.get(`/music/sounds/${soundId}`);
       return response.data;
     } catch (error) {
-      console.error('Failed to get original sound:', error);
+      logger.error('Failed to get original sound:', error);
       return null;
     }
   },
@@ -181,7 +182,7 @@ export const soundsApi = {
       await apiClient.post(`/music/sounds/${soundId}/save`);
       return true;
     } catch (error) {
-      console.error('Failed to save original sound:', error);
+      logger.error('Failed to save original sound:', error);
       return false;
     }
   },
@@ -191,7 +192,7 @@ export const soundsApi = {
       await apiClient.post(`/music/sounds/${soundId}/use`);
       return true;
     } catch (error) {
-      console.error('Failed to mark sound as used:', error);
+      logger.error('Failed to mark sound as used:', error);
       return false;
     }
   },
@@ -205,7 +206,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to get my sounds:', error);
+      logger.error('Failed to get my sounds:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -219,7 +220,7 @@ export const soundsApi = {
         page,
       };
     } catch (error) {
-      console.error('Failed to get saved sounds:', error);
+      logger.error('Failed to get saved sounds:', error);
       return { data: [], hasMore: false, page };
     }
   },
@@ -230,7 +231,7 @@ export const soundsApi = {
       await apiClient.post('/music/report', { trackId, reason, details });
       return true;
     } catch (error) {
-      console.error('Failed to report track:', error);
+      logger.error('Failed to report track:', error);
       return false;
     }
   },

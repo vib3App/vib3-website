@@ -161,7 +161,7 @@ function LiveStreamContent() {
                   className="w-24 aspect-video bg-gray-800 rounded-lg overflow-hidden relative"
                 >
                   {guest.avatar ? (
-                    <Image src={guest.avatar} alt="" fill className="object-cover" />
+                    <Image src={guest.avatar} alt={guest.username + "'s avatar"} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs">
                       {guest.username}

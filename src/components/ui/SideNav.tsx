@@ -58,7 +58,7 @@ export function SideNav() {
           <div className="absolute bottom-20 -right-20 w-60 h-60 bg-teal-500/10 rounded-full blur-3xl" />
         </div>
 
-        <div onClick={handleLogoClick} className="relative flex items-center gap-3 px-6 py-5 mb-2 cursor-pointer group">
+        <div onClick={handleLogoClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleLogoClick(); } }} className="relative flex items-center gap-3 px-6 py-5 mb-2 cursor-pointer group">
           <div className="relative w-12 h-12 group-hover:scale-105 transition-transform">
             <Image src="/vib3-logo.png" alt="VIB3" fill className="object-contain" style={{ filter: 'drop-shadow(0 0 12px rgba(139, 92, 246, 0.4)) drop-shadow(0 0 24px rgba(34, 211, 238, 0.2))' }} priority />
           </div>

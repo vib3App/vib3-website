@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { videoApi } from '@/services/api';
+import { logger } from '@/utils/logger';
 
 interface ShareModalProps {
   videoId: string;
@@ -30,7 +31,7 @@ export function ShareModal({ videoId, videoUrl: _videoUrl, caption, isOpen, onCl
     try {
       await videoApi.shareVideo(videoId, platform);
     } catch (err) {
-      console.error('Failed to record share:', err);
+      logger.error('Failed to record share:', err);
     }
 
     if (platform === 'copy') {

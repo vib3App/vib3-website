@@ -1,6 +1,7 @@
 import type { NotificationPreferences } from './types';
 import { createPushSubscription, removePushSubscription } from './subscription';
 import * as preferencesApi from './preferences';
+import { logger } from '@/utils/logger';
 
 class PushNotificationService {
   private registration: ServiceWorkerRegistration | null = null;
@@ -30,7 +31,7 @@ class PushNotificationService {
       navigator.serviceWorker.addEventListener('message', this.handleServiceWorkerMessage);
       return true;
     } catch (error) {
-      console.error('Failed to initialize push notifications:', error);
+      logger.error('Failed to initialize push notifications:', error);
       return false;
     }
   }
@@ -47,7 +48,7 @@ class PushNotificationService {
       const permission = await Notification.requestPermission();
       return permission;
     } catch (error) {
-      console.error('Failed to request notification permission:', error);
+      logger.error('Failed to request notification permission:', error);
       return 'denied';
     }
   }
@@ -55,7 +56,7 @@ class PushNotificationService {
   async subscribe(): Promise<PushSubscription | null> {
     if (!this.registration) await this.initialize();
     if (!this.registration) {
-      console.error('Service worker not registered');
+      logger.error('Service worker not registered');
       return null;
     }
     this.subscription = await createPushSubscription(this.registration, () => this.requestPermission());

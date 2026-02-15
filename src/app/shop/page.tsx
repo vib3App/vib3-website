@@ -6,6 +6,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { shopApi } from '@/services/api';
 import { ShopHero, CategoryTabs, ProductCard, CartSidebar } from '@/components/shop';
 import type { Product, ProductCategory, CartItem } from '@/types/shop';
+import { logger } from '@/utils/logger';
 
 export default function ShopPage() {
   return (
@@ -64,7 +65,7 @@ function ShopPageContent() {
           setPage(1);
         }
       } catch (err) {
-        console.error('Error fetching products:', err);
+        logger.error('Error fetching products:', err);
         if (!cancelled) {
           setError('Failed to load products');
         }
@@ -90,7 +91,7 @@ function ShopPageContent() {
       setProducts((prev) => [...prev, ...response.products]);
       setHasMore(response.hasMore);
     } catch (err) {
-      console.error('Error fetching products:', err);
+      logger.error('Error fetching products:', err);
       setError('Failed to load products');
     } finally {
       setLoading(false);
@@ -159,7 +160,7 @@ function ShopPageContent() {
         }
       }
     } catch (err) {
-      console.error('Checkout error:', err);
+      logger.error('Checkout error:', err);
       setError('Failed to complete checkout. Please try again.');
     } finally {
       setCheckingOut(false);

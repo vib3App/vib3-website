@@ -11,6 +11,7 @@ import type {
   UpdatePlaylistPayload,
 } from '@/types/playlist';
 import type { Video } from '@/types';
+import { logger } from '@/utils/logger';
 
 interface PlaylistResponse {
   _id: string;
@@ -76,7 +77,7 @@ export const playlistsApi = {
       );
       return transformPlaylist(data.playlist);
     } catch (error) {
-      console.error('Failed to get playlist:', error);
+      logger.error('Failed to get playlist:', error);
       return null;
     }
   },
@@ -99,7 +100,7 @@ export const playlistsApi = {
       );
       return transformPlaylist(data.playlist);
     } catch (error) {
-      console.error('Failed to create playlist:', error);
+      logger.error('Failed to create playlist:', error);
       return null;
     }
   },
@@ -115,7 +116,7 @@ export const playlistsApi = {
       await apiClient.put(`/playlists/${playlistId}`, payload);
       return true;
     } catch (error) {
-      console.error('Failed to update playlist:', error);
+      logger.error('Failed to update playlist:', error);
       return false;
     }
   },
@@ -128,7 +129,7 @@ export const playlistsApi = {
       await apiClient.delete(`/playlists/${playlistId}`);
       return true;
     } catch (error) {
-      console.error('Failed to delete playlist:', error);
+      logger.error('Failed to delete playlist:', error);
       return false;
     }
   },
@@ -143,7 +144,7 @@ export const playlistsApi = {
       );
       return data.videos || [];
     } catch (error) {
-      console.error('Failed to get playlist videos:', error);
+      logger.error('Failed to get playlist videos:', error);
       return [];
     }
   },
@@ -156,7 +157,7 @@ export const playlistsApi = {
       await apiClient.post(`/playlists/${playlistId}/videos`, { videoId });
       return true;
     } catch (error) {
-      console.error('Failed to add video to playlist:', error);
+      logger.error('Failed to add video to playlist:', error);
       return false;
     }
   },
@@ -172,7 +173,7 @@ export const playlistsApi = {
       await apiClient.delete(`/playlists/${playlistId}/videos/${videoId}`);
       return true;
     } catch (error) {
-      console.error('Failed to remove video from playlist:', error);
+      logger.error('Failed to remove video from playlist:', error);
       return false;
     }
   },
@@ -188,7 +189,7 @@ export const playlistsApi = {
       await apiClient.put(`/playlists/${playlistId}/reorder`, { videoIds });
       return true;
     } catch (error) {
-      console.error('Failed to reorder playlist:', error);
+      logger.error('Failed to reorder playlist:', error);
       return false;
     }
   },
@@ -215,7 +216,7 @@ export const playlistsApi = {
       await apiClient.post('/playlists/watch-later', { videoId });
       return true;
     } catch (error) {
-      console.error('Failed to add to watch later:', error);
+      logger.error('Failed to add to watch later:', error);
       return false;
     }
   },
@@ -228,7 +229,7 @@ export const playlistsApi = {
       await apiClient.delete(`/playlists/watch-later/${videoId}`);
       return true;
     } catch (error) {
-      console.error('Failed to remove from watch later:', error);
+      logger.error('Failed to remove from watch later:', error);
       return false;
     }
   },

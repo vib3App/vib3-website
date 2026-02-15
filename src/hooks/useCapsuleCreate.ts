@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { capsuleApi } from '@/services/api/capsule';
 import { TusUploadManager } from '@/services/api/upload';
+import { logger } from '@/utils/logger';
 
 export function useCapsuleCreate() {
   const router = useRouter();
@@ -118,7 +119,7 @@ export function useCapsuleCreate() {
 
       router.push('/capsule');
     } catch (err) {
-      console.error('Failed to create capsule:', err);
+      logger.error('Failed to create capsule:', err);
       setError('Failed to create capsule. Please try again.');
     } finally {
       setUploading(false);

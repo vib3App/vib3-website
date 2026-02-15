@@ -2,6 +2,7 @@ import type { Video } from '@/types';
 import { MAX_STORAGE_MB, type DownloadProgress, type OfflineVideoMetadata } from './types';
 import { initializeDb, saveVideoToDb, saveMetadataToDb, getDb } from './database';
 import { getUsedStorage, freeSpace } from './storage';
+import { logger } from '@/utils/logger';
 
 const activeDownloads: Map<string, AbortController> = new Map();
 const progressCallbacks: Map<string, (progress: DownloadProgress) => void> = new Map();
@@ -27,7 +28,7 @@ export async function downloadVideo(
 
   if (!getDb()) await initializeDb();
   if (!getDb()) {
-    console.error('IndexedDB not available');
+    logger.error('IndexedDB not available');
     return false;
   }
 
@@ -37,7 +38,7 @@ export async function downloadVideo(
 
   const downloadUrl = video.hlsUrl || video.videoUrl;
   if (!downloadUrl) {
-    console.error('No download URL available');
+    logger.error('No download URL available');
     return false;
   }
 
@@ -96,7 +97,7 @@ export async function downloadVideo(
     if ((error as Error).name === 'AbortError') {
       return false;
     }
-    console.error('Download failed:', error);
+    logger.error('Download failed:', error);
     return false;
   } finally {
     activeDownloads.delete(video.id);

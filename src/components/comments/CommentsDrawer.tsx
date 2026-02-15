@@ -7,6 +7,7 @@ import type { Comment } from '@/types';
 import { useAuthStore } from '@/stores/authStore';
 import { CommentItem } from './CommentItem';
 import { VoiceRecorder } from './VoiceRecorder';
+import { logger } from '@/utils/logger';
 
 interface CommentsDrawerProps {
   videoId: string;
@@ -49,7 +50,7 @@ export function CommentsDrawer({
       setHasMore(response.hasMore);
       setPage(pageNum);
     } catch (error) {
-      console.error('Failed to load comments:', error);
+      logger.error('Failed to load comments:', error);
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +99,7 @@ export function CommentsDrawer({
       setReplyingTo(null);
       onCommentAdded?.();
     } catch (error) {
-      console.error('Failed to post comment:', error);
+      logger.error('Failed to post comment:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +113,7 @@ export function CommentsDrawer({
       setComments(prev => [comment, ...prev]);
       setShowVoiceRecorder(false);
     } catch (error) {
-      console.error('Failed to post voice comment:', error);
+      logger.error('Failed to post voice comment:', error);
     }
   };
 
@@ -141,7 +142,7 @@ export function CommentsDrawer({
         return c;
       }));
     } catch (error) {
-      console.error('Failed to like comment:', error);
+      logger.error('Failed to like comment:', error);
     }
   };
 
@@ -150,7 +151,7 @@ export function CommentsDrawer({
       await videoApi.deleteComment(videoId, commentId);
       setComments(prev => prev.filter(c => c.id !== commentId));
     } catch (error) {
-      console.error('Failed to delete comment:', error);
+      logger.error('Failed to delete comment:', error);
     }
   };
 
@@ -168,7 +169,7 @@ export function CommentsDrawer({
           <h2 className="text-white font-semibold">
             {(commentsCount ?? comments.length).toLocaleString()} comments
           </h2>
-          <button onClick={onClose} className="text-white/70 hover:text-white p-2">
+          <button onClick={onClose} className="text-white/70 hover:text-white p-2" aria-label="Close comments">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>

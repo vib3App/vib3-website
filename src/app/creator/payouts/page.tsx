@@ -7,6 +7,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { useAuthStore } from '@/stores/authStore';
 import { walletApi } from '@/services/api';
 import { formatCurrency } from '@/utils/format';
+import { logger } from '@/utils/logger';
 
 interface PayoutMethod {
   id: string;
@@ -64,7 +65,7 @@ export default function PayoutsPage() {
         setSelectedMethod(defaultMethod?.id || methods[0].id);
       }
     } catch (error) {
-      console.error('Failed to load payout data:', error);
+      logger.error('Failed to load payout data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +82,7 @@ export default function PayoutsPage() {
       setWithdrawAmount('');
       loadData();
     } catch (error) {
-      console.error('Failed to request payout:', error);
+      logger.error('Failed to request payout:', error);
     } finally {
       setIsWithdrawing(false);
     }
