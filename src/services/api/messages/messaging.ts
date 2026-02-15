@@ -22,8 +22,7 @@ export const messagingApi = {
     formData.append('type', type);
     const { data } = await apiClient.post<MessageResponse>(
       `/messages/conversations/${conversationId}/messages/media`,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      formData
     );
     return transformMessage(data);
   },

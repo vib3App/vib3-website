@@ -1,8 +1,9 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserGroupIcon } from '@heroicons/react/24/outline';
+import { useAuthStore } from '@/stores/authStore';
 import { useWatchParty } from '@/hooks/useWatchParty';
 import {
   WatchPartyHeader,
@@ -14,8 +15,10 @@ import {
 } from '@/components/watch-party';
 
 export default function WatchPartyRoom() {
+  const router = useRouter();
   const params = useParams();
   const partyId = params.id as string;
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const {
     // Refs
     videoRef,
@@ -56,6 +59,23 @@ export default function WatchPartyRoom() {
     copyShareLink,
     copyInviteCode,
   } = useWatchParty(partyId);
+
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/watch-party/' + partyId);
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (loading) {
     return (

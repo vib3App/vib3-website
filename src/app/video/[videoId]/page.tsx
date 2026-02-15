@@ -13,12 +13,15 @@ import { useSocialStore } from '@/stores/socialStore';
 import { videoApi, userApi } from '@/services/api';
 import type { Video } from '@/types';
 import { logger } from '@/utils/logger';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function VideoPlayerPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen aurora-bg flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" /></div>}>
-      <VideoPlayerContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<div className="min-h-screen aurora-bg flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" /></div>}>
+        <VideoPlayerContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 

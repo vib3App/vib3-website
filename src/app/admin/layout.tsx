@@ -11,26 +11,25 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const { user, isAuthenticated, isAuthVerified } = useAuthStore();
 
   const isAdmin = useMemo(() => {
     return user?.isAdmin || user?.role === 'admin';
   }, [user]);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated) {
-        router.push('/login?redirect=/admin');
-        return;
-      }
-      if (!isAdmin) {
-        router.push('/');
-        return;
-      }
+    if (!isAuthVerified) return;
+    if (!isAuthenticated) {
+      router.push('/login?redirect=/admin');
+      return;
     }
-  }, [isAuthenticated, isLoading, isAdmin, router]);
+    if (!isAdmin) {
+      router.push('/');
+      return;
+    }
+  }, [isAuthenticated, isAuthVerified, isAdmin, router]);
 
-  if (isLoading || !isAuthenticated || !isAdmin) {
+  if (!isAuthVerified) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
         <div className="text-white text-xl">Verifying admin access...</div>
@@ -38,8 +37,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (!isAdmin) {
-    return null;
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <div className="text-white text-xl">Verifying admin access...</div>
+      </div>
+    );
   }
 
   return (

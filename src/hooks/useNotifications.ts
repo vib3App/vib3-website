@@ -91,14 +91,18 @@ export function useNotifications() {
   };
 
   const handleEnableNotifications = async () => {
-    const permission = await desktopNotifications.requestPermission();
-    setPermissionStatus(permission);
+    try {
+      const permission = await desktopNotifications.requestPermission();
+      setPermissionStatus(permission);
 
-    if (permission === 'granted') {
-      const subscription = await desktopNotifications.subscribeToPush();
-      if (subscription) {
-        await notificationsApi.registerPushSubscription(subscription);
+      if (permission === 'granted') {
+        const subscription = await desktopNotifications.subscribeToPush();
+        if (subscription) {
+          await notificationsApi.registerPushSubscription(subscription);
+        }
       }
+    } catch (error) {
+      logger.error('Failed to enable notifications:', error);
     }
   };
 

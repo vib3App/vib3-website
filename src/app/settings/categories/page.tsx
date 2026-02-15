@@ -13,7 +13,7 @@ import { RESERVED_NAMES, MAX_CUSTOM_CATEGORIES } from '@/types';
 
 export default function ManageCategoriesPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const {
     categories, categoryCounts, isLoading, error,
     loadCategories, createCategory, deleteCategory, canCreateMore, getCustomCategories,
@@ -53,18 +53,19 @@ export default function ManageCategoriesPage() {
     await deleteCategory(category.id);
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthVerified) {
     return (
-      <div className="min-h-screen aurora-bg">
-        <TopNav />
-        <main className="pt-20 px-4 max-w-2xl mx-auto">
-          <div className="glass-card p-8 rounded-2xl text-center">
-            <p className="text-white/70 mb-4">Sign in to manage your feed categories</p>
-            <button onClick={() => router.push('/login')} className="px-6 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white font-medium">
-              Sign In
-            </button>
-          </div>
-        </main>
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/settings/categories');
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }

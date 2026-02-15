@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -63,18 +63,22 @@ export default function SettingsPage() {
   const { user, isAuthenticated, isAuthVerified, logout } = useAuthStore();
   const [activeSection, setActiveSection] = useState<SettingsSection>('account');
 
-  useEffect(() => {
-    if (!isAuthVerified) return;
-    if (!isAuthenticated) router.push('/login?redirect=/settings');
-  }, [isAuthenticated, isAuthVerified, router]);
-
   const handleLogout = async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
     logout();
     router.push('/');
   };
 
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
+    router.push('/login?redirect=/settings');
     return (
       <div className="min-h-screen aurora-bg flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />

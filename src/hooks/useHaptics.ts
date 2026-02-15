@@ -28,7 +28,12 @@ export function useHaptics() {
   const [isEnabled, setIsEnabled] = useState(() => {
     if (typeof localStorage === 'undefined') return true;
     const saved = localStorage.getItem('vib3-haptics-enabled');
-    return saved !== null ? JSON.parse(saved) : true;
+    if (saved === null) return true;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return true;
+    }
   });
 
   // Save preference

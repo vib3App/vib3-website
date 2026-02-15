@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { VideoCameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuthStore } from '@/stores/authStore';
 import { useRemix } from '@/hooks/useRemix';
 import {
   RemixHeader,
@@ -12,7 +14,26 @@ import {
 } from '@/components/remix';
 
 export default function RemixPage() {
+  const router = useRouter();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const remix = useRemix();
+
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/remix/' + remix.videoId);
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (remix.loading) {
     return (

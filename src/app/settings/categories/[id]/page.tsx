@@ -15,7 +15,7 @@ export default function CategorySettingsPage() {
   const params = useParams();
   const categoryId = params.id as string;
 
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const confirmDialog = useConfirmStore(s => s.show);
   const { getCategoryById, updateCategory, deleteCategory, loadCategories } = useFeedCategoryStore();
 
@@ -75,8 +75,13 @@ export default function CategorySettingsPage() {
 
   const markChanged = () => { if (!hasChanges) setHasChanges(true); };
 
+  if (!isAuthVerified) {
+    return <LoadingState />;
+  }
+
   if (!isAuthenticated) {
-    return <AuthRequiredState onLogin={() => router.push('/login')} />;
+    router.push('/login?redirect=/settings/categories/' + categoryId);
+    return <LoadingState />;
   }
 
   if (!category) {
@@ -138,20 +143,6 @@ function DeleteSection({ onDelete }: { onDelete: () => void }) {
         Delete Category
       </button>
       <p className="text-white/30 text-xs text-center mt-2">Users in this category will be moved to Following</p>
-    </div>
-  );
-}
-
-function AuthRequiredState({ onLogin }: { onLogin: () => void }) {
-  return (
-    <div className="min-h-screen aurora-bg">
-      <TopNav />
-      <main className="pt-20 px-4 max-w-2xl mx-auto">
-        <div className="glass-card p-8 rounded-2xl text-center">
-          <p className="text-white/70 mb-4">Sign in to manage category settings</p>
-          <button onClick={onLogin} className="px-6 py-2 bg-gradient-to-r from-purple-500 to-teal-500 rounded-full text-white font-medium">Sign In</button>
-        </div>
-      </main>
     </div>
   );
 }

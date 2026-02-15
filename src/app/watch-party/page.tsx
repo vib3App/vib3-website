@@ -13,7 +13,7 @@ import { logger } from '@/utils/logger';
 
 export default function WatchPartiesPage() {
   const router = useRouter();
-  const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
+  const { isAuthVerified, isAuthenticated } = useAuthStore();
   const addToast = useToastStore(s => s.addToast);
 
   const [parties, setParties] = useState<WatchParty[]>([]);
@@ -75,6 +75,23 @@ export default function WatchPartiesPage() {
       setCreating(false);
     }
   };
+
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/watch-party');
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">

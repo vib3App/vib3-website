@@ -98,7 +98,8 @@ export const useAuthStore = create<AuthStore>()(
         if (state?.user && !state.user.id) {
           const migratedUser = migrateUser(state.user);
           if (migratedUser?.id) {
-            state.user = migratedUser;
+            // Use setState instead of direct mutation so subscribers get notified
+            useAuthStore.setState({ user: migratedUser });
           }
         }
       },

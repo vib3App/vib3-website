@@ -1,6 +1,8 @@
 'use client';
 
 import { Suspense, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/stores/authStore';
 import { useVideoEditor, EDITOR_FILTERS } from '@/hooks/useVideoEditor';
 import { EditorHeader, EditorTabs, TrimPanel, FilterPanel, TextPanel, AudioPanel, StickerPanel } from '@/components/edit';
 import { TopNav } from '@/components/ui/TopNav';
@@ -108,6 +110,8 @@ function DraggableOverlay({ id, x, y, onMove, children, className, style }: {
 }
 
 function EditContent() {
+  const router = useRouter();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const {
     videoUrl, editMode, setEditMode, videoLoaded, selectedFilter, setSelectedFilter,
     volume, isProcessing, processingProgress, videoRef,
@@ -120,6 +124,15 @@ function EditContent() {
     addSticker, removeSticker, updateStickerPosition,
     handleDone, updateVolume, goBack,
   } = useVideoEditor();
+
+  if (!isAuthVerified) {
+    return <EditLoading />;
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/edit');
+    return <EditLoading />;
+  }
 
   if (!videoUrl) {
     return <EditLoading />;

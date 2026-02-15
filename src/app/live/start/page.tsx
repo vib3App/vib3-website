@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftIcon, SignalIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { useAuthStore } from '@/stores/authStore';
 import { useLiveSetup } from '@/hooks/useLiveSetup';
 import { LiveSetupStep, LivePreviewStep } from '@/components/live';
 import { LiveStreamRoom } from '@/components/live/LiveStreamRoom';
@@ -19,7 +21,26 @@ function StartingState({ isScheduling }: { isScheduling: boolean }) {
 }
 
 export default function StartLivePage() {
+  const router = useRouter();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const live = useLiveSetup();
+
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/live/start');
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // When streaming is live, show the LiveKit room
   if (live.step === 'live' && live.liveKitCredentials) {

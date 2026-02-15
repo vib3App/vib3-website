@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { ClockIcon, LockClosedIcon } from '@heroicons/react/24/outline';
+import { useAuthStore } from '@/stores/authStore';
 import { useCapsuleCreate } from '@/hooks/useCapsuleCreate';
 import {
   CapsuleHeader,
@@ -10,7 +12,26 @@ import {
 } from '@/components/capsule';
 
 export default function CreateCapsulePage() {
+  const router = useRouter();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const capsule = useCapsuleCreate();
+
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/capsule/create');
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">

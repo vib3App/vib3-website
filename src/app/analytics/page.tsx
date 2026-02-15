@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
+import { useAuthStore } from '@/stores/authStore';
 import { analyticsApi } from '@/services/api';
 import { OverviewStats, ViewsChart, TopVideosTable, AudienceInsights } from '@/components/analytics';
 import type { AnalyticsDashboard, AnalyticsPeriod } from '@/types/analytics';
@@ -17,6 +19,8 @@ const PERIOD_OPTIONS: { value: AnalyticsPeriod; label: string }[] = [
 ];
 
 export default function AnalyticsPage() {
+  const router = useRouter();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [period, setPeriod] = useState<AnalyticsPeriod>(30);
   const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +40,26 @@ export default function AnalyticsPage() {
     }
   }, [period]);
 
-  useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
+  useEffect(() => {
+    if (!isAuthVerified) return;
+    if (isAuthenticated) fetchAnalytics();
+  }, [fetchAnalytics, isAuthVerified, isAuthenticated]);
+
+  if (!isAuthVerified || !isAuthenticated) {
+    if (!isAuthVerified) {
+      return (
+        <div className="min-h-screen aurora-bg flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+        </div>
+      );
+    }
+    router.push('/login?redirect=/analytics');
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen aurora-bg">

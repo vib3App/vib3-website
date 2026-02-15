@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
+import { useAuthStore } from '@/stores/authStore';
 import { ToggleSetting, ButtonGroup, PINSetupModal, PINSection } from '@/components/settings/parental';
 
 interface ParentalSettings {
@@ -42,6 +43,7 @@ const TIME_OPTIONS = [
 
 export default function ParentalControlsPage() {
   const router = useRouter();
+  const { isAuthenticated, isAuthVerified } = useAuthStore();
   const [settings, setSettings] = useState<ParentalSettings>(DEFAULT_SETTINGS);
   const [showPINSetup, setShowPINSetup] = useState(false);
   const [newPIN, setNewPIN] = useState('');
@@ -85,6 +87,23 @@ export default function ParentalControlsPage() {
     updateSetting('pin', undefined);
     updateSetting('requirePINForSettings', false);
   };
+
+  if (!isAuthVerified) {
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    router.push('/login?redirect=/settings/parental');
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen aurora-bg pb-20">

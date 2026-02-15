@@ -52,9 +52,7 @@ export default function VerificationRequestPage() {
       formData.append('links', JSON.stringify(data.links));
       formData.append('idDocument', data.idDocument);
 
-      await apiClient.post('/user/verification-request', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await apiClient.post('/user/verification-request', formData);
       setStatus('pending');
     } catch (error) {
       logger.error('Failed to submit verification request:', error);

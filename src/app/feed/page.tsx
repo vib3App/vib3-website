@@ -18,6 +18,7 @@ import {
   FeedLoadingMore,
   FollowCategoryPicker,
 } from '@/components/feed';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 function FeedContent() {
   const { isAuthenticated, user } = useAuthStore();
@@ -174,9 +175,11 @@ export default function FeedPage() {
 
       {/* Full-width video feed - no sidebar */}
       <main className="h-full pt-16 md:pt-16 relative z-10">
-        <Suspense fallback={<FeedLoadingState message="Loading..." />}>
-          <FeedContent />
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<FeedLoadingState message="Loading..." />}>
+            <FeedContent />
+          </Suspense>
+        </ErrorBoundary>
       </main>
     </div>
   );

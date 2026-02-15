@@ -74,7 +74,11 @@ export function useSearch(): UseSearchReturn {
   useEffect(() => {
     const saved = localStorage.getItem('vib3_recent_searches');
     if (saved) {
-      setRecentSearches(JSON.parse(saved));
+      try {
+        setRecentSearches(JSON.parse(saved));
+      } catch {
+        // Corrupted data - ignore
+      }
     }
     searchApi.getTrendingSearches().then(setTrendingSearches).catch(() => {
       setTrendingSearches(['dance', 'music', 'comedy', 'pets', 'food', 'travel']);

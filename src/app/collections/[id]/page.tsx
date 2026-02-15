@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuthStore } from '@/stores/authStore';
 import { useCollectionDetail } from '@/hooks/useCollectionDetail';
 import { TopNav } from '@/components/ui/TopNav';
 import { formatCount } from '@/utils/format';
@@ -68,10 +69,15 @@ function EditPlaylistModal({ isOpen, onClose, collection, onUpdated }: { isOpen:
 }
 
 export default function CollectionPage() {
+  const { isAuthVerified } = useAuthStore();
   const c = useCollectionDetail();
 
-  if (!c.isAuthenticated) {
-    return <div className="min-h-screen aurora-bg flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" /></div>;
+  if (!isAuthVerified || !c.isAuthenticated) {
+    return (
+      <div className="min-h-screen aurora-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
+      </div>
+    );
   }
 
   return (
