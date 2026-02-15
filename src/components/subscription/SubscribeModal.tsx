@@ -161,10 +161,10 @@ export function SubscribeModal({
                 <LockClosedIcon className="w-8 h-8 text-white/30" />
               </div>
               <h3 className="text-white font-semibold text-lg mb-2">
-                Subscriptions Coming Soon
+                No Subscription Tiers
               </h3>
               <p className="text-white/50 text-sm">
-                {creatorName} hasn&apos;t set up subscriptions yet.
+                @{creatorName} hasn&apos;t set up subscription tiers yet. Check back later!
               </p>
               <button
                 onClick={onClose}

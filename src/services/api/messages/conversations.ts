@@ -3,8 +3,56 @@ import type { Conversation, PaginatedResponse } from '@/types';
 import { ConversationResponse, transformConversation } from './types';
 
 export const conversationsApi = {
-  async getConversations(page = 1, _limit = 20): Promise<PaginatedResponse<Conversation>> {
-    return { items: [], total: 0, page, hasMore: false };
+  async getConversations(page = 1, limit = 20): Promise<PaginatedResponse<Conversation>> {
+    try {
+      const { data } = await apiClient.get<{ chats: Array<{
+        _id: string;
+        isGroup: boolean;
+        participants: string[];
+        groupName?: string;
+        groupImage?: string;
+        lastMessage?: string;
+        lastMessageTime?: string;
+        lastMessageSender?: { username?: string };
+        unreadCount: number;
+        isMuted?: boolean;
+        otherUser?: { _id: string; username: string; profileImageUrl?: string };
+        createdAt: string;
+        updatedAt: string;
+      }> }>('/chats');
+
+      const chats = data.chats || [];
+      const start = (page - 1) * limit;
+      const paged = chats.slice(start, start + limit);
+
+      const items: Conversation[] = paged.map(chat => ({
+        id: chat._id,
+        type: chat.isGroup ? 'group' : 'direct',
+        name: chat.isGroup ? chat.groupName : chat.otherUser?.username,
+        avatar: chat.isGroup ? chat.groupImage : chat.otherUser?.profileImageUrl,
+        participants: (chat.participants || []).map(p =>
+          typeof p === 'string' ? { userId: p, username: '' } : { userId: p, username: '' }
+        ),
+        lastMessage: chat.lastMessage ? {
+          id: '',
+          conversationId: chat._id,
+          senderId: '',
+          senderUsername: chat.lastMessageSender?.username || '',
+          content: chat.lastMessage,
+          type: 'text' as const,
+          createdAt: chat.lastMessageTime || chat.updatedAt,
+          status: 'sent' as const,
+        } : undefined,
+        unreadCount: chat.unreadCount || 0,
+        isMuted: chat.isMuted,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt,
+      }));
+
+      return { items, total: chats.length, page, hasMore: start + limit < chats.length };
+    } catch {
+      return { items: [], total: 0, page, hasMore: false };
+    }
   },
 
   async getOrCreateConversation(userId: string): Promise<Conversation> {

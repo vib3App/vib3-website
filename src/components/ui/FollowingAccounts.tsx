@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
 import { userApi } from '@/services/api/user';
+import { liveApi } from '@/services/api/live';
 
 interface FollowingUser {
   id: string;
@@ -27,15 +28,23 @@ export function FollowingAccounts() {
 
     setIsLoading(true);
     try {
-      // Get real following list from API
-      const response = await userApi.getFollowing(user.id, 1, 20);
+      // Get real following list and live status in parallel
+      const [response, liveStreams] = await Promise.all([
+        userApi.getFollowing(user.id, 1, 20),
+        liveApi.getFollowingLive().catch(() => []),
+      ]);
+      const liveUserIds = new Set(
+        (liveStreams || []).map((s: { hostId?: string }) => s.hostId).filter(Boolean)
+      );
       const followingUsers: FollowingUser[] = (response.users || []).map((u) => ({
         id: u._id,
         username: u.username,
         displayName: u.displayName || u.username,
         profilePicture: u.profilePicture,
-        isLive: false, // Would need live status from a separate API
+        isLive: liveUserIds.has(u._id),
       }));
+      // Sort live users to the top
+      followingUsers.sort((a, b) => (b.isLive ? 1 : 0) - (a.isLive ? 1 : 0));
       setFollowing(followingUsers);
 
       // Also ensure social store is loaded

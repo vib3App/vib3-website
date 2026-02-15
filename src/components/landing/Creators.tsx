@@ -60,7 +60,7 @@ export function Creators() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold mb-1">Creator Fund <span className="text-xs text-purple-400">(Coming Soon)</span></h3>
+                  <h3 className="text-white font-semibold mb-1">Creator Fund</h3>
                   <p className="text-white/50 text-sm">Get paid based on your video performance. No minimum follower count to start.</p>
                 </div>
               </div>

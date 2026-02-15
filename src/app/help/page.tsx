@@ -55,7 +55,7 @@ export default function HelpPage() {
             <div className="space-y-4 text-white/70 text-sm">
               <div>
                 <h3 className="text-white font-medium mb-1">How do I earn money on VIB3?</h3>
-                <p>Creators can earn through tips and gifts from viewers, subscriber-only content, and the Creator Fund (coming soon).</p>
+                <p>Creators can earn through tips and gifts from viewers, subscriber-only content, and the Creator Fund.</p>
               </div>
               <div>
                 <h3 className="text-white font-medium mb-1">How do I withdraw earnings?</h3>

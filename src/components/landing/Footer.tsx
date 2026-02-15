@@ -43,10 +43,10 @@ export function Footer() {
                 <a href="#creators" className="text-white/40 hover:text-white text-sm transition-colors">For Creators</a>
               </li>
               <li>
-                <span className="text-white/40 text-sm">Download App <span className="text-purple-400 text-xs">(Coming Soon)</span></span>
+                <Link href="/feed" className="text-white/40 hover:text-white text-sm transition-colors">Open App</Link>
               </li>
               <li>
-                <span className="text-white/40 text-sm">Creator Fund <span className="text-purple-400 text-xs">(Coming Soon)</span></span>
+                <Link href="/creator/fund" className="text-white/40 hover:text-white text-sm transition-colors">Creator Fund</Link>
               </li>
             </ul>
           </div>
@@ -96,10 +96,9 @@ export function Footer() {
             &copy; 2025 Docs Marketplace LLC. All rights reserved.
           </p>
 
-          {/* Social links - Coming Soon */}
-          <div className="flex items-center gap-2 text-white/30 text-sm">
+          <div className="flex items-center gap-4 text-white/30 text-sm">
             <span>Follow us</span>
-            <span className="text-purple-400 text-xs">(Coming Soon)</span>
+            <a href="mailto:vibe@docsmarketplacellc.com" className="text-white/40 hover:text-white transition-colors">Contact</a>
           </div>
         </div>
       </div>

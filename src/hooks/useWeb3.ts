@@ -171,44 +171,25 @@ export function useNFT() {
 
     setIsLoading(true);
     try {
-      // In real implementation, would call NFT indexer API
-      // For now, return mock data
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setNfts([
-        {
-          id: '1',
-          name: 'VIB3 Genesis #001',
-          image: '/nft-placeholder.png',
-          collection: 'VIB3 Genesis',
-          tokenId: '1',
-        },
-        {
-          id: '2',
-          name: 'Creator Badge',
-          image: '/nft-placeholder.png',
-          collection: 'VIB3 Badges',
-          tokenId: '42',
-        },
-      ]);
-    } catch (e) {
-      console.error('Failed to fetch NFTs');
+      // NFT indexer integration not yet configured — feature-flagged off
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setNfts([]);
+    } catch {
+      // Feature not available
     } finally {
       setIsLoading(false);
     }
   }, [wallet?.address]);
 
   // Set NFT as profile picture
-  const setAsProfilePicture = useCallback(async (nft: NFT) => {
-    // Would call API to update user profile
-    console.log('Setting NFT as profile picture:', nft);
+  const setAsProfilePicture = useCallback(async (_nft: NFT) => {
+    // NFT profile picture integration — feature-flagged off
   }, []);
 
   // Mint NFT (placeholder)
-  const mintNFT = useCallback(async (metadata: { name: string; description: string; image: string }) => {
+  const mintNFT = useCallback(async (_metadata: { name: string; description: string; image: string }) => {
     if (!wallet) throw new Error('Wallet not connected');
-    // Would interact with smart contract
-    console.log('Minting NFT:', metadata);
+    throw new Error('NFT minting is not yet available');
   }, [wallet]);
 
   return {

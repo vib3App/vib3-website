@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSmartShortcuts } from '@/hooks/useAdaptiveUI';
 
@@ -82,7 +83,7 @@ export function SmartShortcuts({ shortcuts, className = '' }: SmartShortcutsProp
  */
 export function ContextualFAB({ className = '' }: { className?: string }) {
   const { shortcuts: suggestedIds } = useSmartShortcuts();
-  const isExpanded = false; // Would be controlled by user interaction
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const quickActions = [
     { id: 'create', icon: '🎬', label: 'Create' },
@@ -128,8 +129,10 @@ export function ContextualFAB({ className = '' }: { className?: string }) {
         className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500
                    flex items-center justify-center text-white text-2xl
                    shadow-lg shadow-purple-500/30"
-        whileHover={{ scale: 1.1, rotate: 90 }}
+        onClick={() => setIsExpanded(!isExpanded)}
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
+        animate={{ rotate: isExpanded ? 45 : 0 }}
       >
         +
       </motion.button>

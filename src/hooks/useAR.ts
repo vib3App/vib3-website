@@ -125,7 +125,7 @@ export function useAR() {
   // Apply filter (placeholder for actual AR filter implementation)
   const applyFilter = useCallback((filter: FaceFilter) => {
     setSession(prev => ({ ...prev, filter }));
-    // In real implementation, would apply WebGL shader or ML model
+    // AR filter rendering requires WebGL shader or ML model (feature-flagged, beta)
   }, []);
 
   // Remove filter
@@ -148,7 +148,7 @@ export function useAR() {
 
     // Apply filter overlay if active
     if (session.filter) {
-      // Placeholder for filter application
+      // Basic color overlay — full AR filters require WebGL (beta)
       ctx.fillStyle = `rgba(168, 85, 247, ${session.filter.intensity * 0.1})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }

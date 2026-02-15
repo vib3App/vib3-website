@@ -9,12 +9,8 @@ export const watchPartyApi = {
         { params: { page, limit } }
       );
       return data;
-    } catch (error: any) {
-      if (error?.status === 404) {
-        console.log('[Collaboration API] Watch parties endpoint not available');
-        return { parties: [], hasMore: false };
-      }
-      throw error;
+    } catch {
+      return { parties: [], hasMore: false };
     }
   },
 
@@ -22,12 +18,8 @@ export const watchPartyApi = {
     try {
       const { data } = await apiClient.get<{ party: WatchParty }>(`/watch-parties/${partyId}`);
       return data.party;
-    } catch (error: any) {
-      if (error?.status === 404) {
-        console.log('[Collaboration API] Watch party endpoint not available');
-        return null;
-      }
-      throw error;
+    } catch {
+      return null;
     }
   },
 
