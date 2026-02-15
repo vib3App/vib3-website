@@ -13,7 +13,41 @@ import type {
   CapsuleReveal,
 } from '@/types/capsule';
 
-function transformCapsule(c: any): TimeCapsule {
+interface BackendCapsule {
+  id?: string;
+  _id?: string;
+  userId?: string;
+  creatorId?: string;
+  creatorUsername?: string;
+  username?: string;
+  creatorAvatar?: string;
+  profilePicture?: string;
+  title?: string;
+  description?: string;
+  message?: string;
+  coverImageUrl?: string;
+  videoUrl?: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  thumbnailUrl?: string;
+  status?: string;
+  isUnlocked?: boolean;
+  unlockAt?: string;
+  unlockedAt?: string;
+  createdAt?: string;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
+  recipientType?: string;
+  isPrivate?: boolean;
+  recipientIds?: string[];
+  recipientUsernames?: string[];
+  previewEnabled?: boolean;
+  previewSeconds?: number;
+  notifyOnUnlock?: boolean;
+}
+
+function transformCapsule(c: BackendCapsule): TimeCapsule {
   const isUnlocked = c.isUnlocked || c.status === 'unlocked';
   let status: TimeCapsule['status'] = 'sealed';
   if (isUnlocked) status = 'unlocked';
@@ -26,8 +60,8 @@ function transformCapsule(c: any): TimeCapsule {
   const description = messageParts.slice(1).join('\n\n') || c.description;
 
   return {
-    id: c.id || c._id,
-    creatorId: c.userId || c.creatorId,
+    id: c.id || c._id || '',
+    creatorId: c.userId || c.creatorId || '',
     creatorUsername: c.creatorUsername || c.username || 'Unknown',
     creatorAvatar: c.creatorAvatar || c.profilePicture,
     title,
@@ -36,9 +70,9 @@ function transformCapsule(c: any): TimeCapsule {
     videoUrl: isUnlocked ? (c.videoUrl || (c.mediaType === 'video' ? c.mediaUrl : undefined)) : undefined,
     thumbnailUrl: c.thumbnailUrl,
     status,
-    unlockAt: c.unlockAt,
+    unlockAt: c.unlockAt || '',
     unlockedAt: c.unlockedAt,
-    createdAt: c.createdAt,
+    createdAt: c.createdAt || '',
     viewCount: c.viewCount || 0,
     likeCount: c.likeCount || 0,
     commentCount: c.commentCount || 0,

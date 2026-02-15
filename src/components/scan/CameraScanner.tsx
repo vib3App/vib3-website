@@ -60,7 +60,7 @@ export function CameraScanner({ onScanResult, isActive }: CameraScannerProps) {
         }
       }
     } catch {
-      console.log('BarcodeDetector not available');
+      // BarcodeDetector not supported in this browser
     }
 
     animationRef.current = requestAnimationFrame(scanQRCode);

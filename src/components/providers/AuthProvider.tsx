@@ -199,8 +199,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           // API returned null - try refresh before giving up
           const refreshed = await refreshToken();
           if (!refreshed) {
-            // Token is invalid - clear auth state
-            console.log('Auth returned null, clearing auth state');
             logout();
           }
         }
@@ -208,9 +206,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Verification failed - try refresh before giving up
         const refreshed = await refreshToken();
         if (!refreshed) {
-          // Token is invalid and refresh failed - clear auth state
-          // This prevents the "logged in but can't do anything" state
-          console.log('Auth verification failed, clearing auth state');
           logout();
         }
       }

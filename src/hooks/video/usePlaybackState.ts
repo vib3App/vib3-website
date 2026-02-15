@@ -43,7 +43,7 @@ export function usePlaybackState({
     const playVideo = () => {
       if (cancelled) return;
       video.play().catch((err) => {
-        console.log('Autoplay prevented:', err);
+        // Autoplay prevented by browser policy
       });
     };
 

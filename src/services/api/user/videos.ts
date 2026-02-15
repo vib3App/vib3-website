@@ -32,7 +32,6 @@ export const userVideosApi = {
       const videosArray = Array.isArray(data) ? data : (data.videos || []);
       const videos: Video[] = videosArray.map(v => transformVideo(v, userId));
 
-      console.log(`[userApi.getUserVideos] Fetched ${videos.length} videos for user ${userId}`);
       return { videos };
     } catch (error) {
       console.error('Failed to fetch user videos:', error);
@@ -64,7 +63,6 @@ export const userVideosApi = {
 
       const videos: Video[] = videosArray.map(v => transformVideo(v));
 
-      console.log(`[userApi.getLikedVideos] Fetched ${videos.length} liked videos`);
       return { videos };
     } catch (error) {
       console.error('Failed to fetch liked videos:', error);

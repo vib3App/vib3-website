@@ -29,7 +29,6 @@ export function SocialProvider({ children }: { children: React.ReactNode }) {
     if (isAuthenticated && userId) {
       // Load social data only once per session
       if (!hasLoadedRef.current) {
-        console.log('[SocialProvider] Auth verified, loading social data...');
         hasLoadedRef.current = true;
         hasResetRef.current = false;
         loadFollowedUsers(true);

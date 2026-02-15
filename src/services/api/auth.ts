@@ -164,8 +164,6 @@ export const authApi = {
       // Check both isAdmin flag and role === 'admin' or 'owner'
       const isAdmin = data.user?.isAdmin || data.isAdmin || role === 'admin' || role === 'owner' || false;
 
-      console.log('getMe - userId:', userId, 'role:', role, 'isAdmin:', isAdmin);
-
       return {
         id: userId,
         username,
@@ -205,8 +203,6 @@ function transformAuthResponse(data: AuthResponse): AuthUser {
   const role = data.user?.role || data.role;
   // Check both isAdmin flag and role === 'admin' or 'owner'
   const isAdmin = data.user?.isAdmin || data.isAdmin || role === 'admin' || role === 'owner' || false;
-
-  console.log('Auth transform - userId:', userId, 'role:', role, 'isAdmin:', isAdmin);
 
   return {
     id: userId,

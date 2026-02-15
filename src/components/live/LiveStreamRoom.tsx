@@ -197,7 +197,6 @@ export function LiveStreamRoom({
   }, []);
 
   const handleDisconnected = useCallback(() => {
-    console.log('Disconnected from room');
     if (!isHost) {
       // Viewer disconnected - maybe stream ended
       onEnd();

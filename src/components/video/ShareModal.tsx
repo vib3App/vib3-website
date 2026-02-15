@@ -82,7 +82,7 @@ export function ShareModal({ videoId, videoUrl, caption, isOpen, onClose }: Shar
         onClose();
       } catch (err) {
         // User cancelled or error
-        console.log('Share cancelled');
+        // User cancelled share
       }
     }
   };

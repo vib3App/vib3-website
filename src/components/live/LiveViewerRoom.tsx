@@ -26,15 +26,15 @@ interface RoomContentProps {
 
 function RoomContent({ streamTitle, hostName, hostAvatar, onLeave }: RoomContentProps) {
   const handleLike = useCallback(() => {
-    console.log('Liked stream');
+    // Like animation handled by UI
   }, []);
 
   const handleOpenChat = useCallback(() => {
-    console.log('Open chat');
+    // Chat panel toggle handled by UI
   }, []);
 
   const handleOpenGifts = useCallback(() => {
-    console.log('Open gifts');
+    // Gifts panel toggle handled by UI
   }, []);
 
   return (

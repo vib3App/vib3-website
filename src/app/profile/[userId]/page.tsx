@@ -102,7 +102,7 @@ export default function ProfilePage() {
         <ProfileHeader profile={p.profile} onBack={p.goBack} onQRClick={() => p.setShowQRModal(true)} showMoreMenu={p.showMoreMenu} onToggleMenu={() => p.setShowMoreMenu(!p.showMoreMenu)} onCopyLink={p.copyProfileLink} isOwnProfile={p.isOwnProfile} isAuthenticated={p.isAuthenticated} />
 
         <div className="max-w-3xl mx-auto px-4 py-6">
-          <ProfileInfo profile={p.profile} isOwnProfile={p.isOwnProfile} isFollowing={p.isFollowing} isFollowLoading={p.isFollowLoading} onFollow={p.handleFollow} onEditClick={() => p.setShowEditModal(true)} />
+          <ProfileInfo profile={p.profile} isOwnProfile={p.isOwnProfile} isFollowing={p.isFollowing} isFollowLoading={p.isFollowLoading} onFollow={p.handleFollow} onEditClick={() => p.setShowEditModal(true)} onShare={p.copyProfileLink} userId={p.userId} />
           <ProfileStats stats={p.profile.stats} />
           <ProfileTabs activeTab={p.activeTab} onTabChange={p.setActiveTab} />
           <ProfileVideos activeTab={p.activeTab} videos={p.videos} likedVideos={p.likedVideos} isOwnProfile={p.isOwnProfile} onDeleteVideo={p.deleteVideo} />
@@ -162,7 +162,7 @@ function ProfileHeader({ profile, onBack, onQRClick, showMoreMenu, onToggleMenu,
   );
 }
 
-function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFollow, onEditClick }: { profile: UserProfile; isOwnProfile: boolean; isFollowing: boolean; isFollowLoading: boolean; onFollow: () => void; onEditClick: () => void }) {
+function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFollow, onEditClick, onShare, userId }: { profile: UserProfile; isOwnProfile: boolean; isFollowing: boolean; isFollowLoading: boolean; onFollow: () => void; onEditClick: () => void; onShare: () => void; userId: string }) {
   return (
     <div className="flex flex-col items-center text-center mb-8">
       {/* Floating Profile Picture */}
@@ -205,7 +205,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
               }
-              onClick={() => {}}
+              onClick={onShare}
             />
             <FloatingCircleButton
               icon={
@@ -215,7 +215,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
               }
               gradientFrom="#14B8A6"
               gradientTo="#8B5CF6"
-              onClick={() => {}}
+              onClick={() => window.location.href = '/creator/analytics'}
             />
           </>
         ) : (
@@ -245,7 +245,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
               }
               gradientFrom="#14B8A6"
               gradientTo="#8B5CF6"
-              onClick={() => {}}
+              onClick={() => window.location.href = `/messages?user=${userId}`}
             />
             <FloatingCircleButton
               icon={
@@ -253,7 +253,7 @@ function ProfileInfo({ profile, isOwnProfile, isFollowing, isFollowLoading, onFo
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
               }
-              onClick={() => {}}
+              onClick={onShare}
             />
           </>
         )}

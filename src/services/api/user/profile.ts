@@ -4,14 +4,11 @@ import type { UserProfile } from './types';
 export const profileApi = {
   async getProfile(userId: string): Promise<UserProfile> {
     const { data } = await apiClient.get<UserProfile>(`/users/${userId}`);
-    console.log('[userApi.getProfile] Raw response:', JSON.stringify(data, null, 2));
     return data;
   },
 
   async getMyProfile(): Promise<UserProfile> {
     const { data } = await apiClient.get<{ user?: UserProfile } & UserProfile>('/user/profile');
-    console.log('[userApi.getMyProfile] Raw response:', JSON.stringify(data, null, 2));
-
     const profile = data.user || data;
 
     if (!profile.stats) {
@@ -23,7 +20,6 @@ export const profileApi = {
       };
     }
 
-    console.log('[userApi.getMyProfile] Normalized profile:', profile._id, profile.username);
     return profile;
   },
 

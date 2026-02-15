@@ -61,7 +61,6 @@ export const feedsApi = {
   async getSelfFeed(_userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/user/videos', { params: { page, limit } });
-      console.log('[feedApi.getSelfFeed] Fetched videos:', data.videos?.length || 0);
       return transformFeedResponse(data);
     } catch (error) {
       console.error('Failed to get self feed:', error);

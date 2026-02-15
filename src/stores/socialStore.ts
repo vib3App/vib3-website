@@ -51,16 +51,14 @@ export const useSocialStore = create<SocialStore>()(
 
         // Skip if cache is still valid (unless force refresh)
         if (!forceRefresh && state.isLoaded && state.lastFetched && now - state.lastFetched < CACHE_EXPIRY) {
-          console.log('[SocialStore] Using cached followed users:', state.followedUserIds.size);
+          // Cache still valid
           return;
         }
 
         set({ isLoading: true });
-        console.log('[SocialStore] Fetching followed users from API...');
 
         try {
           const followedIds = await userApi.getFollowedUsers();
-          console.log('[SocialStore] Received followed users:', followedIds);
           set({
             followedUserIds: new Set(followedIds),
             isLoaded: true,
