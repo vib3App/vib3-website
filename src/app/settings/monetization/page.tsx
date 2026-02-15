@@ -114,12 +114,25 @@ export default function MonetizationPage() {
     setTiers(tiers.filter((_, i) => i !== index));
   };
 
-  const handleAddBenefit = (tierIndex: number) => {
-    const benefit = prompt('Enter benefit:');
-    if (!benefit?.trim()) return;
+  const [newBenefitText, setNewBenefitText] = useState('');
+  const [editingBenefitTier, setEditingBenefitTier] = useState<number | null>(null);
+
+  const handleStartAddBenefit = (tierIndex: number) => {
+    setEditingBenefitTier(tierIndex);
+    setNewBenefitText('');
+  };
+
+  const handleConfirmAddBenefit = () => {
+    if (editingBenefitTier === null || !newBenefitText.trim()) return;
     const updated = [...tiers];
-    updated[tierIndex] = { ...updated[tierIndex], benefits: [...updated[tierIndex].benefits, benefit.trim()] };
+    updated[editingBenefitTier] = { ...updated[editingBenefitTier], benefits: [...updated[editingBenefitTier].benefits, newBenefitText.trim()] };
     setTiers(updated);
+    setEditingBenefitTier(null);
+    setNewBenefitText('');
+  };
+
+  const handleAddBenefit = (tierIndex: number) => {
+    handleStartAddBenefit(tierIndex);
   };
 
   const handleRemoveBenefit = (tierIndex: number, benefitIndex: number) => {

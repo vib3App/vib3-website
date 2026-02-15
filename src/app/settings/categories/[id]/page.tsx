@@ -6,6 +6,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { ToggleSwitch, SettingsSection, FeedOrderSection, CategoryNameInput } from '@/components/settings/categories';
 import type { FeedCategory, FeedOrder } from '@/types';
 
@@ -15,6 +16,7 @@ export default function CategorySettingsPage() {
   const categoryId = params.id as string;
 
   const { isAuthenticated } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const { getCategoryById, updateCategory, deleteCategory, loadCategories } = useFeedCategoryStore();
 
   const [category, setCategory] = useState<FeedCategory | null>(null);
@@ -64,7 +66,8 @@ export default function CategorySettingsPage() {
 
   const handleDelete = async () => {
     if (!category || !category.isDeletable) return;
-    if (!window.confirm(`Delete "${category.name}"? Users in this category will be moved back to Following.`)) return;
+    const ok = await confirmDialog({ title: 'Delete Category', message: `Delete "${category.name}"? Users in this category will be moved back to Following.`, variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     const success = await deleteCategory(category.id);
     if (success) router.push('/settings/categories');
     else setError('Failed to delete category');

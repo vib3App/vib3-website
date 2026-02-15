@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
 import { videoApi } from '@/services/api';
 import { videoDownloadService } from '@/services/videoDownload';
 import type { Video } from '@/types';
@@ -30,6 +31,7 @@ export function VideoActions({
   orientation = 'vertical',
 }: VideoActionsProps) {
   const { isAuthenticated } = useAuthStore();
+  const addToast = useToastStore(s => s.addToast);
 
   // Like state
   const [isLiked, setIsLiked] = useState(video.isLiked || false);
@@ -167,7 +169,7 @@ export function VideoActions({
       try {
         await videoDownloadService.quickDownload(video.videoUrl, video.id);
       } catch {
-        alert('Download failed. Please try again.');
+        addToast('Download failed. Please try again.');
       }
     } finally {
       setIsDownloading(false);

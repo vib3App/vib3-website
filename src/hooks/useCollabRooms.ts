@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { collaborationApi } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
 import type { CollabRoom } from '@/types/collaboration';
 
 export type CollabTab = 'discover' | 'my';
 
 export function useCollabRooms() {
   const router = useRouter();
+  const addToast = useToastStore(s => s.addToast);
   const [tab, setTab] = useState<CollabTab>('discover');
   const [rooms, setRooms] = useState<CollabRoom[]>([]);
   const [myRooms, setMyRooms] = useState<CollabRoom[]>([]);
@@ -67,11 +69,11 @@ export function useCollabRooms() {
       console.error('Failed to create room:', err);
       // Show specific error message
       if (err?.status === 401) {
-        alert('Please login to create a collab room');
+        addToast('Please login to create a collab room');
       } else if (err?.message) {
-        alert(err.message);
+        addToast(err.message);
       } else {
-        alert('Failed to create collab room');
+        addToast('Failed to create collab room');
       }
     } finally {
       setCreating(false);
@@ -88,7 +90,7 @@ export function useCollabRooms() {
       router.push(`/collab/${room.id}`);
     } catch (err) {
       console.error('Failed to join room:', err);
-      alert('Invalid invite code');
+      addToast('Invalid invite code');
     } finally {
       setJoining(false);
     }

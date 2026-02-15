@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { adminApi, type FlaggedReporter } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 
 export default function FlaggedReportersPage() {
+  const addToast = useToastStore(s => s.addToast);
+  const confirmDialog = useConfirmStore(s => s.show);
   const [reporters, setReporters] = useState<FlaggedReporter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,26 +38,24 @@ export default function FlaggedReportersPage() {
       setReporters(reporters.filter((r) => r._id !== userId));
     } catch (err) {
       console.error('Failed to clear flag:', err);
-      alert('Failed to clear flagged status');
+      addToast('Failed to clear flagged status');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleBanUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to ban this user for abusing the report system?')) {
-      return;
-    }
+    const ok = await confirmDialog({ title: 'Ban User', message: 'Are you sure you want to ban this user for abusing the report system?', variant: 'danger', confirmText: 'Ban User' });
+    if (!ok) return;
 
     setActionLoading(userId);
     try {
       await adminApi.banUser(userId, 'Abuse of report system - multiple unfounded reports');
-      // Remove from list
       setReporters(reporters.filter((r) => r._id !== userId));
-      alert('User banned successfully');
+      addToast('User banned successfully', 'success');
     } catch (err) {
       console.error('Failed to ban user:', err);
-      alert('Failed to ban user');
+      addToast('Failed to ban user');
     } finally {
       setActionLoading(null);
     }

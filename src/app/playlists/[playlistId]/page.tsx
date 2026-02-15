@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { playlistsApi } from '@/services/api/playlists';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -17,6 +19,8 @@ export default function PlaylistDetailPage() {
   const params = useParams();
   const playlistId = params.playlistId as string;
   const { isAuthVerified, user } = useAuthStore();
+  const addToast = useToastStore(s => s.addToast);
+  const confirmDialog = useConfirmStore(s => s.show);
 
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -50,7 +54,8 @@ export default function PlaylistDetailPage() {
   };
 
   const handleDeletePlaylist = async () => {
-    if (!confirm('Are you sure you want to delete this playlist?')) return;
+    const ok = await confirmDialog({ title: 'Delete Playlist', message: 'Are you sure you want to delete this playlist?', variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     const success = await playlistsApi.deletePlaylist(playlistId);
     if (success) router.push('/playlists');
   };
@@ -68,7 +73,7 @@ export default function PlaylistDetailPage() {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
+      addToast('Link copied to clipboard!', 'success');
     }
   };
 

@@ -13,15 +13,18 @@ import {
   FloatingActionPill,
   FloatingCircleButton,
 } from '@/components/ui/FloatingPillButton';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
 
 function VideoThumbnail({ video, showDelete, onDelete }: { video: Video; showDelete?: boolean; onDelete?: (videoId: string) => void }) {
-  const handleDelete = (e: React.MouseEvent) => {
+  const confirmDialog = useConfirmStore(s => s.show);
+  const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onDelete && confirm('Are you sure you want to delete this video?')) {
-      onDelete(video.id);
+    if (onDelete) {
+      const ok = await confirmDialog({ title: 'Delete Video', message: 'Are you sure you want to delete this video?', variant: 'danger', confirmText: 'Delete' });
+      if (ok) onDelete(video.id);
     }
   };
 

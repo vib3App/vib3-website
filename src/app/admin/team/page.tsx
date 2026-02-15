@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react';
 import { adminApi, type TeamMember, type UserRole } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import Link from 'next/link';
 import { RoleSection, TeamMemberCard } from '@/components/admin';
 
 export default function TeamPage() {
   const { user: currentUser } = useAuthStore();
+  const addToast = useToastStore(s => s.addToast);
+  const confirmDialog = useConfirmStore(s => s.show);
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -30,12 +34,14 @@ export default function TeamPage() {
 
   const handleDemote = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'admin' ? 'moderator' : 'user';
-    if (!confirm(`Demote this ${currentRole} to ${newRole}?`)) return;
+    const ok = await confirmDialog({ title: 'Demote User', message: `Demote this ${currentRole} to ${newRole}?`, variant: 'danger', confirmText: 'Demote' });
+    if (!ok) return;
     await executeRoleChange(userId, newRole as UserRole);
   };
 
   const handleRemove = async (userId: string) => {
-    if (!confirm('Remove this user from the team entirely?')) return;
+    const ok = await confirmDialog({ title: 'Remove from Team', message: 'Remove this user from the team entirely?', variant: 'danger', confirmText: 'Remove' });
+    if (!ok) return;
     await executeRoleChange(userId, 'user');
   };
 
@@ -49,7 +55,7 @@ export default function TeamPage() {
       await adminApi.changeUserRole(userId, role);
       await loadTeam();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to change role');
+      addToast(err.response?.data?.message || 'Failed to change role');
     } finally {
       setActionLoading(null);
     }

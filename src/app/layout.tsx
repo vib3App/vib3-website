@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { CursorSpotlight } from "@/components/3d";
 import { ToastContainer } from "@/components/ui/ToastContainer";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
         <CursorSpotlight />
         <Providers>{children}</Providers>
         <ToastContainer />
+        <ConfirmDialog />
       </body>
     </html>
   );

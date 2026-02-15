@@ -6,6 +6,7 @@ import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { CategoryRow, CreateCategoryModal } from '@/components/settings/categories';
 import type { FeedCategory } from '@/types';
 import { RESERVED_NAMES, MAX_CUSTOM_CATEGORIES } from '@/types';
@@ -18,6 +19,7 @@ export default function ManageCategoriesPage() {
     loadCategories, createCategory, deleteCategory, canCreateMore, getCustomCategories,
   } = useFeedCategoryStore();
 
+  const confirmDialog = useConfirmStore(s => s.show);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [createError, setCreateError] = useState<string | null>(null);
@@ -46,7 +48,8 @@ export default function ManageCategoriesPage() {
 
   const handleDelete = async (category: FeedCategory) => {
     if (!category.isDeletable) return;
-    if (!window.confirm(`Delete "${category.name}"? Users in this category will be moved to Following.`)) return;
+    const ok = await confirmDialog({ title: 'Delete Category', message: `Delete "${category.name}"? Users in this category will be moved to Following.`, variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     await deleteCategory(category.id);
   };
 

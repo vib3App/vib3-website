@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
 import { apiClient } from '@/services/api/client';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -13,6 +14,7 @@ import type { VerificationStatus, VerificationRequest, VerificationFormData } fr
 export default function VerificationRequestPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified, user } = useAuthStore();
+  const addToast = useToastStore(s => s.addToast);
   const [status, setStatus] = useState<VerificationStatus>('none');
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +57,7 @@ export default function VerificationRequestPage() {
       setStatus('pending');
     } catch (error) {
       console.error('Failed to submit verification request:', error);
-      alert('Failed to submit request. Please try again.');
+      addToast('Failed to submit request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

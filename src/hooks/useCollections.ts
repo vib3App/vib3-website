@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { collectionsApi } from '@/services/api';
+import { useConfirmStore } from '@/stores/confirmStore';
 import type { Collection } from '@/types';
 
 export type CollectionTabType = 'playlists' | 'saved' | 'liked' | 'history';
@@ -11,6 +12,7 @@ export type CollectionTabType = 'playlists' | 'saved' | 'liked' | 'history';
 export function useCollections() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const [activeTab, setActiveTab] = useState<CollectionTabType>('playlists');
   const [playlists, setPlaylists] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +43,8 @@ export function useCollections() {
   }, [isAuthenticated, isAuthVerified, router, loadCollections]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this playlist?')) return;
+    const ok = await confirmDialog({ title: 'Delete Playlist', message: 'Delete this playlist?', variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     try {
       await collectionsApi.deletePlaylist(id);
       setPlaylists(prev => prev.filter(p => p.id !== id));

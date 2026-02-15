@@ -3,12 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { adminApi, type AdminUser, type UserRole, type UserStats } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { UserStatsCards, UserFilters, UsersTable } from '@/components/admin';
 
 const LIMIT = 20;
 
 export default function UserManagementPage() {
   const { user: currentUser } = useAuthStore();
+  const addToast = useToastStore(s => s.addToast);
+  const confirmDialog = useConfirmStore(s => s.show);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,7 +57,7 @@ export default function UserManagementPage() {
       await loadUsers();
       setSelectedUsers(new Set());
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to change role');
+      addToast(err.response?.data?.message || 'Failed to change role');
     } finally {
       setActionLoading(null);
     }
@@ -61,7 +65,8 @@ export default function UserManagementPage() {
 
   const handleBulkRoleChange = async (newRole: UserRole) => {
     if (selectedUsers.size === 0) return;
-    if (!confirm(`Change ${selectedUsers.size} user(s) to ${newRole}?`)) return;
+    const ok = await confirmDialog({ title: 'Bulk Role Change', message: `Change ${selectedUsers.size} user(s) to ${newRole}?` });
+    if (!ok) return;
 
     setActionLoading('bulk');
     try {
@@ -71,7 +76,7 @@ export default function UserManagementPage() {
       await loadUsers();
       setSelectedUsers(new Set());
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Some role changes failed');
+      addToast(err.response?.data?.message || 'Some role changes failed');
     } finally {
       setActionLoading(null);
     }

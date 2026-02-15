@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { collectionsApi } from '@/services/api';
+import { useConfirmStore } from '@/stores/confirmStore';
 import type { Collection, CollectionVideo } from '@/types';
 
 export function useCollectionDetail() {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated, isAuthVerified, user } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const collectionId = params.id as string;
 
   const [collection, setCollection] = useState<Collection | null>(null);
@@ -73,7 +75,8 @@ export function useCollectionDetail() {
   }, [collectionId, collection]);
 
   const handleDelete = useCallback(async () => {
-    if (!confirm('Delete this playlist? This cannot be undone.')) return;
+    const ok = await confirmDialog({ title: 'Delete Playlist', message: 'Delete this playlist? This cannot be undone.', variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     try {
       await collectionsApi.deletePlaylist(collectionId);
       router.push('/collections');

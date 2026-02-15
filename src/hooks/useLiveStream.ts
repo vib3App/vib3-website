@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { liveApi } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import type { LiveStream, LiveChatMessage, LiveGift, LiveKitCredentials } from '@/types';
 
 interface FloatingReaction {
@@ -13,6 +15,8 @@ interface FloatingReaction {
 
 export function useLiveStream(streamId: string, isHost: boolean) {
   const router = useRouter();
+  const addToast = useToastStore(s => s.addToast);
+  const confirmDialog = useConfirmStore(s => s.show);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -178,7 +182,7 @@ export function useLiveStream(streamId: string, isHost: boolean) {
   const handleRequestToJoin = useCallback(async () => {
     try {
       await liveApi.requestToJoin(streamId);
-      alert('Join request sent!');
+      addToast('Join request sent!', 'success');
     } catch (err) {
       console.error('Failed to request to join:', err);
     }
@@ -203,7 +207,8 @@ export function useLiveStream(streamId: string, isHost: boolean) {
   }, [streamId]);
 
   const handleEndStream = useCallback(async () => {
-    if (!confirm('Are you sure you want to end the stream?')) return;
+    const ok = await confirmDialog({ title: 'End Stream', message: 'Are you sure you want to end the stream?', variant: 'danger', confirmText: 'End Stream' });
+    if (!ok) return;
     try {
       await liveApi.endStream(streamId);
       router.push('/live');

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 import { challengesApi } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
 import {
   ChallengesHero,
   ChallengeCategoryTabs,
@@ -14,6 +15,7 @@ import {
 import type { Challenge, ChallengeCategory, CreateChallengeInput } from '@/types/challenge';
 
 export default function ChallengesPage() {
+  const addToast = useToastStore(s => s.addToast);
   const [activeCategory, setActiveCategory] = useState<ChallengeCategory | 'all'>('all');
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +97,7 @@ export default function ChallengesPage() {
       fetchChallenges(true);
     } catch (err) {
       console.error('Error creating challenge:', err);
-      alert('Failed to create challenge. Please try again.');
+      addToast('Failed to create challenge. Please try again.');
     } finally {
       setCreating(false);
     }

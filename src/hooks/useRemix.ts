@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { collaborationApi, videoApi } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
 import type { RemixType } from '@/types/collaboration';
 import type { Video } from '@/types';
 
@@ -17,6 +18,7 @@ export function useRemix() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const addToast = useToastStore(s => s.addToast);
   const videoId = params.videoId as string;
   const typeParam = searchParams.get('type') as RemixType | null;
 
@@ -74,7 +76,7 @@ export function useRemix() {
       }
     } catch (err) {
       console.error('Failed to start camera:', err);
-      alert('Failed to access camera/microphone');
+      addToast('Failed to access camera/microphone');
     }
   }, []);
 
@@ -141,7 +143,7 @@ export function useRemix() {
       router.push(`/video/${remix.id}`);
     } catch (err) {
       console.error('Failed to create remix:', err);
-      alert('Failed to create remix');
+      addToast('Failed to create remix');
     } finally {
       setUploading(false);
     }

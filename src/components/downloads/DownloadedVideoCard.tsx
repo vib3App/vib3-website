@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { TrashIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { useConfirmStore } from '@/stores/confirmStore';
 import type { Video } from '@/types';
 
 interface OfflineVideo {
@@ -44,11 +45,13 @@ interface DownloadedVideoCardProps {
 }
 
 export function DownloadedVideoCard({ offlineVideo, onDelete, onPlay }: DownloadedVideoCardProps) {
+  const confirmDialog = useConfirmStore(s => s.show);
   const [isDeleting, setIsDeleting] = useState(false);
   const { video } = offlineVideo;
 
   const handleDelete = async () => {
-    if (!confirm('Remove this video from downloads?')) return;
+    const ok = await confirmDialog({ title: 'Remove Download', message: 'Remove this video from downloads?', variant: 'danger', confirmText: 'Remove' });
+    if (!ok) return;
     setIsDeleting(true);
     await onDelete();
   };

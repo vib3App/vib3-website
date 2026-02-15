@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { collaborationApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import type { CollabRoom } from '@/types/collaboration';
 
 interface UseCollabRoomReturn {
@@ -40,6 +42,8 @@ interface UseCollabRoomReturn {
 export function useCollabRoom(roomId: string): UseCollabRoomReturn {
   const router = useRouter();
   const { user } = useAuthStore();
+  const addToast = useToastStore(s => s.addToast);
+  const confirmDialog = useConfirmStore(s => s.show);
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -106,7 +110,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       }
     } catch (err) {
       console.error('Failed to get media:', err);
-      alert('Failed to access camera/microphone');
+      addToast('Failed to access camera/microphone');
     }
   }, []);
 
@@ -176,7 +180,7 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       setTimeout(() => setUploadProgress(0), 1000);
     } catch (err) {
       console.error('Failed to submit clip:', err);
-      alert('Failed to submit clip');
+      addToast('Failed to submit clip');
       setUploadProgress(0);
     }
   }, [recordedBlob, roomId]);
@@ -204,12 +208,13 @@ export function useCollabRoom(roomId: string): UseCollabRoomReturn {
       router.push(`/video/${result.videoId}`);
     } catch (err) {
       console.error('Failed to finalize:', err);
-      alert('Failed to finalize collab');
+      addToast('Failed to finalize collab');
     }
   }, [roomId, router]);
 
   const handleLeave = useCallback(async () => {
-    if (!confirm('Are you sure you want to leave this collab?')) return;
+    const ok = await confirmDialog({ title: 'Leave Collab', message: 'Are you sure you want to leave this collab?' });
+    if (!ok) return;
     try {
       await collaborationApi.leaveCollabRoom(roomId);
       router.push('/collab');

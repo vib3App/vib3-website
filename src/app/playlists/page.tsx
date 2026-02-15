@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, PlusIcon, PlayIcon } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { playlistsApi } from '@/services/api/playlists';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -13,6 +14,7 @@ import type { Playlist } from '@/types/playlist';
 export default function PlaylistsPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -43,7 +45,8 @@ export default function PlaylistsPage() {
   };
 
   const handleDeletePlaylist = async (playlistId: string) => {
-    if (!confirm('Are you sure you want to delete this playlist?')) return;
+    const ok = await confirmDialog({ title: 'Delete Playlist', message: 'Are you sure you want to delete this playlist?', variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     const success = await playlistsApi.deletePlaylist(playlistId);
     if (success) setPlaylists((prev) => prev.filter((p) => p.id !== playlistId));
   };

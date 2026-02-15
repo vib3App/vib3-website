@@ -7,6 +7,7 @@ import { ArrowLeftIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { formatCount } from '@/utils/format';
 import type { Video } from '@/types';
 
@@ -128,18 +129,19 @@ function getTimeAgo(dateString: string): string {
 
 export default function WatchHistoryPage() {
   const { isAuthenticated, isAuthVerified } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const [history, setHistory] = useState<WatchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load history from localStorage
     const watchHistory = getWatchHistory();
     setHistory(watchHistory);
     setLoading(false);
   }, []);
 
-  const handleClearHistory = () => {
-    if (confirm('Are you sure you want to clear your watch history?')) {
+  const handleClearHistory = async () => {
+    const ok = await confirmDialog({ title: 'Clear History', message: 'Are you sure you want to clear your watch history?', variant: 'danger', confirmText: 'Clear' });
+    if (ok) {
       clearWatchHistory();
       setHistory([]);
     }

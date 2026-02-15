@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Hls from 'hls.js';
 import { collaborationApi, videoApi, feedApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import type { WatchParty, WatchPartyChatMessage } from '@/types/collaboration';
 
 export function useWatchParty(partyId: string) {
   const router = useRouter();
   const { user, isAuthVerified } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -273,7 +275,8 @@ export function useWatchParty(partyId: string) {
   }, [searchQuery]);
 
   const handleLeave = useCallback(async () => {
-    if (!confirm('Are you sure you want to leave?')) return;
+    const ok = await confirmDialog({ title: 'Leave Party', message: 'Are you sure you want to leave?' });
+    if (!ok) return;
     try {
       await collaborationApi.leaveWatchParty(partyId);
       router.push('/watch-party');
@@ -283,7 +286,8 @@ export function useWatchParty(partyId: string) {
   }, [partyId, router]);
 
   const handleEndParty = useCallback(async () => {
-    if (!confirm('Are you sure you want to end the party?')) return;
+    const ok = await confirmDialog({ title: 'End Party', message: 'Are you sure you want to end the party?', variant: 'danger', confirmText: 'End Party' });
+    if (!ok) return;
     try {
       await collaborationApi.endWatchParty(partyId);
       router.push('/watch-party');

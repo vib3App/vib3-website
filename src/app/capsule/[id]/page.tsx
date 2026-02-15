@@ -7,6 +7,7 @@ import Hls from 'hls.js';
 import { useRef } from 'react';
 import { capsuleApi } from '@/services/api/capsule';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import type { TimeCapsule } from '@/types/capsule';
 
@@ -29,6 +30,7 @@ export default function CapsuleDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
 
@@ -84,7 +86,8 @@ export default function CapsuleDetailPage() {
   }, [capsule?.videoUrl]);
 
   const handleDelete = async () => {
-    if (!confirm('Delete this capsule permanently?')) return;
+    const ok = await confirmDialog({ title: 'Delete Capsule', message: 'Delete this capsule permanently?', variant: 'danger', confirmText: 'Delete' });
+    if (!ok) return;
     try {
       await capsuleApi.deleteCapsule(capsuleId);
       router.push('/capsule');

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { TopNav } from '@/components/ui/TopNav';
 import { creatorFundApi } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
 import {
   CreatorFundHero,
   TierProgressSection,
@@ -18,6 +19,7 @@ import {
 import type { DashboardData, EligibilityResponse, EarningPeriod, EarningsSummary } from '@/types/creatorFund';
 
 export default function CreatorFundPage() {
+  const addToast = useToastStore(s => s.addToast);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
@@ -71,7 +73,7 @@ export default function CreatorFundPage() {
       await fetchData();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      alert(error.response?.data?.error || 'Failed to apply');
+      addToast(error.response?.data?.error || 'Failed to apply');
     } finally {
       setApplying(false);
     }
@@ -79,26 +81,26 @@ export default function CreatorFundPage() {
 
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawAmount);
-    if (isNaN(amount) || amount < 50) { alert('Minimum withdrawal is $50'); return; }
-    if (summary && amount > summary.availableBalance) { alert('Insufficient balance'); return; }
+    if (isNaN(amount) || amount < 50) { addToast('Minimum withdrawal is $50'); return; }
+    if (summary && amount > summary.availableBalance) { addToast('Insufficient balance'); return; }
 
     try {
       setWithdrawing(true);
       const result = await creatorFundApi.withdraw(amount);
-      alert(`Withdrawal requested! ${result.withdrawal.estimatedProcessing}`);
+      addToast(`Withdrawal requested! ${result.withdrawal.estimatedProcessing}`, 'success');
       setShowWithdrawModal(false);
       setWithdrawAmount('');
       await fetchData();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      alert(error.response?.data?.error || 'Failed to request withdrawal');
+      addToast(error.response?.data?.error || 'Failed to request withdrawal');
     } finally {
       setWithdrawing(false);
     }
   };
 
   const handleSavePaymentMethod = async () => {
-    if (paymentType === 'paypal' && !paymentEmail) { alert('Please enter your PayPal email'); return; }
+    if (paymentType === 'paypal' && !paymentEmail) { addToast('Please enter your PayPal email'); return; }
     try {
       setSavingPayment(true);
       await creatorFundApi.updatePaymentMethod(paymentType, { email: paymentType === 'paypal' ? paymentEmail : undefined });
@@ -106,7 +108,7 @@ export default function CreatorFundPage() {
       await fetchData();
     } catch (err) {
       console.error('Error saving payment method:', err);
-      alert('Failed to save payment method');
+      addToast('Failed to save payment method');
     } finally {
       setSavingPayment(false);
     }

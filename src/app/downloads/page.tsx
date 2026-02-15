@@ -12,6 +12,7 @@ import {
   SignalSlashIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/stores/authStore';
+import { useConfirmStore } from '@/stores/confirmStore';
 import { offlineVideoService } from '@/services/offlineVideo';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -20,6 +21,7 @@ import { DownloadedVideoCard, type OfflineVideo } from '@/components/downloads';
 export default function DownloadsPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
+  const confirmDialog = useConfirmStore(s => s.show);
   const [downloads, setDownloads] = useState<OfflineVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [storageUsage, setStorageUsage] = useState({ used: '0 MB', max: '500 MB', percent: 0 });
@@ -72,7 +74,8 @@ export default function DownloadsPage() {
   };
 
   const handleClearAll = async () => {
-    if (!confirm('Remove all downloaded videos? This cannot be undone.')) return;
+    const ok = await confirmDialog({ title: 'Clear Downloads', message: 'Remove all downloaded videos? This cannot be undone.', variant: 'danger', confirmText: 'Clear All' });
+    if (!ok) return;
     await offlineVideoService.clearAllDownloads();
     setDownloads([]);
     setStorageUsage({ used: '0 Bytes', max: '500 MB', percent: 0 });

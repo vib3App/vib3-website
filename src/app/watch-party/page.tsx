@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { ArrowLeftIcon, PlusIcon, TvIcon } from '@heroicons/react/24/outline';
 import { collaborationApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
+import { useToastStore } from '@/stores/toastStore';
 import { WatchPartyCard, CreatePartyModal } from '@/components/watch-party';
 import type { WatchParty } from '@/types/collaboration';
 
 export default function WatchPartiesPage() {
   const router = useRouter();
   const isAuthVerified = useAuthStore((s) => s.isAuthVerified);
+  const addToast = useToastStore(s => s.addToast);
 
   const [parties, setParties] = useState<WatchParty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function WatchPartiesPage() {
       router.push(`/watch-party/${party.id}`);
     } catch (error) {
       console.error('Failed to create watch party:', error);
-      alert('Failed to create watch party. Please try again.');
+      addToast('Failed to create watch party. Please try again.');
     } finally {
       setCreating(false);
     }

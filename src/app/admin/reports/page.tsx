@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { adminApi, type ContentReport, type ModerationAction } from '@/services/api';
+import { useToastStore } from '@/stores/toastStore';
 import { ReportCard } from '@/components/admin';
 
 interface ReportWithUsers extends ContentReport {
@@ -10,6 +11,7 @@ interface ReportWithUsers extends ContentReport {
 }
 
 export default function ReportsPage() {
+  const addToast = useToastStore(s => s.addToast);
   const [reports, setReports] = useState<ReportWithUsers[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +52,10 @@ export default function ReportsPage() {
     try {
       await adminApi.takeAction(reportId, action, notes);
       await loadReports();
-      alert(`Action "${action}" completed successfully. Notifications sent.`);
+      addToast(`Action "${action}" completed successfully`, 'success');
     } catch (err) {
       console.error('Action failed:', err);
-      alert('Failed to take action. Please try again.');
+      addToast('Failed to take action. Please try again.');
     } finally {
       setActionLoading(false);
     }
