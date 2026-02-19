@@ -19,3 +19,6 @@ export * from './creatorFund';
 export * from './analytics';
 export * from './wallet';
 export * from './call';
+export * from './story';
+export * from './gauntlet';
+export * from './location';

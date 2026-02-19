@@ -1,11 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ExclamationTriangleIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, MicrophoneIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useLiveStream } from '@/hooks/useLiveStream';
 import {
   LiveStreamHeader,
@@ -16,6 +17,10 @@ import {
   GiftsModal,
   GuestRequestsModal,
   LiveFloatingReactions,
+  GiftAnimationOverlay,
+  LiveBattleOverlay,
+  ModerationPanel,
+  GuestRequestPanel,
 } from '@/components/live';
 import { LiveViewerRoom } from '@/components/live/LiveViewerRoom';
 import type { LiveGuest } from '@/types';
@@ -66,6 +71,9 @@ function LiveStreamContent() {
     handleRejectGuest,
     handleEndStream,
   } = useLiveStream(streamId);
+
+  const [showModeration, setShowModeration] = useState(false);
+  const [showGuestPanel, setShowGuestPanel] = useState(false);
 
   const handleLeaveStream = () => {
     router.push('/live');
@@ -121,19 +129,33 @@ function LiveStreamContent() {
 
           <LiveFloatingReactions reactions={floatingReactions} />
           <LiveStreamHeader stream={stream} viewerCount={viewerCount} />
+          {/* Gap #39: Gift animation overlay */}
+          <GiftAnimationOverlay streamId={streamId} />
+          {/* Gap #40: Battle overlay */}
+          <LiveBattleOverlay streamId={streamId} onSendGift={(pid) => handleSendGift(pid)} />
 
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
             <div className="flex items-center justify-between">
               {isHost ? (
-                <HostControls
-                  audioEnabled={audioEnabled}
-                  videoEnabled={videoEnabled}
-                  guestRequestCount={guestRequests.length}
-                  onToggleAudio={() => setAudioEnabled(!audioEnabled)}
-                  onToggleVideo={() => setVideoEnabled(!videoEnabled)}
-                  onShowGuestRequests={() => setShowGuestRequests(true)}
-                  onEndStream={handleEndStream}
-                />
+                <div className="flex items-center gap-2">
+                  <HostControls
+                    audioEnabled={audioEnabled}
+                    videoEnabled={videoEnabled}
+                    guestRequestCount={guestRequests.length}
+                    onToggleAudio={() => setAudioEnabled(!audioEnabled)}
+                    onToggleVideo={() => setVideoEnabled(!videoEnabled)}
+                    onShowGuestRequests={() => setShowGuestRequests(true)}
+                    onEndStream={handleEndStream}
+                  />
+                  {/* Gap #43: Moderation button */}
+                  <button
+                    onClick={() => setShowModeration(true)}
+                    className="p-3 bg-white/20 hover:bg-white/30 rounded-full transition"
+                    title="Moderation"
+                  >
+                    <ShieldCheckIcon className="w-5 h-5 text-white" />
+                  </button>
+                </div>
               ) : (
                 <ViewerControls
                   allowGuests={stream.allowGuests}
@@ -200,6 +222,24 @@ function LiveStreamContent() {
           onClose={() => setShowGuestRequests(false)}
           onAccept={handleAcceptGuest}
           onReject={handleRejectGuest}
+        />
+      )}
+
+      {/* Gap #42: Guest request panel */}
+      {isHost && (
+        <GuestRequestPanel
+          streamId={streamId}
+          isOpen={showGuestPanel}
+          onClose={() => setShowGuestPanel(false)}
+        />
+      )}
+
+      {/* Gap #43: Moderation panel */}
+      {isHost && (
+        <ModerationPanel
+          streamId={streamId}
+          isOpen={showModeration}
+          onClose={() => setShowModeration(false)}
         />
       )}
 

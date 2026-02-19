@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
 import { useSocialStore } from '@/stores/socialStore';
 import { ActionButtons } from '@/components/feed/ActionButtons';
+import { DoubleTapLike } from './DoubleTapLike';
+import { SpeedControl } from './SpeedControl';
 import type { Video } from '@/types';
 
 interface FeedVideoItemProps {
@@ -33,62 +35,49 @@ export function FeedVideoItem({
   onShare,
   userId,
 }: FeedVideoItemProps) {
-  const [showHeart, setShowHeart] = useState(false);
+  const videoRef = useRef<React.RefObject<HTMLVideoElement | null> | null>(null);
 
-  const handleDoubleTap = () => {
+  const handleDoubleTap = useCallback(() => {
     if (!video.isLiked) {
       onLike();
     }
-    setShowHeart(true);
-    setTimeout(() => setShowHeart(false), 800);
-  };
+  }, [video.isLiked, onLike]);
+
+  const handleVideoRef = useCallback(
+    (ref: React.RefObject<HTMLVideoElement | null>) => {
+      videoRef.current = ref;
+    },
+    []
+  );
 
   return (
     <div className="relative w-full h-full snap-start snap-always flex-shrink-0">
-      {/* Video */}
-      <div className="absolute inset-0" onDoubleClick={handleDoubleTap}>
-        <VideoPlayer
-          src={video.videoUrl}
-          poster={video.thumbnailUrl}
-          autoPlay={isActive}
-          muted={isMuted}
-          loop
-          isActive={isActive}
-          showControls={false}
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      {/* Double tap heart animation - Enhanced */}
-      {showHeart && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
-          {/* Glow effect */}
-          <div className="absolute w-40 h-40 bg-gradient-to-r from-pink-500 to-red-500 rounded-full blur-3xl opacity-50 animate-ping" />
-          {/* Heart with gradient */}
-          <svg
-            className="relative w-28 h-28"
-            viewBox="0 0 24 24"
-            style={{ animation: 'like-explode 0.6s ease-out forwards' }}
-          >
-            <defs>
-              <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ec4899" />
-                <stop offset="100%" stopColor="#ef4444" />
-              </linearGradient>
-            </defs>
-            <path
-              fill="url(#heartGradient)"
-              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-            />
-          </svg>
+      {/* Video with double-tap detection */}
+      <DoubleTapLike onDoubleTap={handleDoubleTap}>
+        <div className="absolute inset-0">
+          <VideoPlayer
+            src={video.videoUrl}
+            poster={video.thumbnailUrl}
+            autoPlay={isActive}
+            muted={isMuted}
+            loop
+            isActive={isActive}
+            showControls={false}
+            className="w-full h-full object-cover"
+            videoId={video.id}
+            onVideoRef={handleVideoRef}
+          />
         </div>
-      )}
+      </DoubleTapLike>
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
 
       {/* Mute button */}
       <MuteButton isMuted={isMuted} onToggle={onMuteToggle} />
+
+      {/* Feed controls (speed) - top area */}
+      <FeedPlayerControls videoRef={videoRef} />
 
       {/* Creator info - Top left */}
       <CreatorInfo video={video} userId={userId} onFollow={onFollow} />
@@ -115,6 +104,27 @@ export function FeedVideoItem({
         onSave={onSave}
         onShare={() => onShare()}
       />
+    </div>
+  );
+}
+
+/** Compact speed control overlay for feed videos */
+function FeedPlayerControls({
+  videoRef,
+}: {
+  videoRef: React.RefObject<React.RefObject<HTMLVideoElement | null> | null>;
+}) {
+  // Create a stable ref that points to the actual video element
+  const actualVideoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Update the actual ref when the nested ref changes
+  if (videoRef.current?.current && videoRef.current.current !== actualVideoRef.current) {
+    actualVideoRef.current = videoRef.current.current;
+  }
+
+  return (
+    <div className="absolute top-20 md:top-14 right-16 z-40 flex items-center gap-2">
+      <SpeedControl videoRef={actualVideoRef as React.RefObject<HTMLVideoElement | null>} />
     </div>
   );
 }
@@ -155,7 +165,6 @@ function CreatorInfo({
     <div className="absolute top-16 md:top-4 left-4 z-20">
       <Link href={`/profile/${video.userId}`} className="group flex items-center gap-3 glass px-3 py-2 rounded-2xl transition-all hover:bg-white/10">
         <div className="relative">
-          {/* Avatar glow */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl blur-sm opacity-50" />
           <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-1 ring-white/20">
             {video.userAvatar ? (
@@ -196,10 +205,8 @@ function CreatorInfo({
 function VideoInfo({ video }: { video: Video }) {
   return (
     <div className="absolute bottom-32 md:bottom-20 left-4 right-20 z-10 space-y-2">
-      {/* Caption */}
       <p className="text-white text-sm line-clamp-2 drop-shadow-lg">{video.caption}</p>
 
-      {/* Hashtags as glass pills */}
       {Array.isArray(video.hashtags) && video.hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {video.hashtags.slice(0, 4).map(tag => (
@@ -214,7 +221,6 @@ function VideoInfo({ video }: { video: Video }) {
         </div>
       )}
 
-      {/* Music info with glass styling */}
       <div className="inline-flex items-center gap-2 px-3 py-1.5 glass rounded-full">
         <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />

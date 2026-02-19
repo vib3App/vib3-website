@@ -1,6 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { aiApi } from '@/services/api/ai';
+import { logger } from '@/utils/logger';
+import { LocationPicker } from './LocationPicker';
+import { MentionInput } from './MentionInput';
+import { QualitySelector } from './QualitySelector';
+import { WatermarkOptions } from './WatermarkOptions';
 
 const vibes = [
   { name: 'Energetic', emoji: '⚡' },
@@ -13,6 +19,7 @@ const vibes = [
 ];
 
 interface VideoDetailsFormProps {
+  videoId?: string;
   caption: string;
   onCaptionChange: (caption: string) => void;
   hashtags: string[];
@@ -36,9 +43,25 @@ interface VideoDetailsFormProps {
   onSaveDraft: () => void;
   onPublish: () => void;
   isSavingDraft: boolean;
+  // Optional new features
+  location?: string | null;
+  onLocationChange?: (location: string | null) => void;
+  mentions?: string[];
+  onMentionsChange?: (mentions: string[]) => void;
+  uploadQuality?: string;
+  onUploadQualityChange?: (quality: string) => void;
+  watermarkEnabled?: boolean;
+  onWatermarkToggle?: (enabled: boolean) => void;
+  watermarkPosition?: string;
+  onWatermarkPositionChange?: (position: string) => void;
+  watermarkText?: string;
+  onWatermarkTextChange?: (text: string) => void;
+  watermarkOpacity?: number;
+  onWatermarkOpacityChange?: (opacity: number) => void;
 }
 
 export function VideoDetailsForm({
+  videoId,
   caption,
   onCaptionChange,
   hashtags,
@@ -62,8 +85,43 @@ export function VideoDetailsForm({
   onSaveDraft,
   onPublish,
   isSavingDraft,
+  location, onLocationChange,
+  mentions, onMentionsChange,
+  uploadQuality, onUploadQualityChange,
+  watermarkEnabled, onWatermarkToggle,
+  watermarkPosition, onWatermarkPositionChange,
+  watermarkText, onWatermarkTextChange,
+  watermarkOpacity, onWatermarkOpacityChange,
 }: VideoDetailsFormProps) {
   const [hashtagInput, setHashtagInput] = useState('');
+  const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
+  const [isGeneratingHashtags, setIsGeneratingHashtags] = useState(false);
+
+  const handleAICaption = async () => {
+    if (!videoId) return;
+    setIsGeneratingCaption(true);
+    try {
+      const description = await aiApi.generateDescription(videoId);
+      if (description) onCaptionChange(description);
+    } catch (err) {
+      logger.error('AI caption generation failed:', err);
+    } finally {
+      setIsGeneratingCaption(false);
+    }
+  };
+
+  const handleAIHashtags = async () => {
+    if (!videoId) return;
+    setIsGeneratingHashtags(true);
+    try {
+      const tags = await aiApi.suggestHashtags(videoId);
+      if (tags.length > 0) onHashtagsChange([...new Set([...hashtags, ...tags])].slice(0, 10));
+    } catch (err) {
+      logger.error('AI hashtag generation failed:', err);
+    } finally {
+      setIsGeneratingHashtags(false);
+    }
+  };
 
   const handleHashtagAdd = () => {
     const tag = hashtagInput.trim().replace(/^#/, '');
@@ -77,7 +135,21 @@ export function VideoDetailsForm({
     <div className="space-y-6">
       {/* Caption */}
       <div>
-        <label className="block text-white font-medium mb-2">Caption</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-white font-medium">Caption</label>
+          {videoId && (
+            <button
+              onClick={handleAICaption}
+              disabled={isGeneratingCaption}
+              className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-purple-500/20 text-purple-400 rounded-full hover:bg-purple-500/30 transition disabled:opacity-50"
+            >
+              <svg className={`w-3 h-3 ${isGeneratingCaption ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              {isGeneratingCaption ? 'Generating...' : 'AI Suggest'}
+            </button>
+          )}
+        </div>
         <textarea
           value={caption}
           onChange={(e) => onCaptionChange(e.target.value)}
@@ -93,7 +165,21 @@ export function VideoDetailsForm({
 
       {/* Hashtags */}
       <div>
-        <label className="block text-white font-medium mb-2">Hashtags</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-white font-medium">Hashtags</label>
+          {videoId && (
+            <button
+              onClick={handleAIHashtags}
+              disabled={isGeneratingHashtags}
+              className="flex items-center gap-1 px-3 py-1 text-xs font-medium bg-teal-500/20 text-teal-400 rounded-full hover:bg-teal-500/30 transition disabled:opacity-50"
+            >
+              <svg className={`w-3 h-3 ${isGeneratingHashtags ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+              </svg>
+              {isGeneratingHashtags ? 'Suggesting...' : 'AI Suggest'}
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2 mb-2">
           {hashtags.map((tag) => (
             <span
@@ -148,6 +234,21 @@ export function VideoDetailsForm({
           ))}
         </div>
       </div>
+
+      {/* Location - Gap #32 */}
+      {onLocationChange && (
+        <LocationPicker location={location ?? null} onLocationChange={onLocationChange} />
+      )}
+
+      {/* @Mentions - Gap #33 */}
+      {mentions !== undefined && onMentionsChange && (
+        <MentionInput mentions={mentions} onMentionsChange={onMentionsChange} />
+      )}
+
+      {/* Upload Quality - Gap #34 */}
+      {uploadQuality !== undefined && onUploadQualityChange && (
+        <QualitySelector quality={uploadQuality} onQualityChange={onUploadQualityChange} />
+      )}
 
       {/* Visibility */}
       <div>
@@ -222,6 +323,20 @@ export function VideoDetailsForm({
           </div>
         )}
       </div>
+
+      {/* Watermark - Gap #37 */}
+      {onWatermarkToggle && (
+        <WatermarkOptions
+          enabled={watermarkEnabled ?? false}
+          onToggle={onWatermarkToggle}
+          position={watermarkPosition ?? 'bottom-right'}
+          onPositionChange={onWatermarkPositionChange ?? (() => {})}
+          text={watermarkText ?? ''}
+          onTextChange={onWatermarkTextChange ?? (() => {})}
+          opacity={watermarkOpacity ?? 0.5}
+          onOpacityChange={onWatermarkOpacityChange ?? (() => {})}
+        />
+      )}
 
       {/* Actions */}
       <div className="flex gap-4">

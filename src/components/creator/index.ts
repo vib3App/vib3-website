@@ -10,3 +10,4 @@ export { ContentTab } from './ContentTab';
 export { MonetizationTab } from './MonetizationTab';
 export { AudienceTab } from './AudienceTab';
 export { SettingsTab } from './SettingsTab';
+export { EarningsDashboard } from './EarningsDashboard';

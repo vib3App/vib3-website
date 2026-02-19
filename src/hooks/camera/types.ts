@@ -1,5 +1,8 @@
 export type RecordingState = 'idle' | 'recording' | 'paused' | 'preview';
 export type CameraFacing = 'user' | 'environment';
+export type CameraMode = 'photo' | 'video' | 'story';
+export type PhotoMode = 'single' | 'burst' | 'collage';
+export type CollageLayout = '2x2' | '3x3';
 
 export const CAMERA_FILTERS = [
   { name: 'Normal', filter: 'none' },
@@ -27,4 +30,11 @@ export const CAMERA_SPEEDS = [
   { label: '1x', value: 1 },
   { label: '2x', value: 2 },
   { label: '3x', value: 3 },
+];
+
+export const DURATION_PRESETS = [
+  { label: '15s', value: 15 },
+  { label: '60s', value: 60 },
+  { label: '3m', value: 180 },
+  { label: '10m', value: 600 },
 ];

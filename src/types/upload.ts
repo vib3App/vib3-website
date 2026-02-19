@@ -57,6 +57,7 @@ export interface PublishVideoInput {
   caption: string;
   hashtags?: string[];
   mentions?: string[];
+  location?: string;
   thumbnailUrl?: string;
   isPublic?: boolean;
   allowComments?: boolean;

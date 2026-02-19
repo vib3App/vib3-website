@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useUpload } from '@/hooks/useUpload';
@@ -13,6 +13,9 @@ import {
   UploadProgress,
   ProcessingIndicator,
   UploadComplete,
+  AIVideoOutline,
+  CodecSelector,
+  CompressionOptions,
 } from '@/components/upload';
 
 export default function UploadPage() {
@@ -35,6 +38,36 @@ function UploadPageContent() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
   const upload = useUpload(isAuthenticated, isAuthVerified);
+
+  // Gap #31: AI Video Outline state
+  const [outline, setOutline] = useState<{ scenes: { timestamp: number; description: string; suggestion: string }[] } | null>(null);
+  const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+
+  const handleGenerateOutline = useCallback(() => {
+    setIsGeneratingOutline(true);
+    setOutline(null);
+    // Simulate AI analysis with mock data
+    setTimeout(() => {
+      setOutline({
+        scenes: [
+          { timestamp: 0, description: 'Opening shot - wide angle establishing scene', suggestion: 'Add a quick zoom-in for more dynamic feel' },
+          { timestamp: 3.5, description: 'Subject enters frame from left', suggestion: 'Good composition. Consider adding text overlay here' },
+          { timestamp: 8.2, description: 'Close-up reaction shot', suggestion: 'Lighting is slightly dark - consider brightness adjustment' },
+          { timestamp: 12.0, description: 'Action sequence with fast movement', suggestion: 'Speed ramp to 1.5x would enhance the energy' },
+          { timestamp: 18.5, description: 'Dialogue section - two subjects talking', suggestion: 'Enable auto-captions for accessibility' },
+          { timestamp: 25.0, description: 'Closing shot - subject waves goodbye', suggestion: 'Add fade-out transition and end card' },
+        ],
+      });
+      setIsGeneratingOutline(false);
+    }, 2000);
+  }, []);
+
+  // Gap #35: Codec selection state
+  const [selectedCodec, setSelectedCodec] = useState('h264');
+
+  // Gap #36: Compression state
+  const [compressionEnabled, setCompressionEnabled] = useState(false);
+  const [targetBitrate, setTargetBitrate] = useState(5);
 
   useEffect(() => {
     // Wait for auth to be verified before checking isAuthenticated
@@ -114,31 +147,70 @@ function UploadPageContent() {
 
           {/* Step: Details */}
           {upload.step === 'details' && (
-            <VideoDetailsForm
-              caption={upload.caption}
-              onCaptionChange={upload.setCaption}
-              hashtags={upload.hashtags}
-              onHashtagsChange={upload.setHashtags}
-              selectedVibe={upload.selectedVibe}
-              onVibeChange={upload.setSelectedVibe}
-              visibility={upload.visibility}
-              onVisibilityChange={upload.setVisibility}
-              allowComments={upload.allowComments}
-              onAllowCommentsChange={upload.setAllowComments}
-              allowDuet={upload.allowDuet}
-              onAllowDuetChange={upload.setAllowDuet}
-              allowStitch={upload.allowStitch}
-              onAllowStitchChange={upload.setAllowStitch}
-              showSchedule={upload.showSchedule}
-              onShowScheduleChange={upload.setShowSchedule}
-              scheduleDate={upload.scheduleDate}
-              onScheduleDateChange={upload.setScheduleDate}
-              scheduleTime={upload.scheduleTime}
-              onScheduleTimeChange={upload.setScheduleTime}
-              onSaveDraft={upload.handleSaveDraft}
-              onPublish={upload.handleUpload}
-              isSavingDraft={upload.isSavingDraft}
-            />
+            <div className="space-y-6">
+              <VideoDetailsForm
+                caption={upload.caption}
+                onCaptionChange={upload.setCaption}
+                hashtags={upload.hashtags}
+                onHashtagsChange={upload.setHashtags}
+                selectedVibe={upload.selectedVibe}
+                onVibeChange={upload.setSelectedVibe}
+                visibility={upload.visibility}
+                onVisibilityChange={upload.setVisibility}
+                allowComments={upload.allowComments}
+                onAllowCommentsChange={upload.setAllowComments}
+                allowDuet={upload.allowDuet}
+                onAllowDuetChange={upload.setAllowDuet}
+                allowStitch={upload.allowStitch}
+                onAllowStitchChange={upload.setAllowStitch}
+                showSchedule={upload.showSchedule}
+                onShowScheduleChange={upload.setShowSchedule}
+                scheduleDate={upload.scheduleDate}
+                onScheduleDateChange={upload.setScheduleDate}
+                scheduleTime={upload.scheduleTime}
+                onScheduleTimeChange={upload.setScheduleTime}
+                onSaveDraft={upload.handleSaveDraft}
+                onPublish={upload.handleUpload}
+                isSavingDraft={upload.isSavingDraft}
+                location={upload.location}
+                onLocationChange={upload.setLocation}
+                mentions={upload.mentions}
+                onMentionsChange={upload.setMentions}
+                uploadQuality={upload.uploadQuality}
+                onUploadQualityChange={upload.setUploadQuality}
+                watermarkEnabled={upload.watermarkEnabled}
+                onWatermarkToggle={upload.setWatermarkEnabled}
+                watermarkPosition={upload.watermarkPosition}
+                onWatermarkPositionChange={upload.setWatermarkPosition}
+                watermarkText={upload.watermarkText}
+                onWatermarkTextChange={upload.setWatermarkText}
+                watermarkOpacity={upload.watermarkOpacity}
+                onWatermarkOpacityChange={upload.setWatermarkOpacity}
+              />
+
+              {/* Gap #31: AI Video Outline */}
+              <AIVideoOutline
+                videoUrl={upload.videoPreviewUrl}
+                outline={outline}
+                isGenerating={isGeneratingOutline}
+                onGenerate={handleGenerateOutline}
+              />
+
+              {/* Gap #35: Codec Selector */}
+              <CodecSelector
+                selectedCodec={selectedCodec}
+                onCodecChange={setSelectedCodec}
+              />
+
+              {/* Gap #36: Compression Options */}
+              <CompressionOptions
+                enabled={compressionEnabled}
+                onToggle={() => setCompressionEnabled(v => !v)}
+                targetBitrate={targetBitrate}
+                onBitrateChange={setTargetBitrate}
+                originalSize={upload.videoFile?.size ?? null}
+              />
+            </div>
           )}
 
           {/* Step: Uploading */}

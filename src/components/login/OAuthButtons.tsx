@@ -1,5 +1,7 @@
 'use client';
 
+import { SnapchatLoginButton } from './SnapchatLoginButton';
+
 interface OAuthButtonsProps {
   isSubmitting: boolean;
   googleLoaded: boolean;
@@ -16,7 +18,7 @@ export function OAuthButtons({ isSubmitting, googleLoaded, onGoogleClick, onAppl
         <div className="flex-1 h-px bg-white/10" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div className="relative">
           <div id="google-signin-btn" className="hidden" />
           <button
@@ -39,6 +41,8 @@ export function OAuthButtons({ isSubmitting, googleLoaded, onGoogleClick, onAppl
           <AppleIcon />
           Apple
         </button>
+
+        <SnapchatLoginButton disabled={isSubmitting} />
       </div>
 
       <p className="text-white/30 text-xs text-center mt-6">

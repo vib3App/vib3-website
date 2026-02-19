@@ -17,6 +17,8 @@ interface RecordingConfig {
   streamRef: React.RefObject<MediaStream | null>;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   effectsCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  cameraKitCanvasRef: React.RefObject<HTMLCanvasElement | null>;
+  isCameraKitActive: boolean;
   maxDuration: number;
   selectedSpeed: number;
   activeFilter: string;
@@ -26,6 +28,7 @@ const MAX_CLIPS = 8;
 
 export function useCameraRecording({
   streamRef, videoRef, effectsCanvasRef,
+  cameraKitCanvasRef, isCameraKitActive,
   maxDuration, selectedSpeed, activeFilter,
 }: RecordingConfig) {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
@@ -38,6 +41,7 @@ export function useCameraRecording({
   const chunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const clipStartTimeRef = useRef<number>(0);
+  const ckActiveAtStartRef = useRef(false);
 
   const pipeline = useCanvasPipeline();
   const clips = useClipManagement(selectedSpeed);
@@ -60,24 +64,36 @@ export function useCameraRecording({
 
     chunksRef.current = [];
     clipStartTimeRef.current = Date.now();
+    ckActiveAtStartRef.current = isCameraKitActive;
 
-    const hasFilter = activeFilter && activeFilter !== 'none';
-    const hasEffects = effectsCanvasRef.current !== null;
-    const useCanvasCapture = (hasFilter || hasEffects) && videoRef.current;
     let recordStream: MediaStream;
 
-    if (useCanvasCapture) {
-      const canvas = pipeline.startCanvasPipeline(
-        videoRef.current!, activeFilter, effectsCanvasRef,
-      );
-      const canvasStream = canvas.captureStream(30);
+    if (isCameraKitActive && cameraKitCanvasRef.current) {
+      // Camera Kit path: capture from CK canvas
+      const ckStream = cameraKitCanvasRef.current.captureStream(30);
       const audioTracks = streamRef.current.getAudioTracks();
       recordStream = new MediaStream([
-        ...canvasStream.getVideoTracks(),
+        ...ckStream.getVideoTracks(),
         ...audioTracks,
       ]);
     } else {
-      recordStream = streamRef.current;
+      const hasFilter = activeFilter && activeFilter !== 'none';
+      const hasEffects = effectsCanvasRef.current !== null;
+      const useCanvasCapture = (hasFilter || hasEffects) && videoRef.current;
+
+      if (useCanvasCapture) {
+        const canvas = pipeline.startCanvasPipeline(
+          videoRef.current!, activeFilter, effectsCanvasRef,
+        );
+        const canvasStream = canvas.captureStream(30);
+        const audioTracks = streamRef.current.getAudioTracks();
+        recordStream = new MediaStream([
+          ...canvasStream.getVideoTracks(),
+          ...audioTracks,
+        ]);
+      } else {
+        recordStream = streamRef.current;
+      }
     }
 
     let recorder: MediaRecorder;
@@ -92,7 +108,9 @@ export function useCameraRecording({
     };
 
     recorder.onstop = () => {
-      pipeline.stopCanvasPipeline();
+      if (!ckActiveAtStartRef.current) {
+        pipeline.stopCanvasPipeline();
+      }
       const blob = new Blob(chunksRef.current, { type: 'video/webm' });
       const clipDuration = Math.round((Date.now() - clipStartTimeRef.current) / 1000);
       const url = URL.createObjectURL(blob);
@@ -116,7 +134,7 @@ export function useCameraRecording({
         return newDuration;
       });
     }, 1000);
-  }, [streamRef, videoRef, effectsCanvasRef, activeFilter, stopRecording, pipeline, clips, remainingDuration]);
+  }, [streamRef, videoRef, effectsCanvasRef, cameraKitCanvasRef, isCameraKitActive, activeFilter, stopRecording, pipeline, clips, remainingDuration]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') {

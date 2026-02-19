@@ -16,6 +16,7 @@ interface UseVideoPlayerOptions {
   onTimeUpdate?: (time: number, duration: number) => void;
   onError?: (error: Error) => void;
   onMiniPlayerToggle?: (isMini: boolean) => void;
+  videoId?: string;
 }
 
 /**
@@ -32,6 +33,7 @@ export function useVideoPlayer({
   onTimeUpdate,
   onError,
   onMiniPlayerToggle,
+  videoId,
 }: UseVideoPlayerOptions) {
   // HLS streaming and quality management
   const hls = useHlsPlayer({ src, onError });
@@ -45,6 +47,7 @@ export function useVideoPlayer({
     onPlay,
     onPause,
     onTimeUpdate,
+    videoId,
   });
 
   // UI controls (fullscreen, PiP, menus)

@@ -3,6 +3,9 @@
 import { useEffect } from 'react';
 import Image from 'next/image';
 import type { Call } from '@/types/call';
+import { SpeakerSelector } from './SpeakerSelector';
+import { CallQualityIndicator } from '@/components/calls/CallQualityIndicator';
+import { CallRecordButton } from '@/components/calls/CallRecordButton';
 
 interface VideoCallModalProps {
   call: Call;
@@ -18,6 +21,16 @@ interface VideoCallModalProps {
   onToggleSpeaker: () => void;
   onSwitchCamera: () => void;
   onEndCall: () => void;
+  /** Gap #58: Speaker device selection */
+  onSelectSpeaker?: (deviceId: string) => Promise<void>;
+  getAudioOutputDevices?: () => Promise<MediaDeviceInfo[]>;
+  /** Gap #59: Call fallback state */
+  fallbackState?: string;
+  /** Gap #33: Call quality indicator */
+  peerConnection?: RTCPeerConnection | null;
+  /** Gap #35: Call recording */
+  localStream?: MediaStream | null;
+  remoteStream?: MediaStream | null;
 }
 
 export function VideoCallModal({
@@ -34,6 +47,12 @@ export function VideoCallModal({
   onToggleSpeaker,
   onSwitchCamera,
   onEndCall,
+  onSelectSpeaker,
+  getAudioOutputDevices,
+  fallbackState,
+  peerConnection,
+  localStream,
+  remoteStream,
 }: VideoCallModalProps) {
   const isRinging = call.status === 'ringing';
   const isConnecting = call.status === 'connecting';
@@ -61,6 +80,7 @@ export function VideoCallModal({
             ref={remoteVideoRef}
             autoPlay
             playsInline
+            data-remote-video
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
@@ -102,11 +122,48 @@ export function VideoCallModal({
           </div>
         )}
 
-        {/* Status indicator */}
+        {/* Status indicator + Gap #33: Quality Indicator */}
         {isActive && (
-          <div className="absolute top-4 left-4 flex items-center gap-2 glass-heavy px-3 py-1.5 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-white text-sm font-medium">{callDuration}</span>
+          <div className="absolute top-4 left-4 flex items-center gap-3">
+            <div className="flex items-center gap-2 glass-heavy px-3 py-1.5 rounded-full">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-white text-sm font-medium">{callDuration}</span>
+            </div>
+            {peerConnection && (
+              <div className="glass-heavy px-3 py-1.5 rounded-full">
+                <CallQualityIndicator peerConnection={peerConnection} showDetails />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Gap #59: Fallback state indicator */}
+        {fallbackState && fallbackState !== 'p2p' && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 glass-heavy px-3 py-1.5 rounded-full">
+            {fallbackState === 'reconnecting' && (
+              <>
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
+                <span className="text-yellow-300 text-xs font-medium">Reconnecting...</span>
+              </>
+            )}
+            {fallbackState === 'turn-relay' && (
+              <>
+                <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                <span className="text-blue-300 text-xs font-medium">Relay connection</span>
+              </>
+            )}
+            {fallbackState === 'livekit-fallback' && (
+              <>
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                <span className="text-purple-300 text-xs font-medium">Server-relayed call</span>
+              </>
+            )}
+            {fallbackState === 'failed' && (
+              <>
+                <div className="w-2 h-2 bg-red-500 rounded-full" />
+                <span className="text-red-300 text-xs font-medium">Connection failed</span>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -141,6 +198,20 @@ export function VideoCallModal({
               )}
             </svg>
           </button>
+          {/* Gap #35: Call recording */}
+          {isActive && (
+            <CallRecordButton
+              localStream={localStream || null}
+              remoteStream={remoteStream || null}
+            />
+          )}
+          {/* Gap #58: Speaker device selector */}
+          {onSelectSpeaker && getAudioOutputDevices && (
+            <SpeakerSelector
+              onSelectDevice={onSelectSpeaker}
+              getDevices={getAudioOutputDevices}
+            />
+          )}
         </div>
 
         {/* Primary controls */}

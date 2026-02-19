@@ -33,6 +33,18 @@ export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Gap #32: Location tagging
+  const [location, setLocation] = useState<string | null>(null);
+  // Gap #33: @Mentions
+  const [mentions, setMentions] = useState<string[]>([]);
+  // Gap #34: Upload quality
+  const [uploadQuality, setUploadQuality] = useState('auto');
+  // Gap #37: Watermark
+  const [watermarkEnabled, setWatermarkEnabled] = useState(false);
+  const [watermarkPosition, setWatermarkPosition] = useState('bottom-right');
+  const [watermarkText, setWatermarkText] = useState('');
+  const [watermarkOpacity, setWatermarkOpacity] = useState(0.5);
+
   const resetForm = useCallback(() => {
     setStep('select');
     setVideoFile(null);
@@ -48,6 +60,13 @@ export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
     setScheduleDate('');
     setScheduleTime('');
     setError(null);
+    setLocation(null);
+    setMentions([]);
+    setUploadQuality('auto');
+    setWatermarkEnabled(false);
+    setWatermarkPosition('bottom-right');
+    setWatermarkText('');
+    setWatermarkOpacity(0.5);
   }, []);
 
   // Draft handlers
@@ -68,6 +87,7 @@ export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
   const processState = {
     videoFile, caption, hashtags, selectedThumbnail, visibility,
     allowComments, allowDuet, allowStitch, showSchedule, scheduleDate, scheduleTime,
+    location, mentions,
   };
   const processHandlers = { setStep, setUploadId, setUploadProgress, setThumbnailOptions, setError };
   const { handleUpload, handleCancelUpload, handleCustomThumbnail: uploadThumbnail } = useUploadProcess(
@@ -186,5 +206,12 @@ export function useUpload(isAuthenticated: boolean, isAuthVerified: boolean) {
     handleDragLeave: useCallback(() => setIsDragging(false), []),
     handleCustomThumbnail, handleUpload, handleSaveDraft,
     handleLoadDraft, handleDeleteDraft, handleCancelUpload, resetForm, goBack,
+    // Gap #32-37: Upload form features
+    location, setLocation, mentions, setMentions,
+    uploadQuality, setUploadQuality,
+    watermarkEnabled, setWatermarkEnabled,
+    watermarkPosition, setWatermarkPosition,
+    watermarkText, setWatermarkText,
+    watermarkOpacity, setWatermarkOpacity,
   };
 }

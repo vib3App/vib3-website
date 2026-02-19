@@ -13,6 +13,7 @@ export interface MessageResponse {
   mediaDuration?: number;
   replyTo?: { id: string; content: string; senderUsername: string };
   reactions?: Message['reactions'];
+  location?: { lat: number; lng: number; address?: string };
   readBy?: string[];
   createdAt: string;
   updatedAt?: string;
@@ -47,6 +48,7 @@ export function transformMessage(data: MessageResponse): Message {
     mediaDuration: data.mediaDuration,
     replyTo: data.replyTo,
     reactions: data.reactions,
+    location: data.location,
     readBy: data.readBy,
     createdAt: data.createdAt,
     updatedAt: data.updatedAt,

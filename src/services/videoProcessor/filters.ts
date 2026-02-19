@@ -1,4 +1,14 @@
 import type { VideoEdits, TextOverlay, StickerOverlay } from './types';
+import {
+  buildTuneFilter,
+  buildBlurFilter,
+  buildCropFilter,
+  buildTransformFilters,
+  buildOpacityFilter,
+  buildMaskFilter,
+  buildSpeedFilter,
+} from './filterBuilders';
+import { buildVoiceEffectFilter } from '@/services/audioProcessing/voiceEffects';
 
 export function cssFilterToFFmpeg(cssFilter: string): string | null {
   const filters: string[] = [];
@@ -100,6 +110,102 @@ export function renderOverlaysToImage(
   return bytes;
 }
 
+/** Collect all video filter strings from edits */
+function collectVideoFilters(edits: VideoEdits): string[] {
+  const videoFilters: string[] = [];
+
+  // CSS filter preset (existing)
+  if (edits.filter && edits.filter !== 'none') {
+    const ffmpegFilter = cssFilterToFFmpeg(edits.filter);
+    if (ffmpegFilter) videoFilters.push(ffmpegFilter);
+  }
+
+  // Gap 18: Tune (brightness, contrast, saturation, exposure)
+  if (edits.tune) {
+    const tuneFilter = buildTuneFilter(edits.tune);
+    if (tuneFilter) videoFilters.push(tuneFilter);
+  }
+
+  // Gap 19: Blur
+  if (edits.blur && edits.blur > 0) {
+    const blurFilter = buildBlurFilter(edits.blur);
+    if (blurFilter) videoFilters.push(blurFilter);
+  }
+
+  // Gap 29: Crop
+  if (edits.crop && edits.videoWidth && edits.videoHeight) {
+    const cropFilter = buildCropFilter(edits.crop, edits.videoWidth, edits.videoHeight);
+    if (cropFilter) videoFilters.push(cropFilter);
+  }
+
+  // Gap 30: Transform (rotation, flip)
+  if (edits.transform) {
+    const transformFilters = buildTransformFilters(edits.transform);
+    videoFilters.push(...transformFilters);
+  }
+
+  // Gap 32: Opacity
+  if (edits.opacity !== undefined && edits.opacity < 1) {
+    const opacityFilter = buildOpacityFilter(edits.opacity);
+    if (opacityFilter) videoFilters.push(opacityFilter);
+  }
+
+  // Gap 33: Mask shapes
+  if (edits.mask && edits.mask.shape && edits.videoWidth && edits.videoHeight) {
+    const maskFilter = buildMaskFilter(edits.mask, edits.videoWidth, edits.videoHeight);
+    if (maskFilter) videoFilters.push(maskFilter);
+  }
+
+  // Gap 25: Stabilization via deshake filter
+  if (edits.stabilization?.enabled) {
+    const rx = edits.stabilization.strength * 16;
+    const ry = edits.stabilization.strength * 16;
+    videoFilters.push(`deshake=rx=${rx}:ry=${ry}`);
+  }
+
+  // Gap 27: Green screen chroma key
+  if (edits.greenScreen?.enabled) {
+    const hex = edits.greenScreen.color.replace('#', '');
+    const similarity = Math.round((edits.greenScreen.sensitivity / 100) * 0.3 * 100) / 100 + 0.1;
+    videoFilters.push(`colorkey=0x${hex}:${similarity}:0.05`);
+  }
+
+  // Gap 26: Cutout via colorkey mode
+  if (edits.cutout && edits.cutout.mode === 'colorkey') {
+    const hex = edits.cutout.color.replace('#', '');
+    const similarity = Math.round((edits.cutout.sensitivity / 100) * 0.3 * 100) / 100 + 0.1;
+    videoFilters.push(`colorkey=0x${hex}:${similarity}:0.05`);
+  }
+
+  // Gap 11: Speed ramp via setpts (averaged speed for FFmpeg)
+  if (edits.speedRamp && edits.speedRamp.length >= 2) {
+    const avgSpeed = edits.speedRamp.reduce((sum, kf) => sum + kf.speed, 0) / edits.speedRamp.length;
+    if (Math.abs(avgSpeed - 1) > 0.01) {
+      videoFilters.push(`setpts=${(1 / avgSpeed).toFixed(4)}*PTS`);
+    }
+  }
+
+  return videoFilters;
+}
+
+/** Collect audio filter strings from edits (voice effects, volume) */
+function collectAudioFilters(edits: VideoEdits): string[] {
+  const audioFilters: string[] = [];
+
+  // Gap #19: Voice effect
+  if (edits.voiceEffect) {
+    const vfx = buildVoiceEffectFilter(edits.voiceEffect);
+    if (vfx) audioFilters.push(vfx);
+  }
+
+  // Volume adjustment (when no music mixing)
+  if (edits.volume !== undefined && edits.volume !== 1) {
+    audioFilters.push(`volume=${edits.volume}`);
+  }
+
+  return audioFilters;
+}
+
 export function buildFFmpegArgs(edits: VideoEdits, hasOverlay = false, hasMusic = false): string[] {
   const args: string[] = ['-i', 'input.mp4'];
   let inputIdx = 1;
@@ -117,11 +223,8 @@ export function buildFFmpegArgs(edits: VideoEdits, hasOverlay = false, hasMusic 
     args.push('-t', duration.toString());
   }
 
-  const videoFilters: string[] = [];
-  if (edits.filter && edits.filter !== 'none') {
-    const ffmpegFilter = cssFilterToFFmpeg(edits.filter);
-    if (ffmpegFilter) videoFilters.push(ffmpegFilter);
-  }
+  const videoFilters = collectVideoFilters(edits);
+  const audioFilters = collectAudioFilters(edits);
 
   const useComplex = hasOverlay || hasMusic;
 
@@ -140,16 +243,18 @@ export function buildFFmpegArgs(edits: VideoEdits, hasOverlay = false, hasMusic 
       filterParts.push(`[0:v]${videoFilters.join(',')}[outv]`);
     }
 
-    // Audio chain - use anullsrc as fallback if video has no audio
+    // Audio chain
     if (hasMusic) {
       const origVol = edits.volume !== undefined ? edits.volume : 1;
       const musVol = edits.musicVolume !== undefined ? edits.musicVolume : 0.5;
+      const voiceFx = edits.voiceEffect ? buildVoiceEffectFilter(edits.voiceEffect) : null;
+
       if (origVol > 0) {
-        filterParts.push(`[0:a]volume=${origVol}[a0]`);
+        const origChain = voiceFx ? `volume=${origVol},${voiceFx}` : `volume=${origVol}`;
+        filterParts.push(`[0:a]${origChain}[a0]`);
         filterParts.push(`[${musicIdx}:a]volume=${musVol}[a1]`);
         filterParts.push(`[a0][a1]amix=inputs=2:duration=first[outa]`);
       } else {
-        // Original muted, just use music track
         filterParts.push(`[${musicIdx}:a]volume=${musVol}[outa]`);
       }
     }
@@ -164,12 +269,61 @@ export function buildFFmpegArgs(edits: VideoEdits, hasOverlay = false, hasMusic 
     else args.push('-map', '0:a?');
   } else {
     if (videoFilters.length > 0) args.push('-vf', videoFilters.join(','));
-    if (edits.volume !== undefined && edits.volume !== 1) {
-      args.push('-af', `volume=${edits.volume}`);
+    if (audioFilters.length > 0) {
+      args.push('-af', audioFilters.join(','));
     }
   }
 
-  args.push('-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', 'output.mp4');
+  args.push(
+    '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+    '-c:a', 'aac', '-b:a', '128k',
+    '-movflags', '+faststart',
+    'output.mp4',
+  );
 
   return args;
+}
+
+/** Gap 31: Build FFmpeg args for transition between two clips using xfade */
+export function buildTransitionArgs(
+  transitionType: string,
+  transitionDuration: number,
+  clip1Duration: number,
+): string[] {
+  // Map our transition names to FFmpeg xfade transition names
+  const xfadeMap: Record<string, string> = {
+    'crossfade': 'fade',
+    'fade': 'fade',
+    'fade-black': 'fadeblack',
+    'slide-left': 'slideleft',
+    'slide-right': 'slideright',
+    'slide-up': 'slideup',
+    'slide-down': 'slidedown',
+    'zoom-in': 'circlecrop',
+    'zoom-out': 'squeezev',
+    'dissolve': 'dissolve',
+    'wipe': 'wipeleft',
+    'spin': 'circleopen',
+    'glitch': 'pixelize',
+    'flash': 'fadewhite',
+  };
+
+  const xfadeName = xfadeMap[transitionType] || 'fade';
+  const offset = Math.max(0, clip1Duration - transitionDuration);
+
+  return [
+    '-filter_complex',
+    `[0:v][1:v]xfade=transition=${xfadeName}:duration=${transitionDuration}:offset=${offset}[outv];[0:a][1:a]acrossfade=d=${transitionDuration}[outa]`,
+    '-map', '[outv]',
+    '-map', '[outa]',
+  ];
+}
+
+/** Gap 35: Build FFmpeg args for per-clip speed changes */
+export function buildClipSpeedArgs(speed: number): string[] {
+  const { video, audio } = buildSpeedFilter(speed);
+  const filters: string[] = ['-filter:v', video];
+  if (audio) filters.push('-filter:a', audio);
+  else filters.push('-an');
+  return filters;
 }

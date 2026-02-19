@@ -1120,6 +1120,41 @@ body {
   background: radial-gradient(var(--tw-gradient-stops));
 }
 
+/* ═══════════════════════════════════════════════════════════
+   LOCATION MAP ANIMATIONS (Gaps 70-82)
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Hide scrollbar for horizontal scroll containers */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* Accessibility: Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .aurora-orb,
@@ -1134,7 +1169,10 @@ body {
   .glow-button::before,
   .action-ring::before,
   .animate-logo-spin,
-  .animate-logo-pulse {
+  .animate-logo-pulse,
+  .animate-pulse-ring,
+  .animate-bounce-slow,
+  .animate-slide-up {
     animation: none !important;
   }
 

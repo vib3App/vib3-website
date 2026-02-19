@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import { PlusIcon, ClockIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useCapsules } from '@/hooks/useCapsules';
+import { useCapsuleDelivery } from '@/hooks/useCapsuleDelivery';
 import { CapsuleCard, CapsuleTabs } from '@/components/capsules';
 
 export default function CapsulePage() {
   const c = useCapsules();
+  const delivery = useCapsuleDelivery();
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -31,6 +33,47 @@ export default function CapsulePage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* Gap #81: Delivery notifications */}
+        {delivery.readyCount > 0 && (
+          <div className="mb-4 space-y-2">
+            {delivery.notifications.filter(n => n.status === 'ready').map(n => (
+              <div key={n.capsuleId} className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl animate-pulse">
+                <ClockIcon className="w-6 h-6 text-purple-400 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-white font-medium">"{n.title}" is ready to open!</p>
+                  <p className="text-white/60 text-sm">From @{n.creatorUsername}</p>
+                </div>
+                <Link
+                  href={`/capsule/${n.capsuleId}`}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:opacity-90 transition"
+                >
+                  Open Capsule
+                </Link>
+                <button onClick={() => delivery.dismissNotification(n.capsuleId)} className="text-white/40 hover:text-white">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Gap #81: Upcoming countdown banners */}
+        {delivery.upcomingCount > 0 && (
+          <div className="mb-4">
+            <h3 className="text-white/50 text-sm font-medium mb-2">Upcoming Reveals</h3>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {delivery.notifications.filter(n => n.status === 'upcoming').slice(0, 5).map(n => (
+                <div key={n.capsuleId} className="flex-shrink-0 px-4 py-2 glass-card rounded-xl min-w-[160px]">
+                  <p className="text-white text-sm font-medium truncate">{n.title}</p>
+                  <p className="text-purple-400 text-xs font-mono">{n.timeRemaining}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Hero Section */}
         <div className="mb-8 p-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-2xl">
           <h2 className="text-2xl font-bold mb-2">Create moments for the future</h2>

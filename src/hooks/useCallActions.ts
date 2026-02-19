@@ -48,7 +48,30 @@ export function useCallMediaControls(refs: WebRTCRefs) {
     }
   }, [localStreamRef, pcRef, localVideoRef]);
 
-  return { toggleMute, toggleVideo, switchCamera };
+  // Gap #56: Speaker/output device selection
+  const selectSpeaker = useCallback(async (deviceId: string) => {
+    const remoteVideo = document.querySelector<HTMLVideoElement>('[data-remote-video]');
+    const remoteAudio = document.querySelector<HTMLAudioElement>('[data-remote-audio]');
+    const target = remoteVideo || remoteAudio;
+    if (target && 'setSinkId' in target) {
+      try {
+        await (target as HTMLVideoElement & { setSinkId: (id: string) => Promise<void> }).setSinkId(deviceId);
+      } catch (err) {
+        logger.error('Failed to set audio output device:', err);
+      }
+    }
+  }, []);
+
+  const getAudioOutputDevices = useCallback(async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      return devices.filter(d => d.kind === 'audiooutput');
+    } catch {
+      return [];
+    }
+  }, []);
+
+  return { toggleMute, toggleVideo, switchCamera, selectSpeaker, getAudioOutputDevices };
 }
 
 /**

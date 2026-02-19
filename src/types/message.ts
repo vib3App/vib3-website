@@ -9,7 +9,7 @@ export interface Message {
   senderUsername: string;
   senderAvatar?: string;
   content: string;
-  type: 'text' | 'image' | 'video' | 'voice' | 'gif' | 'sticker';
+  type: 'text' | 'image' | 'video' | 'voice' | 'gif' | 'sticker' | 'location' | 'liveLoc';
   mediaUrl?: string;
   mediaThumbnail?: string;
   mediaDuration?: number;
@@ -22,10 +22,11 @@ export interface Message {
   readBy?: string[];
   createdAt: string;
   updatedAt?: string;
+  location?: { lat: number; lng: number; address?: string; duration?: number };
   status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 }
 
-interface MessageReaction {
+export interface MessageReaction {
   emoji: string;
   userId: string;
   username: string;
@@ -70,5 +71,7 @@ export interface SendMessagePayload {
   content?: string;
   type: Message['type'];
   mediaUrl?: string;
+  mediaThumbnail?: string;
   replyToId?: string;
+  location?: { lat: number; lng: number; address?: string };
 }

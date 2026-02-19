@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useVideoPlayer } from '@/hooks/useVideoPlayer';
 import {
   VideoProgressBar,
@@ -34,6 +35,9 @@ interface VideoPlayerProps {
   isActive?: boolean;
   chapters?: Chapter[];
   onMiniPlayerToggle?: (isMini: boolean) => void;
+  videoId?: string;
+  /** Called when the video element ref is available */
+  onVideoRef?: (ref: React.RefObject<HTMLVideoElement | null>) => void;
 }
 
 export function VideoPlayer({
@@ -52,6 +56,8 @@ export function VideoPlayer({
   isActive = true,
   chapters = [],
   onMiniPlayerToggle,
+  videoId,
+  onVideoRef,
 }: VideoPlayerProps) {
   const {
     // Refs
@@ -119,7 +125,15 @@ export function VideoPlayer({
     onTimeUpdate,
     onError,
     onMiniPlayerToggle,
+    videoId,
   });
+
+  // Expose video ref to parent
+  useEffect(() => {
+    if (onVideoRef && videoRef) {
+      onVideoRef(videoRef);
+    }
+  }, [onVideoRef, videoRef]);
 
   const pipEnabled = typeof document !== 'undefined' && document.pictureInPictureEnabled;
 

@@ -14,19 +14,23 @@ import {
   NotificationsSection,
   ContentSection,
   AboutSection,
+  SecuritySection,
+  PlaybackSection,
 } from '@/components/settings';
 import { ThemeCustomizer, PreferenceSyncPanel } from '@/components/personalization';
 import { SoundSettings } from '@/components/audio';
 import { AccessibilityPanel } from '@/components/haptic';
 import { FeatureLab } from '@/components/future';
 
-type SettingsSection = 'account' | 'privacy' | 'notifications' | 'content' | 'appearance' | 'accessibility' | 'lab' | 'about';
+type SettingsSection = 'account' | 'security' | 'privacy' | 'notifications' | 'content' | 'playback' | 'appearance' | 'accessibility' | 'lab' | 'about';
 
 const SECTIONS: { id: SettingsSection; label: string; icon: string }[] = [
   { id: 'account', label: 'Account', icon: '👤' },
+  { id: 'security', label: 'Security', icon: '🛡️' },
   { id: 'privacy', label: 'Privacy', icon: '🔒' },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'content', label: 'Content', icon: '🎬' },
+  { id: 'playback', label: 'Playback', icon: '▶️' },
   { id: 'appearance', label: 'Appearance', icon: '🎨' },
   { id: 'accessibility', label: 'Accessibility', icon: '♿' },
   { id: 'lab', label: 'Lab', icon: '🧪' },
@@ -123,9 +127,11 @@ export default function SettingsPage() {
           </div>
 
           {activeSection === 'account' && <AccountSection />}
+          {activeSection === 'security' && <SecuritySection />}
           {activeSection === 'privacy' && <PrivacySection />}
           {activeSection === 'notifications' && <NotificationsSection />}
           {activeSection === 'content' && <ContentSection />}
+          {activeSection === 'playback' && <PlaybackSection />}
           {activeSection === 'appearance' && (
             <div className="space-y-6">
               <ThemeCustomizer />
@@ -136,6 +142,45 @@ export default function SettingsPage() {
           {activeSection === 'accessibility' && <AccessibilityPanel />}
           {activeSection === 'lab' && <FeatureLab />}
           {activeSection === 'about' && <AboutSection />}
+
+          {/* Quick settings links */}
+          <div className="mt-6 glass-card rounded-2xl overflow-hidden divide-y divide-white/5">
+            <Link href="/settings/language" className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-sm">🌐</div>
+                <span className="text-white text-sm">Language</span>
+              </div>
+              <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+            <Link href="/settings/appearance" className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-sm">🎨</div>
+                <span className="text-white text-sm">Appearance & Theme</span>
+              </div>
+              <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+            <Link href="/settings/map-markers" className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-sm">📍</div>
+                <span className="text-white text-sm">Map Markers</span>
+              </div>
+              <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+            <Link href="/settings/downloads" className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-sm">⬇️</div>
+                <span className="text-white text-sm">Downloads</span>
+              </div>
+              <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+            <Link href="/settings/report-problem" className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-sm">🐛</div>
+                <span className="text-white text-sm">Report a Problem</span>
+              </div>
+              <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+            </Link>
+          </div>
 
           {/* Admin Link - only visible to admins */}
           {(user?.isAdmin || user?.role === 'admin') && (

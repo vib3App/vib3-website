@@ -17,6 +17,8 @@ interface UploadProcessState {
   showSchedule: boolean;
   scheduleDate: string;
   scheduleTime: string;
+  location?: string | null;
+  mentions?: string[];
 }
 
 interface UploadProcessHandlers {
@@ -73,6 +75,8 @@ export function useUploadProcess(
             allowDuet: state.allowDuet,
             allowStitch: state.allowStitch,
             scheduledFor,
+            location: state.location || undefined,
+            mentions: state.mentions?.length ? state.mentions : undefined,
           });
 
           handlers.setStep('complete');

@@ -3,6 +3,8 @@
 import Script from 'next/script';
 import { useLoginForm } from '@/hooks/useLoginForm';
 import { LoginHeader, AuthModeToggle, LoginForm, OAuthButtons } from '@/components/login';
+import { ParentalConsentModal } from '@/components/auth/ParentalConsentModal';
+import { useAuthStore } from '@/stores/authStore';
 
 declare global {
   interface Window {
@@ -26,6 +28,7 @@ declare global {
 
 export default function LoginPage() {
   const form = useLoginForm();
+  const { user } = useAuthStore();
 
   return (
     <>
@@ -92,6 +95,16 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Parental consent modal for minors (13-17) after signup */}
+      <ParentalConsentModal
+        isOpen={form.showParentalConsent}
+        userAge={form.registeredUserAge}
+        userId={user?.id || ''}
+        username={user?.username || ''}
+        onComplete={form.dismissParentalConsent}
+        onSkip={form.dismissParentalConsent}
+      />
     </>
   );
 }

@@ -12,6 +12,7 @@ import {
   waitForCallRegistered,
   formatCallDuration,
 } from './useCallActions';
+import { useCallFallback } from './useCallFallback';
 
 export function useVideoCall() {
   const user = useAuthStore((s) => s.user);
@@ -48,6 +49,17 @@ export function useVideoCall() {
 
   const rtc = useWebRTCConnection(refs, user?.id, onConnected, onFailed);
   const mediaControls = useCallMediaControls(refs);
+
+  // Gap #59: Call fallback with TURN relay / LiveKit
+  const callFallback = useCallFallback({
+    callId: refs.callIdRef.current,
+    pcRef: refs.pcRef,
+    localStreamRef: refs.localStreamRef,
+    remoteVideoRef: refs.remoteVideoRef,
+    userId: user?.id,
+    onReconnected: onConnected,
+    onFailed,
+  });
 
   // --- Socket event listeners ---
   useEffect(() => {
@@ -198,5 +210,11 @@ export function useVideoCall() {
     startCall, answerCall, declineCall, endCall,
     toggleMute, toggleVideo, toggleSpeaker,
     switchCamera: mediaControls.switchCamera,
+    // Gap #58: Speaker device selection
+    selectSpeaker: mediaControls.selectSpeaker,
+    getAudioOutputDevices: mediaControls.getAudioOutputDevices,
+    // Gap #59: Call fallback state
+    fallbackState: callFallback.fallbackState,
+    startFallbackMonitoring: callFallback.startMonitoring,
   };
 }

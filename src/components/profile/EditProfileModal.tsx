@@ -10,6 +10,7 @@ interface ProfileData {
   displayName?: string;
   bio?: string;
   profilePicture?: string;
+  location?: string;
 }
 
 interface EditProfileModalProps {
@@ -28,6 +29,7 @@ export function EditProfileModal({
   const { user, setUser } = useAuthStore();
   const [displayName, setDisplayName] = useState(profile.displayName || '');
   const [bio, setBio] = useState(profile.bio || '');
+  const [location, setLocation] = useState(profile.location || '');
   const [profilePicture, setProfilePicture] = useState(profile.profilePicture || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -38,6 +40,7 @@ export function EditProfileModal({
     if (isOpen) {
       setDisplayName(profile.displayName || '');
       setBio(profile.bio || '');
+      setLocation(profile.location || '');
       setProfilePicture(profile.profilePicture || '');
       setImagePreview(null);
       setError('');
@@ -86,6 +89,7 @@ export function EditProfileModal({
       const updates = {
         displayName: displayName.trim() || undefined,
         bio: bio.trim() || undefined,
+        location: location.trim() || undefined,
         profilePicture: newProfilePicture,
       };
 
@@ -210,6 +214,20 @@ export function EditProfileModal({
               className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50 resize-none"
             />
             <p className="text-white/30 text-xs mt-1">{bio.length}/150</p>
+          </div>
+
+          {/* Location */}
+          <div>
+            <label className="block text-white/70 text-sm mb-2">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="City, Region"
+              maxLength={100}
+              className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50"
+            />
+            <p className="text-white/30 text-xs mt-1">Where are you based?</p>
           </div>
 
           {/* Username (read-only) */}

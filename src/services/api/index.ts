@@ -42,3 +42,5 @@ export { callsApi } from './calls';
 export { soundsApi } from './sounds';
 export { creatorSettingsApi } from './creatorSettings';
 export type { CreatorMonetizationSettings, StripeConnectStatus } from './creatorSettings';
+export { qaApi } from './qa';
+export type { Question, Answer } from './qa';

@@ -178,6 +178,7 @@ export const uploadApi = {
 /**
  * TUS Upload Manager
  * Handles chunked uploads with resume capability
+ * Gap #40: Enhanced with IndexedDB persistence for background uploads
  */
 export class TusUploadManager {
   private chunkSize = 5 * 1024 * 1024; // 5MB chunks
@@ -186,6 +187,7 @@ export class TusUploadManager {
   private offset = 0;
   private file: File | null = null;
   private aborted = false;
+  private visibilityCleanup?: () => void;
 
   onProgress?: (progress: number) => void;
   onComplete?: (uploadId: string) => void;
@@ -202,6 +204,10 @@ export class TusUploadManager {
       this.uploadUrl = uploadUrl;
       this.uploadId = uploadId;
       this.chunkSize = chunkSize || this.chunkSize;
+
+      // Persist to IndexedDB for background resume (Gap #40)
+      await this.persistState();
+      this.setupVisibilityHandler();
 
       // Start uploading chunks
       await this.uploadChunks();
@@ -220,6 +226,8 @@ export class TusUploadManager {
       this.offset = offset;
       this.uploadUrl = uploadUrl;
 
+      await this.persistState();
+      this.setupVisibilityHandler();
       await this.uploadChunks();
     } catch (error) {
       this.onError?.(error as Error);
@@ -228,9 +236,50 @@ export class TusUploadManager {
 
   abort(): void {
     this.aborted = true;
+    this.visibilityCleanup?.();
     if (this.uploadId) {
       uploadApi.cancelUpload(this.uploadId).catch(() => {});
+      this.removePersistedState();
     }
+  }
+
+  /** Gap #40: Persist upload state to IndexedDB */
+  private async persistState(): Promise<void> {
+    if (!this.uploadId || !this.file || !this.uploadUrl) return;
+    try {
+      const { backgroundUploadService } = await import('@/services/backgroundUpload');
+      await backgroundUploadService.persistState({
+        uploadId: this.uploadId,
+        fileName: this.file.name,
+        fileSize: this.file.size,
+        fileType: this.file.type,
+        offset: this.offset,
+        uploadUrl: this.uploadUrl,
+        createdAt: Date.now(),
+        lastUpdated: Date.now(),
+      });
+    } catch { /* ignore persistence failures */ }
+  }
+
+  private async removePersistedState(): Promise<void> {
+    if (!this.uploadId) return;
+    try {
+      const { backgroundUploadService } = await import('@/services/backgroundUpload');
+      await backgroundUploadService.removeUpload(this.uploadId);
+    } catch { /* ignore */ }
+  }
+
+  /** Gap #40: Setup handler for tab visibility changes */
+  private setupVisibilityHandler(): void {
+    this.visibilityCleanup?.();
+    const handler = () => {
+      if (document.visibilityState === 'hidden') {
+        // Persist current state when tab backgrounds
+        this.persistState();
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    this.visibilityCleanup = () => document.removeEventListener('visibilitychange', handler);
   }
 
   private async uploadChunks(): Promise<void> {
@@ -248,6 +297,7 @@ export class TusUploadManager {
             'Tus-Resumable': '1.0.0',
           },
           body: chunk,
+          keepalive: true, // Gap #40: Allow upload to continue when tab is backgrounded
         });
 
         if (!response.ok) {
@@ -263,12 +313,16 @@ export class TusUploadManager {
 
         const progress = (this.offset / this.file.size) * 100;
         this.onProgress?.(progress);
+
+        // Update persisted state with new offset
+        await this.persistState();
       } catch (error) {
         // Store progress for resume
         localStorage.setItem(
           `upload_${this.uploadId}`,
           JSON.stringify({ offset: this.offset, fileName: this.file.name })
         );
+        await this.persistState();
         throw error;
       }
     }
@@ -276,6 +330,8 @@ export class TusUploadManager {
     if (!this.aborted && this.uploadId) {
       // Clear stored progress
       localStorage.removeItem(`upload_${this.uploadId}`);
+      await this.removePersistedState();
+      this.visibilityCleanup?.();
       this.onComplete?.(this.uploadId);
     }
   }

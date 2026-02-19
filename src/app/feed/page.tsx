@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { CommentSheet } from '@/components/video/CommentSheet';
@@ -17,10 +18,18 @@ import {
   FeedLoadingState,
   FeedLoadingMore,
   FollowCategoryPicker,
+  SwipeActions,
 } from '@/components/feed';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+import { userApi } from '@/services/api';
+import { logger } from '@/utils/logger';
+
+/** Number of items to render above and below the current index */
+const VIRTUAL_WINDOW = 2;
 
 function FeedContent() {
+  const router = useRouter();
   const { isAuthenticated, user } = useAuthStore();
   const {
     activeTab,
@@ -77,6 +86,47 @@ function FeedContent() {
     disabled: commentsOpen || shareOpen,
   });
 
+  // Swipe action handlers
+  const handleNotInterested = useCallback(
+    (index: number) => {
+      // Remove video from feed (skip it)
+      setVideos((prev) => prev.filter((_, i) => i !== index));
+    },
+    [setVideos]
+  );
+
+  const handleReport = useCallback(
+    (videoId: string) => {
+      router.push(`/settings/report-problem?videoId=${videoId}`);
+    },
+    [router]
+  );
+
+  const handleHideCreator = useCallback(
+    async (userId: string) => {
+      if (!isAuthenticated) {
+        router.push('/login');
+        return;
+      }
+      try {
+        await userApi.blockUser(userId);
+        // Remove all videos from this creator
+        setVideos((prev) => prev.filter((v) => v.userId !== userId));
+      } catch (err) {
+        logger.error('Failed to hide creator:', err);
+      }
+    },
+    [isAuthenticated, router, setVideos]
+  );
+
+  // Virtual scrolling: compute which indices to render
+  const renderWindow = useMemo(() => {
+    if (videos.length === 0) return { start: 0, end: 0 };
+    const start = Math.max(0, currentIndex - VIRTUAL_WINDOW);
+    const end = Math.min(videos.length, currentIndex + VIRTUAL_WINDOW + 1);
+    return { start, end };
+  }, [currentIndex, videos.length]);
+
   return (
     <>
       <FeedTopActions
@@ -103,22 +153,41 @@ function FeedContent() {
           <FeedEmptyState activeTab={activeTab} />
         ) : (
           <>
-            {videos.map((video, index) => (
-              <div key={`${video.id}-${index}`} data-index={index} className="h-full w-full">
-                <FeedVideoItem
-                  video={video}
-                  isActive={index === currentIndex}
-                  isMuted={isMuted}
-                  onMuteToggle={toggleMute}
-                  onLike={() => handleLike(index)}
-                  onSave={() => handleSave(index)}
-                  onFollow={() => handleFollow(index)}
-                  onComment={() => handleComment(video.id)}
-                  onShare={() => handleShare(video.id)}
-                  userId={user?.id}
-                />
-              </div>
-            ))}
+            {videos.map((video, index) => {
+              const isInWindow =
+                index >= renderWindow.start && index < renderWindow.end;
+
+              return (
+                <div
+                  key={`${video.id}-${index}`}
+                  data-index={index}
+                  className="h-full w-full"
+                >
+                  {isInWindow ? (
+                    <SwipeActions
+                      onNotInterested={() => handleNotInterested(index)}
+                      onReport={() => handleReport(video.id)}
+                      onHideCreator={() => handleHideCreator(video.userId)}
+                    >
+                      <FeedVideoItem
+                        video={video}
+                        isActive={index === currentIndex}
+                        isMuted={isMuted}
+                        onMuteToggle={toggleMute}
+                        onLike={() => handleLike(index)}
+                        onSave={() => handleSave(index)}
+                        onFollow={() => handleFollow(index)}
+                        onComment={() => handleComment(video.id)}
+                        onShare={() => handleShare(video.id)}
+                        userId={user?.id}
+                      />
+                    </SwipeActions>
+                  ) : (
+                    <VirtualPlaceholder />
+                  )}
+                </div>
+              );
+            })}
             {loadingMore && <FeedLoadingMore />}
           </>
         )}
@@ -164,6 +233,15 @@ function FeedContent() {
   );
 }
 
+/** Lightweight placeholder for off-screen video items during virtual scrolling */
+function VirtualPlaceholder() {
+  return (
+    <div className="w-full h-full bg-black flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-white/10 border-t-white/40 rounded-full animate-spin" />
+    </div>
+  );
+}
+
 export default function FeedPage() {
   return (
     <div className="h-screen overflow-hidden relative">
@@ -181,6 +259,9 @@ export default function FeedPage() {
           </Suspense>
         </ErrorBoundary>
       </main>
+
+      {/* First-time user onboarding */}
+      <OnboardingModal />
     </div>
   );
 }

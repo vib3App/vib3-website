@@ -74,6 +74,14 @@ export const authApi = {
   },
 
   /**
+   * Snapchat OAuth login - exchange authorization code for session
+   */
+  async snapchatLogin(code: string, redirectUri: string): Promise<AuthUser> {
+    const { data } = await apiClient.post<AuthResponse>('/auth/snapchat', { code, redirectUri });
+    return transformAuthResponse(data);
+  },
+
+  /**
    * Refresh access token using refresh token
    */
   async refreshToken(refreshToken: string): Promise<RefreshResponse> {

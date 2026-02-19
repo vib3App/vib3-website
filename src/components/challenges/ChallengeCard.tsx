@@ -39,18 +39,27 @@ interface ChallengeCardProps {
   challenge: Challenge;
   joiningId: string | null;
   onJoin: (e: React.MouseEvent, challengeId: string, hasJoined: boolean) => void;
+  onViewDetail?: (challengeId: string) => void;
 }
 
-export function ChallengeCard({ challenge, joiningId, onJoin }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, joiningId, onJoin, onViewDetail }: ChallengeCardProps) {
   const timeRemaining = getTimeRemaining(challenge.endDate);
   const creatorUsername =
     typeof challenge.creatorId === 'object' && challenge.creatorId.username
       ? challenge.creatorId.username
       : 'Unknown';
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (onViewDetail) {
+      e.preventDefault();
+      onViewDetail(challenge._id);
+    }
+  };
+
   return (
     <Link
       href={`/hashtag/${challenge.hashtag}`}
+      onClick={handleClick}
       className="glass-card overflow-hidden hover:border-amber-500/50 transition-all hover:scale-[1.02] group"
     >
       {/* Thumbnail */}

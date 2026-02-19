@@ -4,3 +4,8 @@ export { PrivacySection } from './PrivacySection';
 export { NotificationsSection } from './NotificationsSection';
 export { ContentSection } from './ContentSection';
 export { AboutSection } from './AboutSection';
+export { SecuritySection } from './SecuritySection';
+export { PlaybackSection } from './PlaybackSection';
+export { TwoFactorSetup } from './TwoFactorSetup';
+export { DataExport } from './DataExport';
+export { ActiveSessions } from './ActiveSessions';

@@ -14,6 +14,7 @@ export interface UserProfile {
   displayName?: string;
   profilePicture?: string;
   bio?: string;
+  location?: string;
   isVerified?: boolean;
   createdAt?: string;
   stats: { followers: number; following: number; likes: number; videos: number };
@@ -34,7 +35,8 @@ export function useProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [likedVideos, _setLikedVideos] = useState<Video[]>([]);
-  const [activeTab, setActiveTab] = useState<'videos' | 'liked'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'liked' | 'exclusive'>('videos');
+  const [categoryFilter, setCategoryFilter] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -200,6 +202,8 @@ export function useProfile() {
     likedVideos,
     activeTab,
     setActiveTab,
+    categoryFilter,
+    setCategoryFilter,
     isLoading: isLoading || !isAuthVerified, // Show loading while auth is being verified
     error,
     isFollowing,

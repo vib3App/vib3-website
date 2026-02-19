@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, RefObject } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, RefObject } from 'react';
 import type { Chapter } from '@/components/video/player/types';
+import { watchHistoryService } from '@/services/watchHistory';
 
 interface UsePlaybackStateOptions {
   videoRef: RefObject<HTMLVideoElement | null>;
@@ -11,6 +12,7 @@ interface UsePlaybackStateOptions {
   onPlay?: () => void;
   onPause?: () => void;
   onTimeUpdate?: (time: number, duration: number) => void;
+  videoId?: string;
 }
 
 export function usePlaybackState({
@@ -21,6 +23,7 @@ export function usePlaybackState({
   onPlay,
   onPause,
   onTimeUpdate,
+  videoId,
 }: UsePlaybackStateOptions) {
   // Core playback state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -31,6 +34,7 @@ export function usePlaybackState({
   const [isBuffering, setIsBuffering] = useState(false);
   const [volume, setVolume] = useState(1);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const hasResumedRef = useRef<string | null>(null);
 
   // Handle active state - autoplay when active, pause when inactive
   useEffect(() => {
@@ -41,6 +45,16 @@ export function usePlaybackState({
 
     const playVideo = () => {
       if (cancelled) return;
+
+      // Resume from saved position (Gap #41)
+      if (videoId && hasResumedRef.current !== videoId && video.duration > 0) {
+        const savedProgress = watchHistoryService.getProgress(videoId);
+        if (savedProgress && savedProgress > 5 && savedProgress < 90) {
+          video.currentTime = (savedProgress / 100) * video.duration;
+        }
+        hasResumedRef.current = videoId;
+      }
+
       video.play().catch((_err) => {
         // Autoplay prevented by browser policy
       });
@@ -61,7 +75,7 @@ export function usePlaybackState({
       cancelled = true;
       video.removeEventListener('canplay', playVideo);
     };
-  }, [isActive, videoRef]);
+  }, [isActive, videoRef, videoId]);
 
   // Sync muted state with external prop
   useEffect(() => {

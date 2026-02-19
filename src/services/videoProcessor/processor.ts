@@ -1,7 +1,13 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
-import type { ProcessingProgress, VideoEdits } from './types';
+import type { ProcessingProgress, VideoEdits, ClipEdit, FreezeFrame } from './types';
 import { buildFFmpegArgs, renderOverlaysToImage } from './filters';
+import {
+  splitVideoImpl,
+  applyTransitionImpl,
+  insertFreezeFramesImpl,
+  processClipSpeedsImpl,
+} from './advancedProcessing';
 import { logger } from '@/utils/logger';
 
 export class VideoProcessorService {
@@ -58,11 +64,15 @@ export class VideoProcessorService {
     return this.isLoaded;
   }
 
-  async processVideo(inputFile: File | Blob | string, edits: VideoEdits, onProgress?: (progress: ProcessingProgress) => void): Promise<Blob | null> {
+  private async ensureLoaded(onProgress?: (p: ProcessingProgress) => void): Promise<boolean> {
     if (!this.ffmpeg || !this.isLoaded) {
-      const loaded = await this.load(onProgress);
-      if (!loaded) return null;
+      return await this.load(onProgress);
     }
+    return true;
+  }
+
+  async processVideo(inputFile: File | Blob | string, edits: VideoEdits, onProgress?: (progress: ProcessingProgress) => void): Promise<Blob | null> {
+    if (!(await this.ensureLoaded(onProgress))) return null;
 
     try {
       onProgress?.({ stage: 'processing', percent: 0, message: 'Preparing video...' });
@@ -97,7 +107,6 @@ export class VideoProcessorService {
       try {
         await this.ffmpeg!.exec(args);
       } catch (execError) {
-        // If music mixing failed (likely no audio in source), retry without music mix
         if (hasMusic && edits.volume !== undefined) {
           const fallbackEdits = { ...edits, volume: 0 };
           args = buildFFmpegArgs(fallbackEdits, hasOverlay, hasMusic);
@@ -132,27 +141,77 @@ export class VideoProcessorService {
     return this.processVideo(inputFile, { filter }, onProgress);
   }
 
+  /** Gap 28: Split video at a given time */
+  async splitVideo(input: File | Blob | string, splitTime: number, onProgress?: (p: ProcessingProgress) => void) {
+    if (!(await this.ensureLoaded(onProgress))) return null;
+    return splitVideoImpl(this.ffmpeg!, this.getInputData.bind(this), input, splitTime, onProgress);
+  }
+
+  /** Gap 31: Apply transition between two video blobs */
+  async applyTransition(clipA: Blob, clipB: Blob, type: string, dur: number, clip1Dur: number, onProgress?: (p: ProcessingProgress) => void) {
+    if (!(await this.ensureLoaded(onProgress))) return null;
+    return applyTransitionImpl(this.ffmpeg!, clipA, clipB, type, dur, clip1Dur, onProgress);
+  }
+
+  /** Gap 34: Insert freeze frames */
+  async insertFreezeFrames(input: File | Blob | string, frames: FreezeFrame[], onProgress?: (p: ProcessingProgress) => void) {
+    if (!(await this.ensureLoaded(onProgress))) return null;
+    return insertFreezeFramesImpl(this.ffmpeg!, this.getInputData.bind(this), input, frames, onProgress);
+  }
+
+  /** Gap 35: Per-clip speed changes */
+  async processClipSpeeds(input: File | Blob | string, clips: ClipEdit[], onProgress?: (p: ProcessingProgress) => void) {
+    if (!(await this.ensureLoaded(onProgress))) return null;
+    return processClipSpeedsImpl(this.ffmpeg!, this.getInputData.bind(this), input, clips, onProgress);
+  }
+
   async generateThumbnail(inputFile: File | Blob | string, time = 0, width = 320): Promise<string | null> {
-    if (!this.ffmpeg || !this.isLoaded) {
-      const loaded = await this.load();
-      if (!loaded) return null;
-    }
+    if (!(await this.ensureLoaded())) return null;
 
     try {
       const inputData = await this.getInputData(inputFile);
       await this.ffmpeg!.writeFile('input.mp4', inputData);
-
       await this.ffmpeg!.exec(['-i', 'input.mp4', '-ss', time.toString(), '-vframes', '1', '-vf', `scale=${width}:-1`, '-f', 'image2', 'thumbnail.jpg']);
-
       const data = await this.ffmpeg!.readFile('thumbnail.jpg');
       const blob = new Blob([data as BlobPart], { type: 'image/jpeg' });
-
       await this.ffmpeg!.deleteFile('input.mp4');
       await this.ffmpeg!.deleteFile('thumbnail.jpg');
-
       return URL.createObjectURL(blob);
     } catch (error) {
       logger.error('Thumbnail generation failed:', error);
+      return null;
+    }
+  }
+
+  /** Gap #46: Extract audio track from video as MP3 */
+  async extractAudio(inputFile: File | Blob | string, onProgress?: (progress: ProcessingProgress) => void): Promise<Blob | null> {
+    if (!(await this.ensureLoaded(onProgress))) return null;
+
+    try {
+      onProgress?.({ stage: 'processing', percent: 0, message: 'Extracting audio...' });
+      const inputData = await this.getInputData(inputFile);
+      await this.ffmpeg!.writeFile('input.mp4', inputData);
+
+      await this.ffmpeg!.exec([
+        '-i', 'input.mp4',
+        '-vn',           // No video
+        '-acodec', 'libmp3lame',
+        '-ab', '192k',   // 192kbps bitrate
+        '-ar', '44100',  // 44.1kHz sample rate
+        'output.mp3',
+      ]);
+
+      const data = await this.ffmpeg!.readFile('output.mp3');
+      const blob = new Blob([data as BlobPart], { type: 'audio/mpeg' });
+
+      await this.ffmpeg!.deleteFile('input.mp4');
+      await this.ffmpeg!.deleteFile('output.mp3');
+
+      onProgress?.({ stage: 'complete', percent: 100, message: 'Audio extracted!' });
+      return blob;
+    } catch (error) {
+      logger.error('Audio extraction failed:', error);
+      onProgress?.({ stage: 'error', percent: 0, message: 'Extraction failed' });
       return null;
     }
   }

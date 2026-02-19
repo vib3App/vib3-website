@@ -13,15 +13,24 @@ function getMaxBirthdate(): string {
   return date.toISOString().split('T')[0];
 }
 
-function isValidAge(birthdate: string): boolean {
+function calculateAge(birthdate: string): number {
   const birth = new Date(birthdate);
   const today = new Date();
-  const age = today.getFullYear() - birth.getFullYear();
+  let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    return age - 1 >= 13;
+    age--;
   }
-  return age >= 13;
+  return age;
+}
+
+function isValidAge(birthdate: string): boolean {
+  return calculateAge(birthdate) >= 13;
+}
+
+function isMinor(birthdate: string): boolean {
+  const age = calculateAge(birthdate);
+  return age >= 13 && age < 18;
 }
 
 function validatePassword(password: string): string | null {
@@ -57,6 +66,8 @@ export function useLoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoaded, setGoogleLoaded] = useState(false);
+  const [showParentalConsent, setShowParentalConsent] = useState(false);
+  const [registeredUserAge, setRegisteredUserAge] = useState(0);
 
   const maxBirthdate = useMemo(() => getMaxBirthdate(), []);
 
@@ -198,6 +209,14 @@ export function useLoginForm() {
       }
 
       setUser(user);
+
+      // Check if minor needs parental consent after registration
+      if (mode === 'register' && birthdate && isMinor(birthdate)) {
+        setRegisteredUserAge(calculateAge(birthdate));
+        setShowParentalConsent(true);
+        return;
+      }
+
       router.push('/feed');
     } catch (err: unknown) {
       const error = err as { message?: string };
@@ -227,6 +246,11 @@ export function useLoginForm() {
     window.google?.accounts.id.prompt();
   }, []);
 
+  const dismissParentalConsent = useCallback(() => {
+    setShowParentalConsent(false);
+    router.push('/feed');
+  }, [router]);
+
   return {
     mode,
     email,
@@ -253,5 +277,8 @@ export function useLoginForm() {
     clearFieldError,
     changeMode,
     promptGoogleSignIn,
+    showParentalConsent,
+    registeredUserAge,
+    dismissParentalConsent,
   };
 }

@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { videoProcessor, type ProcessingProgress, type VideoEdits } from '@/services/videoProcessor';
+import {
+  videoProcessor,
+  type ProcessingProgress,
+  type VideoEdits,
+  type FreezeFrame,
+  type ClipEdit,
+} from '@/services/videoProcessor';
 
 export function useVideoProcessor() {
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +80,91 @@ export function useVideoProcessor() {
     []
   );
 
+  /** Gap 28: Split video at a time point */
+  const splitVideo = useCallback(
+    async (
+      input: File | Blob | string,
+      splitTime: number,
+    ): Promise<[Blob, Blob] | null> => {
+      setIsProcessing(true);
+      setError(null);
+      try {
+        return await videoProcessor.splitVideo(input, splitTime, setProgress);
+      } catch (_err) {
+        setError('Split failed');
+        return null;
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    []
+  );
+
+  /** Gap 31: Apply transition between two clips */
+  const applyTransition = useCallback(
+    async (
+      clipA: Blob,
+      clipB: Blob,
+      transitionType: string,
+      transitionDuration: number,
+      clip1Duration: number,
+    ): Promise<Blob | null> => {
+      setIsProcessing(true);
+      setError(null);
+      try {
+        return await videoProcessor.applyTransition(
+          clipA, clipB, transitionType, transitionDuration, clip1Duration, setProgress,
+        );
+      } catch (_err) {
+        setError('Transition failed');
+        return null;
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    []
+  );
+
+  /** Gap 34: Insert freeze frames */
+  const insertFreezeFrames = useCallback(
+    async (
+      input: File | Blob | string,
+      freezeFrames: FreezeFrame[],
+    ): Promise<Blob | null> => {
+      setIsProcessing(true);
+      setError(null);
+      try {
+        return await videoProcessor.insertFreezeFrames(input, freezeFrames, setProgress);
+      } catch (_err) {
+        setError('Freeze frame failed');
+        return null;
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    []
+  );
+
+  /** Gap 35: Apply per-clip speed changes */
+  const processClipSpeeds = useCallback(
+    async (
+      input: File | Blob | string,
+      clipEdits: ClipEdit[],
+    ): Promise<Blob | null> => {
+      setIsProcessing(true);
+      setError(null);
+      try {
+        return await videoProcessor.processClipSpeeds(input, clipEdits, setProgress);
+      } catch (_err) {
+        setError('Speed processing failed');
+        return null;
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    []
+  );
+
   const generateThumbnail = useCallback(
     async (input: File | Blob | string, time?: number): Promise<string | null> => {
       try {
@@ -99,6 +190,10 @@ export function useVideoProcessor() {
     loadProcessor,
     processVideo,
     trimVideo,
+    splitVideo,
+    applyTransition,
+    insertFreezeFrames,
+    processClipSpeeds,
     generateThumbnail,
     reset,
   };

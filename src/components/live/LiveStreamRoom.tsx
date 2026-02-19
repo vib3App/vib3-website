@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   LiveKitRoom,
   VideoTrack,
@@ -37,6 +37,9 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
   const { localParticipant } = useLocalParticipant();
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   const toggleAudio = useCallback(async () => {
     await localParticipant.setMicrophoneEnabled(!audioEnabled);
@@ -47,6 +50,46 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
     await localParticipant.setCameraEnabled(!videoEnabled);
     setVideoEnabled(!videoEnabled);
   }, [localParticipant, videoEnabled]);
+
+  // Gap #59: Record own live stream
+  const toggleRecording = useCallback(() => {
+    if (isRecording && recorderRef.current) {
+      recorderRef.current.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    // Gather local tracks into a new MediaStream for recording
+    const tracks: MediaStreamTrack[] = [];
+    for (const pub of localParticipant.trackPublications.values()) {
+      if (pub.track?.mediaStreamTrack) tracks.push(pub.track.mediaStreamTrack);
+    }
+    if (tracks.length === 0) return;
+
+    const stream = new MediaStream(tracks);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+      ? 'video/webm;codecs=vp9,opus'
+      : 'video/webm';
+    const recorder = new MediaRecorder(stream, { mimeType });
+    chunksRef.current = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) chunksRef.current.push(e.data);
+    };
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `live-recording-${Date.now()}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    recorder.start(1000);
+    recorderRef.current = recorder;
+    setIsRecording(true);
+  }, [isRecording, localParticipant]);
 
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/60 backdrop-blur-lg px-6 py-3 rounded-full">
@@ -74,6 +117,23 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
         ) : (
           <VideoOffIcon className="w-6 h-6 text-white" />
         )}
+      </button>
+
+      {/* Record button */}
+      <button
+        onClick={toggleRecording}
+        className={`p-3 rounded-full transition ${
+          isRecording ? 'bg-red-500 animate-pulse' : 'bg-white/20 hover:bg-white/30'
+        }`}
+        title={isRecording ? 'Stop Recording' : 'Record Stream'}
+      >
+        <div className={`w-6 h-6 flex items-center justify-center ${isRecording ? 'text-white' : 'text-white'}`}>
+          {isRecording ? (
+            <div className="w-4 h-4 bg-white rounded-sm" />
+          ) : (
+            <div className="w-4 h-4 bg-red-500 rounded-full" />
+          )}
+        </div>
       </button>
 
       <button

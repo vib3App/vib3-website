@@ -194,6 +194,9 @@ export default function CallsPage() {
           onToggleSpeaker={call.toggleSpeaker}
           onSwitchCamera={call.switchCamera}
           onEndCall={call.endCall}
+          onSelectSpeaker={call.selectSpeaker}
+          getAudioOutputDevices={call.getAudioOutputDevices}
+          fallbackState={call.fallbackState}
         />
       )}
 

@@ -19,6 +19,8 @@ type CallAcceptedHandler = (data: { callId: string }) => void;
 type CallRejectedHandler = (data: { callId: string; reason: string }) => void;
 type CallRegisteredHandler = (data: { callId: string }) => void;
 type CallSignalHandler = (data: { callId: string; type: string; sdp?: string; iceCandidate?: RTCIceCandidateInit; fromUserId: string; toUserId: string }) => void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GenericHandler = (data: any) => void;
 
 interface Notification {
   id: string;
@@ -29,7 +31,15 @@ interface Notification {
   createdAt: string;
 }
 
+/** Gap #76: Queued message when disconnected */
+interface QueuedMessage {
+  event: string;
+  data: unknown;
+  timestamp: number;
+}
+
 const SOCKET_URL = config.api.socketUrl;
+const MAX_QUEUE_SIZE = 50;
 
 class WebSocketService {
   private socket: Socket | null = null;
@@ -44,7 +54,22 @@ class WebSocketService {
   private callRejectedHandlers: Set<CallRejectedHandler> = new Set();
   private callRegisteredHandlers: Set<CallRegisteredHandler> = new Set();
   private callSignalHandlers: Set<CallSignalHandler> = new Set();
+  private battleStartHandlers: Set<GenericHandler> = new Set();
+  private battleUpdateHandlers: Set<GenericHandler> = new Set();
+  private battleEndHandlers: Set<GenericHandler> = new Set();
+  private giftReceivedHandlers: Set<GenericHandler> = new Set();
+  private locationUpdateHandlers: Set<GenericHandler> = new Set();
   private currentToken: string | null = null;
+
+  /** Gap #76: Message queue for offline buffering */
+  private messageQueue: QueuedMessage[] = [];
+
+  /** Gap #82: Collab event handlers */
+  private collabJoinHandlers: Set<GenericHandler> = new Set();
+  private collabLeaveHandlers: Set<GenericHandler> = new Set();
+  private collabStateHandlers: Set<GenericHandler> = new Set();
+  private collabChatHandlers: Set<GenericHandler> = new Set();
+  private collabReactionHandlers: Set<GenericHandler> = new Set();
 
   /**
    * Connect to Socket.IO server
@@ -75,6 +100,8 @@ class WebSocketService {
 
       this.socket.on('connect', () => {
         this.notifyConnectionHandlers(true);
+        // Gap #76: Flush queued messages on reconnect
+        this.flushQueue();
       });
 
       this.socket.on('disconnect', (_reason) => {
@@ -142,6 +169,44 @@ class WebSocketService {
         this.callSignalHandlers.forEach((handler) => handler(data));
       });
 
+      // Battle events
+      this.socket.on('battle:start', (data: unknown) => {
+        this.battleStartHandlers.forEach((handler) => handler(data));
+      });
+      this.socket.on('battle:update', (data: unknown) => {
+        this.battleUpdateHandlers.forEach((handler) => handler(data));
+      });
+      this.socket.on('battle:end', (data: unknown) => {
+        this.battleEndHandlers.forEach((handler) => handler(data));
+      });
+
+      // Gift events
+      this.socket.on('gift:received', (data: unknown) => {
+        this.giftReceivedHandlers.forEach((handler) => handler(data));
+      });
+
+      // Location events
+      this.socket.on('location:update', (data: unknown) => {
+        this.locationUpdateHandlers.forEach((handler) => handler(data));
+      });
+
+      // Gap #82: Collab room events
+      this.socket.on('collab:join', (data: unknown) => {
+        this.collabJoinHandlers.forEach((handler) => handler(data));
+      });
+      this.socket.on('collab:leave', (data: unknown) => {
+        this.collabLeaveHandlers.forEach((handler) => handler(data));
+      });
+      this.socket.on('collab:state', (data: unknown) => {
+        this.collabStateHandlers.forEach((handler) => handler(data));
+      });
+      this.socket.on('collab:chat', (data: unknown) => {
+        this.collabChatHandlers.forEach((handler) => handler(data));
+      });
+      this.socket.on('collab:reaction', (data: unknown) => {
+        this.collabReactionHandlers.forEach((handler) => handler(data));
+      });
+
     } catch (error) {
       logger.error('Failed to create Socket.IO connection:', error);
     }
@@ -160,11 +225,34 @@ class WebSocketService {
 
   /**
    * Emit an event through Socket.IO
+   * Gap #76: Queues messages when disconnected, flushes on reconnect
    */
   send(type: string, payload: unknown): void {
     if (this.socket?.connected) {
       this.socket.emit(type, payload);
+    } else {
+      // Queue the message for later delivery
+      if (this.messageQueue.length >= MAX_QUEUE_SIZE) {
+        this.messageQueue.shift(); // drop oldest
+      }
+      this.messageQueue.push({ event: type, data: payload, timestamp: Date.now() });
     }
+  }
+
+  /** Gap #76: Flush queued messages in order */
+  private flushQueue(): void {
+    if (!this.socket?.connected || this.messageQueue.length === 0) return;
+    const queue = [...this.messageQueue];
+    this.messageQueue = [];
+    for (const msg of queue) {
+      this.socket.emit(msg.event, msg.data);
+    }
+    logger.info(`[WebSocket] Flushed ${queue.length} queued message(s)`);
+  }
+
+  /** Gap #76: Get queue size for UI display */
+  getQueueSize(): number {
+    return this.messageQueue.length;
   }
 
   /**
@@ -271,11 +359,102 @@ class WebSocketService {
     return () => this.callSignalHandlers.delete(handler);
   }
 
+  onBattleStart(handler: GenericHandler): () => void {
+    this.battleStartHandlers.add(handler);
+    return () => this.battleStartHandlers.delete(handler);
+  }
+
+  onBattleUpdate(handler: GenericHandler): () => void {
+    this.battleUpdateHandlers.add(handler);
+    return () => this.battleUpdateHandlers.delete(handler);
+  }
+
+  onBattleEnd(handler: GenericHandler): () => void {
+    this.battleEndHandlers.add(handler);
+    return () => this.battleEndHandlers.delete(handler);
+  }
+
+  onGiftReceived(handler: GenericHandler): () => void {
+    this.giftReceivedHandlers.add(handler);
+    return () => this.giftReceivedHandlers.delete(handler);
+  }
+
+  onLocationUpdate(handler: GenericHandler): () => void {
+    this.locationUpdateHandlers.add(handler);
+    return () => this.locationUpdateHandlers.delete(handler);
+  }
+
+  /**
+   * Subscribe to a generic event by name (for custom events like message:reaction)
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string, handler: (data: any) => void): () => void {
+    if (this.socket) {
+      this.socket.on(event, handler);
+    }
+    return () => {
+      if (this.socket) {
+        this.socket.off(event, handler);
+      }
+    };
+  }
+
   /**
    * Check if connected
    */
   isConnected(): boolean {
     return this.socket?.connected ?? false;
+  }
+
+  /** Gap #82: Collab room event subscriptions */
+  onCollabJoin(handler: GenericHandler): () => void {
+    this.collabJoinHandlers.add(handler);
+    return () => this.collabJoinHandlers.delete(handler);
+  }
+
+  onCollabLeave(handler: GenericHandler): () => void {
+    this.collabLeaveHandlers.add(handler);
+    return () => this.collabLeaveHandlers.delete(handler);
+  }
+
+  onCollabState(handler: GenericHandler): () => void {
+    this.collabStateHandlers.add(handler);
+    return () => this.collabStateHandlers.delete(handler);
+  }
+
+  onCollabChat(handler: GenericHandler): () => void {
+    this.collabChatHandlers.add(handler);
+    return () => this.collabChatHandlers.delete(handler);
+  }
+
+  onCollabReaction(handler: GenericHandler): () => void {
+    this.collabReactionHandlers.add(handler);
+    return () => this.collabReactionHandlers.delete(handler);
+  }
+
+  /** Join a collab room channel */
+  joinCollabRoom(roomId: string): void {
+    this.send('collab:join_room', { roomId });
+  }
+
+  /** Leave a collab room channel */
+  leaveCollabRoom(roomId: string): void {
+    this.send('collab:leave_room', { roomId });
+  }
+
+  /** Send chat message in collab room */
+  sendCollabChat(roomId: string, message: string): void {
+    this.send('collab:chat', { roomId, message });
+  }
+
+  /** Send reaction in collab room */
+  sendCollabReaction(roomId: string, emoji: string): void {
+    this.send('collab:reaction', { roomId, emoji });
+  }
+
+  /** Update collab participant state (muted, camera on/off) */
+  updateCollabState(roomId: string, state: Record<string, unknown>): void {
+    this.send('collab:state', { roomId, ...state });
   }
 
   private notifyConnectionHandlers(connected: boolean): void {

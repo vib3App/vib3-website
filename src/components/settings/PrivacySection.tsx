@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsCard, SettingsToggle, SettingsLink } from './SettingsComponents';
+import { CallPermissions } from '@/components/call/CallPermissions';
+
+type CallPermission = 'everyone' | 'followers' | 'mutual' | 'nobody';
 
 interface PrivacySettings {
   privateAccount: boolean;
   allowComments: boolean;
   allowMessages: boolean;
   allowDuets: boolean;
+  callPermission: CallPermission;
 }
 
 const defaultSettings: PrivacySettings = {
@@ -16,6 +20,7 @@ const defaultSettings: PrivacySettings = {
   allowComments: true,
   allowMessages: true,
   allowDuets: true,
+  callPermission: 'everyone',
 };
 
 const STORAGE_KEY = 'vib3_privacy_settings';
@@ -78,6 +83,18 @@ export function PrivacySection() {
         <SettingsLink
           label="Download Your Data"
           onClick={() => router.push('/settings/download-data')}
+        />
+      </SettingsCard>
+      <SettingsCard>
+        <CallPermissions
+          currentPermission={settings.callPermission}
+          onPermissionChange={(perm) => {
+            const newSettings = { ...settings, callPermission: perm };
+            setSettings(newSettings);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+          }}
+          blockedUsers={[]}
+          onUnblockUser={() => {}}
         />
       </SettingsCard>
     </div>

@@ -11,6 +11,7 @@ import {
   ChallengeCategoryTabs,
   ChallengeCard,
   CreateChallengeModal,
+  ChallengeDetail,
 } from '@/components/challenges';
 import type { Challenge, ChallengeCategory, CreateChallengeInput } from '@/types/challenge';
 import { logger } from '@/utils/logger';
@@ -27,6 +28,7 @@ export default function ChallengesPage() {
   const [creating, setCreating] = useState(false);
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState('');
@@ -194,7 +196,7 @@ export default function ChallengesPage() {
           <>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {challenges.map((challenge) => (
-                <ChallengeCard key={challenge._id} challenge={challenge} joiningId={joiningId} onJoin={handleJoinChallenge} />
+                <ChallengeCard key={challenge._id} challenge={challenge} joiningId={joiningId} onJoin={handleJoinChallenge} onViewDetail={setSelectedChallengeId} />
               ))}
             </div>
             {hasMore && (
@@ -205,6 +207,14 @@ export default function ChallengesPage() {
               </div>
             )}
           </>
+        )}
+
+        {/* Gap #83: Challenge Detail overlay */}
+        {selectedChallengeId && (
+          <ChallengeDetail
+            challengeId={selectedChallengeId}
+            onClose={() => setSelectedChallengeId(null)}
+          />
         )}
 
         <CreateChallengeModal

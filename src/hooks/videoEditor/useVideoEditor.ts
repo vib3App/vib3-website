@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { videoProcessor, type ProcessingProgress } from '@/services/videoProcessor';
+import { videoProcessor, type ProcessingProgress, type VideoEdits } from '@/services/videoProcessor';
 import { EDITOR_FILTERS, type EditMode, type TextOverlay } from './types';
 import { useEditorTimeline } from './useEditorTimeline';
 import { useEditorOverlays } from './useEditorOverlays';
@@ -60,10 +60,16 @@ export function useVideoEditor() {
     if (videoRef.current) videoRef.current.volume = val;
   }, []);
 
-  const handleDone = useCallback(async () => {
+  /**
+   * handleDone accepts optional extra edits from the edit page
+   * so that tune, blur, crop, transform, opacity, masks, etc.
+   * all get passed through to the FFmpeg processor.
+   */
+  const handleDone = useCallback(async (extraEdits?: Partial<VideoEdits>) => {
     const hasOverlays = overlays.texts.length > 0 || overlays.stickers.length > 0;
     const hasMusic = !!selectedMusic;
-    const hasEdits = trimStart > 0 || trimEnd < duration || selectedFilter !== 0 || volume !== 1 || hasOverlays || hasMusic;
+    const hasExtras = extraEdits && Object.keys(extraEdits).length > 0;
+    const hasEdits = trimStart > 0 || trimEnd < duration || selectedFilter !== 0 || volume !== 1 || hasOverlays || hasMusic || hasExtras;
 
     const saveSettings = (texts: TextOverlay[]) => {
       sessionStorage.setItem('editSettings', JSON.stringify({
@@ -86,22 +92,25 @@ export function useVideoEditor() {
       let source: File | Blob | string = videoUrl || '';
       if (originalFileRef.current) source = originalFileRef.current;
 
+      const edits: VideoEdits = {
+        trimStart: trimStart > 0 ? trimStart : undefined,
+        trimEnd: trimEnd < duration ? trimEnd : undefined,
+        filter: selectedFilter !== 0 ? EDITOR_FILTERS[selectedFilter].filter : undefined,
+        volume: volume !== 1 ? volume : undefined,
+        texts: overlays.texts.length > 0 ? overlays.texts : undefined,
+        stickers: overlays.stickers.length > 0 ? overlays.stickers : undefined,
+        videoWidth: videoRef.current?.videoWidth,
+        videoHeight: videoRef.current?.videoHeight,
+        displayHeight: videoRef.current?.clientHeight,
+        musicUrl: selectedMusic?.audioUrl,
+        musicVolume: hasMusic ? musicVolume : undefined,
+        ...extraEdits,
+      };
+
       const processedBlob = await videoProcessor.processVideo(
         source,
-        {
-          trimStart: trimStart > 0 ? trimStart : undefined,
-          trimEnd: trimEnd < duration ? trimEnd : undefined,
-          filter: selectedFilter !== 0 ? EDITOR_FILTERS[selectedFilter].filter : undefined,
-          volume: volume !== 1 ? volume : undefined,
-          texts: overlays.texts.length > 0 ? overlays.texts : undefined,
-          stickers: overlays.stickers.length > 0 ? overlays.stickers : undefined,
-          videoWidth: videoRef.current?.videoWidth,
-          videoHeight: videoRef.current?.videoHeight,
-          displayHeight: videoRef.current?.clientHeight,
-          musicUrl: selectedMusic?.audioUrl,
-          musicVolume: hasMusic ? musicVolume : undefined,
-        },
-        setProcessingProgress
+        edits,
+        setProcessingProgress,
       );
 
       if (processedBlob) {
@@ -130,7 +139,7 @@ export function useVideoEditor() {
 
   return {
     videoUrl, editMode, setEditMode, videoLoaded, selectedFilter, setSelectedFilter,
-    volume, isProcessing, processingProgress, videoRef,
+    volume, isProcessing, processingProgress, videoRef, originalFileRef,
     selectedMusic, setSelectedMusic, musicVolume, setMusicVolume,
     ...timeline, ...overlays,
     handleVideoLoad, handleDone, updateVolume, goBack: () => router.back(),

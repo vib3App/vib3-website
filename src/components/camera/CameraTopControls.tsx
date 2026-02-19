@@ -12,6 +12,9 @@ interface CameraTopControlsProps {
   onTimerCycle: () => void;
   onFlipCamera: () => void;
   formatTime: (seconds: number) => string;
+  handsFreeEnabled?: boolean;
+  handsFreeSupported?: boolean;
+  onHandsFreeToggle?: () => void;
 }
 
 export function CameraTopControls({
@@ -26,6 +29,9 @@ export function CameraTopControls({
   onTimerCycle,
   onFlipCamera,
   formatTime,
+  handsFreeEnabled = false,
+  handsFreeSupported = false,
+  onHandsFreeToggle,
 }: CameraTopControlsProps) {
   return (
     <div className="absolute top-4 left-0 right-0 z-10 px-4">
@@ -37,6 +43,20 @@ export function CameraTopControls({
         </button>
 
         <div className="flex items-center gap-3">
+          {handsFreeSupported && onHandsFreeToggle && (
+            <button
+              onClick={onHandsFreeToggle}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                handsFreeEnabled ? 'bg-green-500' : 'bg-black/30'
+              }`}
+              title={handsFreeEnabled ? 'Disable voice control' : 'Enable voice control'}
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </button>
+          )}
+
           <button
             onClick={onFlashToggle}
             disabled={!torchSupported}

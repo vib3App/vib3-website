@@ -95,6 +95,16 @@ export function useHlsPlayer({ src, onError }: UseHlsPlayerOptions) {
                         data.details === 'manifestParsingError' ||
                         data.response?.code === 404;
 
+          // Try MP4 fallback before showing error
+          const mp4Fallback = src.replace(/\.m3u8$/, '.mp4').replace(/\/playlist\.m3u8/, '/video.mp4');
+          if (!is404 && mp4Fallback !== src) {
+            hls.destroy();
+            hlsRef.current = null;
+            video.src = mp4Fallback;
+            video.load();
+            return;
+          }
+
           const errorMsg = is404
             ? 'Video not available'
             : `Playback error: ${data.details}`;
@@ -108,6 +118,9 @@ export function useHlsPlayer({ src, onError }: UseHlsPlayerOptions) {
           onError?.(new Error(errorMsg));
         }
       });
+    } else if (isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari native HLS
+      video.src = src;
     } else {
       video.src = src;
     }
