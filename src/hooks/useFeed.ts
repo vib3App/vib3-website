@@ -127,8 +127,12 @@ export function useFeed() {
 
   // Reload when category, tab, or vibe changes
   useEffect(() => {
-    // For "self" category, wait for auth to be verified since it needs authentication
-    if (selectedCategory?.id === 'self' && !isAuthVerified) {
+    // Social feeds (following, friends, family, self, custom categories) need auth.
+    // Wait for auth to be verified before loading them.
+    const AUTH_REQUIRED_FEEDS = ['following', 'friends', 'family', 'self'];
+    const needsAuth = AUTH_REQUIRED_FEEDS.includes(selectedCategory?.id || '') ||
+      (selectedCategory?.type === 'custom' || selectedCategory?.type === 'default');
+    if (needsAuth && !isAuthVerified) {
       return;
     }
 
