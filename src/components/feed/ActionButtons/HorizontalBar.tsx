@@ -14,6 +14,7 @@ export function HorizontalBar({
   onComment,
   onSave,
   onShare,
+  onRepost,
   onDragStart,
   onDragEnd,
   onOpenSettings: _onOpenSettings,
@@ -30,6 +31,7 @@ export function HorizontalBar({
       case 'comment': return onComment;
       case 'save': return onSave;
       case 'share': return onShare;
+      case 'repost': return onRepost;
       default: return undefined;
     }
   };
@@ -38,6 +40,7 @@ export function HorizontalBar({
     switch (id) {
       case 'like': return video.isLiked;
       case 'save': return video.isFavorited;
+      case 'repost': return video.isReposted;
       default: return false;
     }
   };
@@ -46,6 +49,7 @@ export function HorizontalBar({
     switch (id) {
       case 'like': return video.likesCount;
       case 'comment': return video.commentsCount;
+      case 'repost': return video.repostsCount;
       default: return undefined;
     }
   };

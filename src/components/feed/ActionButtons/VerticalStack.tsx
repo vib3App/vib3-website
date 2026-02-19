@@ -13,6 +13,7 @@ export function VerticalStack({
   onComment,
   onSave,
   onShare,
+  onRepost,
 }: LayoutProps) {
   return (
     <div className="absolute right-3 bottom-32 md:bottom-24 z-20">
@@ -66,6 +67,23 @@ export function VerticalStack({
           count={video.sharesCount || 0}
           isActive={video.hasShared}
           onClick={onShare}
+        />
+
+        {/* Repost Button */}
+        <FloatingPillButton
+          icon={
+            <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          }
+          activeIcon={
+            <svg className="w-full h-full" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          }
+          count={video.repostsCount || 0}
+          isActive={video.isReposted}
+          onClick={onRepost}
         />
 
         {/* Save/Favorites Button - uses theme colors */}

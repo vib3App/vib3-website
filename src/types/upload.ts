@@ -63,6 +63,9 @@ export interface PublishVideoInput {
   allowComments?: boolean;
   allowDuet?: boolean;
   allowStitch?: boolean;
+  // GAP-10: Flutter-compatible field aliases
+  allowEcho?: boolean;
+  allowRemix?: boolean;
   scheduledFor?: string;
 }
 

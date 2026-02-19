@@ -17,16 +17,19 @@ interface ActionButtonsProps {
     isFavorited?: boolean;
     hasCommented?: boolean;
     hasShared?: boolean;
+    isReposted?: boolean;
     likesCount: number;
     commentsCount: number;
     sharesCount?: number;
     savesCount?: number;
+    repostsCount?: number;
     thumbnailUrl?: string;
   };
   onLike: () => void;
   onComment: () => void;
   onSave: () => void;
   onShare: () => void;
+  onRepost?: () => void;
 }
 
 export function ActionButtons({
@@ -35,6 +38,7 @@ export function ActionButtons({
   onComment,
   onSave,
   onShare,
+  onRepost,
 }: ActionButtonsProps) {
   const [isMobile, setIsMobile] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -82,6 +86,7 @@ export function ActionButtons({
     onComment,
     onSave,
     onShare,
+    onRepost: onRepost || (() => {}),
     onDragStart: handleDragStart,
     onDragEnd: handleDragEnd,
     onOpenSettings: handleOpenSettings,

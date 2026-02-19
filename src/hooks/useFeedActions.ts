@@ -94,6 +94,36 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
     }
   }, [videos, isAuthenticated, router, setVideos]);
 
+  const handleRepost = useCallback(async (index: number) => {
+    const video = videos[index];
+    if (!video) return;
+    if (!isAuthenticated) { router.push('/login'); return; }
+
+    const wasReposted = video.isReposted;
+    setVideos(prev => prev.map((v, i) =>
+      i === index ? {
+        ...v,
+        isReposted: !v.isReposted,
+        repostsCount: wasReposted ? (v.repostsCount || 1) - 1 : (v.repostsCount || 0) + 1
+      } : v
+    ));
+
+    try {
+      const result = await videoApi.toggleRepost(video.id);
+      setVideos(prev => prev.map((v, i) =>
+        i === index ? { ...v, isReposted: result.reposted, repostsCount: result.repostsCount } : v
+      ));
+    } catch {
+      setVideos(prev => prev.map((v, i) =>
+        i === index ? {
+          ...v,
+          isReposted: wasReposted,
+          repostsCount: wasReposted ? (v.repostsCount || 0) + 1 : (v.repostsCount || 1) - 1
+        } : v
+      ));
+    }
+  }, [videos, isAuthenticated, router, setVideos]);
+
   const handleComment = useCallback((videoId: string) => {
     setSelectedVideoId(videoId);
     setCommentsOpen(true);
@@ -168,6 +198,7 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
     handleLike,
     handleSave,
     handleFollow,
+    handleRepost,
     handleComment,
     handleCommentAdded,
     handleShare,

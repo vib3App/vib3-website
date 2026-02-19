@@ -13,6 +13,7 @@ export function FloatingPills({
   onComment,
   onSave,
   onShare,
+  onRepost,
   onDragStart,
   onDragEnd,
 }: LayoutProps) {
@@ -28,6 +29,7 @@ export function FloatingPills({
       case 'comment': return onComment;
       case 'save': return onSave;
       case 'share': return onShare;
+      case 'repost': return onRepost;
       default: return undefined;
     }
   };
@@ -37,12 +39,14 @@ export function FloatingPills({
     if (id === 'save') return video.isFavorited;
     if (id === 'comment') return video.hasCommented;
     if (id === 'share') return video.hasShared;
+    if (id === 'repost') return video.isReposted;
     return false;
   };
 
   const getCount = (id: ButtonId) => {
     if (id === 'like') return video.likesCount;
     if (id === 'comment') return video.commentsCount;
+    if (id === 'repost') return video.repostsCount;
     if (id === 'share') return video.sharesCount || 0;
     if (id === 'save') return video.savesCount || 0;
     return undefined;

@@ -42,16 +42,32 @@ export function useConversationSocket(
       }
     });
 
+    // GAP-03: Handle both web format (array) and Flutter format (Map<userId,emoji>) for reactions
     const unsubReaction = websocketService.on('message:reaction', (data: {
-      messageId: string; emoji: string; userId: string; username: string; action: 'add' | 'remove';
+      messageId: string; emoji?: string; userId?: string; username?: string; action?: 'add' | 'remove';
+      // Flutter may send reactions as object map: { [userId]: emoji }
+      reactions?: Record<string, string> | Array<{ emoji: string; userId: string; username?: string }>;
     }) => {
       setMessages(prev => prev.map(m => {
         if (m.id !== data.messageId) return m;
-        const reactions = m.reactions || [];
-        if (data.action === 'add') {
-          return { ...m, reactions: [...reactions, { emoji: data.emoji, userId: data.userId, username: data.username }] };
+        // If full reactions replacement (Flutter format: object map)
+        if (data.reactions && !Array.isArray(data.reactions)) {
+          const normalized = Object.entries(data.reactions).map(([userId, emoji]) => ({ emoji, userId, username: '' }));
+          return { ...m, reactions: normalized };
         }
-        return { ...m, reactions: reactions.filter(r => !(r.emoji === data.emoji && r.userId === data.userId)) };
+        // If full reactions replacement (array format)
+        if (data.reactions && Array.isArray(data.reactions)) {
+          return { ...m, reactions: data.reactions.map(r => ({ emoji: r.emoji, userId: r.userId, username: r.username || '' })) };
+        }
+        // Incremental add/remove (web format)
+        const reactions = m.reactions || [];
+        if (data.action === 'add' && data.emoji && data.userId) {
+          return { ...m, reactions: [...reactions, { emoji: data.emoji, userId: data.userId, username: data.username || '' }] };
+        }
+        if (data.action === 'remove' && data.emoji && data.userId) {
+          return { ...m, reactions: reactions.filter(r => !(r.emoji === data.emoji && r.userId === data.userId)) };
+        }
+        return m;
       }));
     });
 
@@ -59,6 +75,19 @@ export function useConversationSocket(
       setMessages(prev => prev.filter(m => m.id !== data.messageId));
     });
 
-    return () => { unsubMessage(); unsubTyping(); unsubReaction(); unsubDelete(); };
+    // GAP-07: Also listen for Flutter-format read receipt events
+    const unsubChatRead = websocketService.on('chat:read', (data: { conversationId: string; messageId?: string }) => {
+      if (data.conversationId === conversationId) {
+        setMessages(prev => prev.map(m => ({ ...m, status: 'read' as const })));
+      }
+    });
+
+    const unsubMessageRead = websocketService.on('message:read', (data: { conversationId: string; messageId: string }) => {
+      if (data.conversationId === conversationId) {
+        setMessages(prev => prev.map(m => m.id === data.messageId ? { ...m, status: 'read' as const } : m));
+      }
+    });
+
+    return () => { unsubMessage(); unsubTyping(); unsubReaction(); unsubDelete(); unsubChatRead(); unsubMessageRead(); };
   }, [token, conversationId, connect, setMessages, setTypingUsers]);
 }

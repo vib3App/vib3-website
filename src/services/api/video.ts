@@ -28,17 +28,19 @@ export const videoApi = {
     await apiClient.post(`/videos/${videoId}/view`);
   },
 
+  // GAP-50: Added sort parameter for comment sorting
   async getComments(
     videoId: string,
     page = 1,
-    limit = 20
+    limit = 20,
+    sort: 'newest' | 'top' | 'oldest' = 'top'
   ): Promise<PaginatedResponse<Comment>> {
     const { data } = await apiClient.get<{
       comments: CommentResponse[];
       total: number;
       page: number;
       hasMore: boolean;
-    }>(`/videos/${videoId}/comments`, { params: { page, limit } });
+    }>(`/videos/${videoId}/comments`, { params: { page, limit, sort } });
 
     return {
       items: data.comments.map(transformComment),
@@ -113,6 +115,14 @@ export const videoApi = {
 
   async shareVideo(videoId: string, platform?: string): Promise<void> {
     await apiClient.post(`/videos/${videoId}/share`, { platform });
+  },
+
+  // GAP-11: Repost toggle
+  async toggleRepost(videoId: string): Promise<{ reposted: boolean; repostsCount: number }> {
+    const { data } = await apiClient.post<{ reposted: boolean; repostsCount: number }>(
+      `/videos/${videoId}/repost`
+    );
+    return data;
   },
 
   async toggleFavorite(videoId: string): Promise<{ favorited: boolean; favoriteCount: number }> {

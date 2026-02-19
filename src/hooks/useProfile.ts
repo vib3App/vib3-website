@@ -5,8 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
 import { userApi, videoApi } from '@/services/api';
+import { uploadApi } from '@/services/api/upload';
 import type { Video } from '@/types';
+import type { VideoDraft } from '@/types/upload';
 import { logger } from '@/utils/logger';
+import type { ProfileTabType } from '@/components/profile/ProfileSections';
 
 export interface UserProfile {
   _id: string;
@@ -35,8 +38,11 @@ export function useProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [likedVideos, _setLikedVideos] = useState<Video[]>([]);
-  const [activeTab, setActiveTab] = useState<'videos' | 'liked' | 'exclusive'>('videos');
+  const [activeTab, setActiveTab] = useState<ProfileTabType>('videos');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  // GAP-12: State for new profile tabs
+  const [drafts, setDrafts] = useState<VideoDraft[]>([]);
+  const [scheduledVideos, setScheduledVideos] = useState<Array<{ id: string; caption: string; thumbnailUrl?: string; scheduledFor?: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -177,6 +183,17 @@ export function useProfile() {
     if (profile) setProfile({ ...profile, ...updates });
   }, [profile]);
 
+  // GAP-12: Lazy-load drafts and scheduled videos when tab is selected
+  useEffect(() => {
+    if (!isOwnProfile) return;
+    if (activeTab === 'drafts' && drafts.length === 0) {
+      uploadApi.getDrafts().then(d => setDrafts(Array.isArray(d) ? d : [])).catch(err => logger.error('Failed to load drafts:', err));
+    }
+    if (activeTab === 'scheduled' && scheduledVideos.length === 0) {
+      uploadApi.getScheduledVideos().then(v => setScheduledVideos(Array.isArray(v) ? v : [])).catch(err => logger.error('Failed to load scheduled:', err));
+    }
+  }, [activeTab, isOwnProfile, drafts.length, scheduledVideos.length]);
+
   const deleteVideo = useCallback(async (videoId: string) => {
     try {
       await videoApi.deleteVideo(videoId);
@@ -200,6 +217,8 @@ export function useProfile() {
     profile,
     videos,
     likedVideos,
+    drafts,
+    scheduledVideos,
     activeTab,
     setActiveTab,
     categoryFilter,

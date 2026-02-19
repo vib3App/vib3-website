@@ -20,6 +20,7 @@ interface FeedVideoItemProps {
   onFollow: () => void;
   onComment: () => void;
   onShare: () => void;
+  onRepost?: () => void;
   userId?: string;
 }
 
@@ -33,6 +34,7 @@ export function FeedVideoItem({
   onFollow,
   onComment,
   onShare,
+  onRepost,
   userId,
 }: FeedVideoItemProps) {
   const videoRef = useRef<React.RefObject<HTMLVideoElement | null> | null>(null);
@@ -97,12 +99,15 @@ export function FeedVideoItem({
           commentsCount: video.commentsCount,
           sharesCount: video.sharesCount,
           savesCount: video.savesCount,
+          repostsCount: video.repostsCount,
+          isReposted: video.isReposted,
           thumbnailUrl: video.thumbnailUrl,
         }}
         onLike={onLike}
         onComment={() => onComment()}
         onSave={onSave}
         onShare={() => onShare()}
+        onRepost={onRepost}
       />
     </div>
   );

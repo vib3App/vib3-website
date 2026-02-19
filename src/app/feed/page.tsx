@@ -50,6 +50,7 @@ function FeedContent() {
     handleLike,
     handleSave,
     handleFollow,
+    handleRepost,
     handleComment,
     handleCommentAdded,
     handleShare,
@@ -179,6 +180,7 @@ function FeedContent() {
                         onFollow={() => handleFollow(index)}
                         onComment={() => handleComment(video.id)}
                         onShare={() => handleShare(video.id)}
+                        onRepost={() => handleRepost(index)}
                         userId={user?.id}
                       />
                     </SwipeActions>

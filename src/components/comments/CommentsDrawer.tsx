@@ -33,6 +33,7 @@ export function CommentsDrawer({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [sortBy, setSortBy] = useState<'top' | 'newest' | 'oldest'>('top');
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const isLoadingRef = useRef(false);
@@ -43,7 +44,7 @@ export function CommentsDrawer({
     setIsLoading(true);
 
     try {
-      const response = await videoApi.getComments(videoId, pageNum, 20);
+      const response = await videoApi.getComments(videoId, pageNum, 20, sortBy);
       if (append) {
         setComments(prev => [...prev, ...response.items]);
       } else {
@@ -57,13 +58,21 @@ export function CommentsDrawer({
       isLoadingRef.current = false;
       setIsLoading(false);
     }
-  }, [videoId]);
+  }, [videoId, sortBy]);
 
   useEffect(() => {
     if (isOpen && comments.length === 0) {
       loadComments(1);
     }
   }, [isOpen, loadComments, comments.length]);
+
+  // Reload when sort changes
+  const handleSortChange = useCallback((newSort: 'top' | 'newest' | 'oldest') => {
+    setSortBy(newSort);
+    setComments([]);
+    setPage(1);
+    setHasMore(true);
+  }, []);
 
   const handleScroll = useCallback(() => {
     if (!listRef.current || isLoading || !hasMore) return;
@@ -172,11 +181,22 @@ export function CommentsDrawer({
           <h2 className="text-white font-semibold">
             {(commentsCount ?? comments.length).toLocaleString()} comments
           </h2>
-          <button onClick={onClose} className="text-white/70 hover:text-white p-2" aria-label="Close comments">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              value={sortBy}
+              onChange={(e) => handleSortChange(e.target.value as 'top' | 'newest' | 'oldest')}
+              className="bg-white/10 text-white/80 text-xs rounded-lg px-2 py-1.5 border border-white/10 outline-none cursor-pointer hover:bg-white/15 transition"
+            >
+              <option value="top" className="bg-gray-900">Top</option>
+              <option value="newest" className="bg-gray-900">Newest</option>
+              <option value="oldest" className="bg-gray-900">Oldest</option>
+            </select>
+            <button onClick={onClose} className="text-white/70 hover:text-white p-2" aria-label="Close comments">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Comments List */}

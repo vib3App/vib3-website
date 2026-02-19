@@ -76,8 +76,14 @@ export const uploadApi = {
   /**
    * Publish video
    */
+  // GAP-10: Inject both field name formats for Flutter compatibility
   async publishVideo(input: PublishVideoInput): Promise<{ videoId: string }> {
-    const { data } = await apiClient.post<{ videoId: string }>('/videos/publish', input);
+    const payload = {
+      ...input,
+      allowEcho: input.allowEcho ?? input.allowDuet,
+      allowRemix: input.allowRemix ?? input.allowStitch,
+    };
+    const { data } = await apiClient.post<{ videoId: string }>('/videos/publish', payload);
     return data;
   },
 

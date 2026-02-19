@@ -130,6 +130,14 @@ class WebSocketService {
         this.typingHandlers.forEach((handler) => handler(data));
       });
 
+      // GAP-06: Also listen for Flutter-format typing events
+      this.socket.on('typing:start', (data: { conversationId: string; userId?: string; username?: string }) => {
+        this.typingHandlers.forEach((handler) => handler({ conversationId: data.conversationId, userId: data.userId || '', isTyping: true, username: data.username || data.userId || '' }));
+      });
+      this.socket.on('typing:stop', (data: { conversationId: string; userId?: string; username?: string }) => {
+        this.typingHandlers.forEach((handler) => handler({ conversationId: data.conversationId, userId: data.userId || '', isTyping: false, username: data.username || data.userId || '' }));
+      });
+
       // Presence events
       this.socket.on('presence', (data: { userId: string; isOnline: boolean }) => {
         this.presenceHandlers.forEach((handler) => handler(data.userId, data.isOnline));
@@ -137,6 +145,11 @@ class WebSocketService {
 
       this.socket.on('user:status', (data: { userId: string; status: string }) => {
         this.presenceHandlers.forEach((handler) => handler(data.userId, data.status === 'online'));
+      });
+
+      // GAP-08: Also listen for Flutter-format presence event
+      this.socket.on('user:online', (data: { userId: string; isOnline?: boolean }) => {
+        this.presenceHandlers.forEach((handler) => handler(data.userId, data.isOnline !== false));
       });
 
       // Notification events
@@ -257,16 +270,23 @@ class WebSocketService {
 
   /**
    * Send typing indicator
+   * GAP-06: Emit both web format (typing) and Flutter format (typing:start/typing:stop)
    */
   sendTyping(conversationId: string, isTyping: boolean): void {
     this.send('typing', { conversationId, isTyping });
+    // Also emit Flutter-compatible events
+    this.send(isTyping ? 'typing:start' : 'typing:stop', { conversationId });
   }
 
   /**
    * Mark conversation as read
+   * GAP-07: Emit both web format (mark_read) and Flutter format (chat:read + message:read)
    */
   sendRead(conversationId: string, messageId: string): void {
     this.send('mark_read', { conversationId, messageId });
+    // Also emit Flutter-compatible events
+    this.send('chat:read', { conversationId, messageId });
+    this.send('message:read', { conversationId, messageId });
   }
 
   /**

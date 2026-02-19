@@ -72,8 +72,40 @@ async function deleteDraft(id: string): Promise<void> {
   });
 }
 
+/**
+ * GAP-44: Fire-and-forget server sync for drafts.
+ * IndexedDB remains primary (fast), server is backup for cross-device access.
+ */
+async function syncDraftToServer(
+  action: 'save' | 'delete',
+  draftId: string,
+  videoUrl: string,
+  serverIdRef: React.MutableRefObject<string | null>
+): Promise<void> {
+  try {
+    const { uploadApi } = await import('@/services/api/upload');
+    if (action === 'delete') {
+      if (serverIdRef.current) {
+        await uploadApi.deleteDraft(serverIdRef.current);
+        serverIdRef.current = null;
+      }
+      return;
+    }
+    const payload = { caption: `editor-draft:${draftId}`, hashtags: [] as string[], mentions: [] as string[], isPublic: false, allowComments: true, allowDuet: true, allowStitch: true, videoUrl };
+    if (serverIdRef.current) {
+      await uploadApi.updateDraft(serverIdRef.current, payload);
+    } else {
+      const created = await uploadApi.createDraft(payload);
+      if (created?.id) serverIdRef.current = created.id;
+    }
+  } catch (err) {
+    logger.error('Server draft sync failed (non-blocking):', err);
+  }
+}
+
 export function useDraftPersistence(videoUrl: string | null) {
   const draftIdRef = useRef<string | null>(null);
+  const serverDraftIdRef = useRef<string | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const getStateRef = useRef<(() => Omit<EditorDraft, 'id' | 'videoUrl' | 'updatedAt'>) | null>(null);
 
@@ -99,6 +131,8 @@ export function useDraftPersistence(videoUrl: string | null) {
         ...state,
         updatedAt: Date.now(),
       });
+      // GAP-44: Fire-and-forget server sync
+      syncDraftToServer('save', draftIdRef.current, videoUrl, serverDraftIdRef);
     } catch (err) {
       logger.error('Failed to save editor draft:', err);
     }
@@ -118,6 +152,8 @@ export function useDraftPersistence(videoUrl: string | null) {
     if (!draftIdRef.current) return;
     try {
       await deleteDraft(draftIdRef.current);
+      // GAP-44: Fire-and-forget server delete
+      syncDraftToServer('delete', draftIdRef.current, '', serverDraftIdRef);
     } catch (err) {
       logger.error('Failed to delete editor draft:', err);
     }

@@ -46,11 +46,11 @@ export default function ProfilePage() {
         <div className="max-w-3xl mx-auto px-4 py-6">
           <ProfileInfo profile={p.profile} isOwnProfile={p.isOwnProfile} isFollowing={p.isFollowing} isFollowLoading={p.isFollowLoading} onFollow={p.handleFollow} onEditClick={() => p.setShowEditModal(true)} onShare={p.copyProfileLink} userId={p.userId} onAnalyticsClick={() => router.push('/creator/analytics')} onMessageClick={() => router.push(`/messages?user=${p.userId}`)} onTipClick={!p.isOwnProfile && p.isAuthenticated ? () => setShowTipModal(true) : undefined} />
           <ProfileStats stats={p.profile.stats} userId={p.userId} />
-          <ProfileTabs activeTab={p.activeTab} onTabChange={p.setActiveTab} />
+          <ProfileTabs activeTab={p.activeTab} onTabChange={p.setActiveTab} isOwnProfile={p.isOwnProfile} />
           {p.activeTab === 'videos' && (
             <ProfileCategoryFilter selected={p.categoryFilter} onSelect={p.setCategoryFilter} />
           )}
-          <ProfileVideos activeTab={p.activeTab} videos={p.videos} likedVideos={p.likedVideos} isOwnProfile={p.isOwnProfile} onDeleteVideo={p.deleteVideo} categoryFilter={p.categoryFilter} />
+          <ProfileVideos activeTab={p.activeTab} videos={p.videos} likedVideos={p.likedVideos} drafts={p.drafts} scheduledVideos={p.scheduledVideos} isOwnProfile={p.isOwnProfile} onDeleteVideo={p.deleteVideo} categoryFilter={p.categoryFilter} />
         </div>
 
         {p.profile && (

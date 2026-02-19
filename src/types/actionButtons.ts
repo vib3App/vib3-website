@@ -3,7 +3,7 @@
  * Defines types for customizable, draggable action buttons
  */
 
-export type ButtonId = 'like' | 'comment' | 'save' | 'share' | 'remix' | 'sound';
+export type ButtonId = 'like' | 'comment' | 'save' | 'share' | 'repost' | 'remix' | 'sound';
 export type LayoutType = 'horizontal' | 'vertical' | 'floating' | 'arc' | 'corner';
 export type ButtonSize = 'small' | 'medium' | 'large';
 
@@ -32,10 +32,12 @@ interface VideoActionState {
   isFavorited?: boolean;
   hasCommented?: boolean;
   hasShared?: boolean;
+  isReposted?: boolean;
   likesCount: number;
   commentsCount: number;
   sharesCount?: number;
   savesCount?: number;
+  repostsCount?: number;
   thumbnailUrl?: string;
 }
 
@@ -47,6 +49,7 @@ export interface ActionButtonProps {
   onComment: () => void;
   onSave: () => void;
   onShare: () => void;
+  onRepost: () => void;
 }
 
 export interface LayoutProps {
@@ -59,6 +62,7 @@ export interface LayoutProps {
   onComment: () => void;
   onSave: () => void;
   onShare: () => void;
+  onRepost: () => void;
   onDragStart: () => void;
   onDragEnd: (newPosition: Position) => void;
   onOpenSettings: () => void;
@@ -69,8 +73,9 @@ const DEFAULT_BUTTONS: ButtonConfig[] = [
   { id: 'comment', visible: true, order: 1 },
   { id: 'save', visible: true, order: 2 },
   { id: 'share', visible: true, order: 3 },
-  { id: 'remix', visible: true, order: 4 },
-  { id: 'sound', visible: true, order: 5 },
+  { id: 'repost', visible: true, order: 4 },
+  { id: 'remix', visible: true, order: 5 },
+  { id: 'sound', visible: true, order: 6 },
 ];
 
 export const DEFAULT_PREFERENCES: ActionButtonPreferences = {
@@ -82,8 +87,9 @@ export const DEFAULT_PREFERENCES: ActionButtonPreferences = {
     comment: { x: 10, y: 40 },
     save: { x: 10, y: 50 },
     share: { x: 10, y: 60 },
-    remix: { x: 10, y: 70 },
-    sound: { x: 10, y: 80 },
+    repost: { x: 10, y: 70 },
+    remix: { x: 10, y: 80 },
+    sound: { x: 10, y: 90 },
   },
   containerPosition: { x: 50, y: 85 },
 };

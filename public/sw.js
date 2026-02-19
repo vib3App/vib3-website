@@ -1,9 +1,14 @@
 // VIB3 Service Worker
 const CACHE_NAME = 'vib3-cache-v1';
+const VIDEO_CACHE_NAME = 'vib3-video-cache-v1';
 const API_BASE = 'https://api.vib3app.net';
 const DB_NAME = 'vib3-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'pending-actions';
+const VIDEO_STORE_NAME = 'cached-videos';
+
+// CDN domains for video content
+const VIDEO_CDN_DOMAINS = ['vz-', '.b-cdn.net', 'bunnycdn', 'pull-zone'];
 
 const STATIC_ASSETS = [
   '/',
@@ -35,9 +40,30 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// GAP-17: Check if URL is a video CDN URL
+function isVideoCdnUrl(url) {
+  return VIDEO_CDN_DOMAINS.some(domain => url.includes(domain));
+}
+
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  // GAP-17: Intercept video CDN requests — serve cached version when offline
+  if (isVideoCdnUrl(event.request.url)) {
+    event.respondWith(
+      caches.open(VIDEO_CACHE_NAME).then(cache =>
+        cache.match(event.request).then(cached => {
+          if (cached) return cached;
+          return fetch(event.request).catch(() =>
+            new Response('', { status: 503, statusText: 'Offline' })
+          );
+        })
+      )
+    );
+    return;
+  }
+
   if (!event.request.url.startsWith(self.location.origin)) return;
 
   if (event.request.url.includes('/api/')) {
@@ -103,10 +129,14 @@ self.addEventListener('fetch', (event) => {
 function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+      }
+      // GAP-17: Video cache metadata store
+      if (!db.objectStoreNames.contains(VIDEO_STORE_NAME)) {
+        db.createObjectStore(VIDEO_STORE_NAME, { keyPath: 'videoId' });
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -297,9 +327,113 @@ async function updateFeedCache() {
   }
 }
 
-// Handle skip waiting message from client
+// Handle messages from client
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (!event.data) return;
+
+  if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+
+  // GAP-17: Cache a video for offline playback
+  if (event.data.type === 'CACHE_VIDEO') {
+    event.waitUntil(cacheVideo(event.data));
+  }
+
+  // GAP-17: Remove a cached video
+  if (event.data.type === 'REMOVE_VIDEO') {
+    event.waitUntil(removeCachedVideo(event.data.videoId, event.data.videoUrl));
+  }
+
+  // GAP-17: Get list of cached videos
+  if (event.data.type === 'GET_CACHED_VIDEOS') {
+    event.waitUntil(
+      getCachedVideos().then(videos => {
+        event.ports[0].postMessage({ type: 'CACHED_VIDEOS', videos });
+      })
+    );
+  }
 });
+
+// GAP-17: Cache a video MP4 for offline playback
+async function cacheVideo({ videoId, videoUrl, thumbnailUrl, caption }) {
+  try {
+    const cache = await caches.open(VIDEO_CACHE_NAME);
+
+    // Cache the video file
+    const videoResponse = await fetch(videoUrl);
+    if (videoResponse.ok) {
+      await cache.put(new Request(videoUrl), videoResponse.clone());
+    }
+
+    // Cache the thumbnail if provided
+    if (thumbnailUrl) {
+      try {
+        const thumbResponse = await fetch(thumbnailUrl);
+        if (thumbResponse.ok) {
+          await cache.put(new Request(thumbnailUrl), thumbResponse.clone());
+        }
+      } catch { /* thumbnail cache is optional */ }
+    }
+
+    // Store metadata in IndexedDB
+    const db = await openDB();
+    const tx = db.transaction(VIDEO_STORE_NAME, 'readwrite');
+    tx.objectStore(VIDEO_STORE_NAME).put({
+      videoId,
+      videoUrl,
+      thumbnailUrl,
+      caption,
+      cachedAt: new Date().toISOString(),
+      size: videoResponse.headers.get('content-length') || 0,
+    });
+
+    // Notify all clients
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({ type: 'VIDEO_CACHED', videoId });
+    });
+  } catch (error) {
+    console.error('[SW] Failed to cache video:', error);
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({ type: 'VIDEO_CACHE_ERROR', videoId, error: error.message });
+    });
+  }
+}
+
+// GAP-17: Remove a cached video
+async function removeCachedVideo(videoId, videoUrl) {
+  try {
+    const cache = await caches.open(VIDEO_CACHE_NAME);
+    if (videoUrl) {
+      await cache.delete(new Request(videoUrl));
+    }
+
+    const db = await openDB();
+    const tx = db.transaction(VIDEO_STORE_NAME, 'readwrite');
+    tx.objectStore(VIDEO_STORE_NAME).delete(videoId);
+
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({ type: 'VIDEO_REMOVED', videoId });
+    });
+  } catch (error) {
+    console.error('[SW] Failed to remove cached video:', error);
+  }
+}
+
+// GAP-17: Get all cached video metadata
+async function getCachedVideos() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(VIDEO_STORE_NAME, 'readonly');
+      const request = tx.objectStore(VIDEO_STORE_NAME).getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  } catch {
+    return [];
+  }
+}

@@ -81,6 +81,39 @@ export const callsApi = {
   },
 
   /**
+   * GAP-13: Get call permission for a conversation (matches Flutter endpoint)
+   */
+  async getCallPermission(conversationId: string): Promise<{ permission: string }> {
+    const { data } = await apiClient.get<{ permission: string }>(
+      `/chats/${conversationId}/call-permission`
+    );
+    return data;
+  },
+
+  /**
+   * GAP-13: Update call permission for a conversation (matches Flutter endpoint)
+   */
+  async updateCallPermission(conversationId: string, permission: string): Promise<void> {
+    await apiClient.put(`/chats/${conversationId}/call-permission`, { permission });
+  },
+
+  /**
+   * GAP-13: Get/update global call privacy setting
+   */
+  async getCallPrivacy(): Promise<{ permission: string }> {
+    try {
+      const { data } = await apiClient.get<{ permission: string }>('/user/call-privacy');
+      return data;
+    } catch {
+      return { permission: 'everyone' };
+    }
+  },
+
+  async updateCallPrivacy(permission: string): Promise<void> {
+    await apiClient.put('/user/call-privacy', { permission });
+  },
+
+  /**
    * Check if user is available for calls
    */
   async checkAvailability(userId: string): Promise<{ available: boolean; reason?: string }> {

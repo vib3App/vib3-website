@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsCard, SettingsToggle, SettingsLink } from './SettingsComponents';
 import { CallPermissions } from '@/components/call/CallPermissions';
+import { callsApi } from '@/services/api/calls';
+import { logger } from '@/utils/logger';
 
 type CallPermission = 'everyone' | 'followers' | 'mutual' | 'nobody';
 
@@ -40,6 +42,18 @@ export function PrivacySection() {
     }
     return defaultSettings;
   });
+
+  // GAP-13: Load call privacy from server on mount
+  useEffect(() => {
+    callsApi.getCallPrivacy().then(({ permission }) => {
+      if (permission && permission !== settings.callPermission) {
+        const newSettings = { ...settings, callPermission: permission as CallPermission };
+        setSettings(newSettings);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+      }
+    }).catch(err => logger.error('Failed to load call privacy:', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleSetting = (key: keyof PrivacySettings) => {
     const newSettings = { ...settings, [key]: !settings[key] };
@@ -92,6 +106,10 @@ export function PrivacySection() {
             const newSettings = { ...settings, callPermission: perm };
             setSettings(newSettings);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+            // GAP-13: Persist to server
+            callsApi.updateCallPrivacy(perm).catch(err =>
+              logger.error('Failed to update call privacy:', err)
+            );
           }}
           blockedUsers={[]}
           onUnblockUser={() => {}}

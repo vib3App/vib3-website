@@ -31,8 +31,11 @@ export const messagingApi = {
     await apiClient.post(`/messages/conversations/${conversationId}/read`);
   },
 
-  async deleteMessage(conversationId: string, messageId: string): Promise<void> {
-    await apiClient.delete(`/messages/conversations/${conversationId}/messages/${messageId}`);
+  // GAP-05/14: Support forEveryone param for message deletion
+  async deleteMessage(conversationId: string, messageId: string, forEveryone?: boolean): Promise<void> {
+    await apiClient.delete(`/messages/conversations/${conversationId}/messages/${messageId}`, {
+      params: forEveryone !== undefined ? { forEveryone } : undefined,
+    });
   },
 
   async addReaction(conversationId: string, messageId: string, emoji: string): Promise<void> {

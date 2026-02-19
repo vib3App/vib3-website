@@ -87,13 +87,18 @@ export function useConversation() {
   const handleReply = useCallback((message: Message) => { setReplyingTo(message); inputRef.current?.focus(); }, []);
   const cancelReply = useCallback(() => { setReplyingTo(null); }, []);
 
-  const handleDelete = useCallback(async (messageId: string) => {
+  // GAP-05/14: Support forEveryone deletion param
+  const handleDelete = useCallback(async (messageId: string, forEveryone = true) => {
     try {
-      await messagesApi.deleteMessage(conversationId, messageId);
+      await messagesApi.deleteMessage(conversationId, messageId, forEveryone);
       setMessages(prev => prev.filter(m => m.id !== messageId));
-      websocketService.send('message:delete', { conversationId, messageId });
+      websocketService.send('message:delete', { conversationId, messageId, forEveryone });
     } catch (error) { logger.error('Failed to delete message:', error); }
   }, [conversationId]);
+
+  const handleDeleteForEveryone = useCallback(async (messageId: string) => {
+    await handleDelete(messageId, true);
+  }, [handleDelete]);
 
   const handleDeleteForMe = useCallback((messageId: string) => {
     setMessages(prev => prev.filter(m => m.id !== messageId));
@@ -175,7 +180,7 @@ export function useConversation() {
     typingUsers, showEmojiPicker, setShowEmojiPicker, replyingTo,
     messagesEndRef, inputRef, participant, user, isAuthenticated,
     handleTyping, handleSend, handleKeyDown, handleReaction, handleReply,
-    cancelReply, handleDelete, handleEmojiSelect, handleSendMedia,
+    cancelReply, handleDelete, handleDeleteForEveryone, handleEmojiSelect, handleSendMedia,
     handleSendLocation, handleSendVoice, handleSendGif, handleDeleteForMe,
     goBack: () => router.push('/messages'),
   };
