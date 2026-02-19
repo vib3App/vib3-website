@@ -60,21 +60,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await authApi.refreshToken(storedRefreshToken);
 
-      // Store new tokens
-      localStorage.setItem('auth_token', response.token);
+      // Store new tokens — backend may return accessToken or token
+      const newAccessToken = response.accessToken || response.token;
+      localStorage.setItem('auth_token', newAccessToken);
       localStorage.setItem('refresh_token', response.refreshToken);
 
       // Update user state with new token
       if (user) {
         setUser({
           ...user,
-          token: response.token,
+          token: newAccessToken,
           refreshToken: response.refreshToken,
         });
       }
 
       // Schedule next refresh
-      scheduleTokenRefreshRef.current(response.token);
+      scheduleTokenRefreshRef.current(newAccessToken);
       isRefreshingRef.current = false;
       return true;
     } catch (error: unknown) {

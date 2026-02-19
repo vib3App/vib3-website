@@ -30,6 +30,7 @@ interface AuthResponse {
 
 interface RefreshResponse {
   token: string;
+  accessToken?: string;
   refreshToken: string;
 }
 

@@ -31,13 +31,18 @@ async function refreshAuthToken(): Promise<string | null> {
 
   try {
     // Use a separate axios instance to avoid interceptor loops
-    const response = await axios.post<{ token: string; refreshToken: string }>(
+    const response = await axios.post<{ token?: string; accessToken?: string; refreshToken: string }>(
       `${config.api.baseUrl}/auth/refresh`,
       { refreshToken },
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    const { token, refreshToken: newRefreshToken } = response.data;
+    const { token: tokenField, accessToken, refreshToken: newRefreshToken } = response.data;
+    const token = accessToken || tokenField || null;
+
+    if (!token) {
+      return null;
+    }
 
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token);
