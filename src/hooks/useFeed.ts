@@ -79,7 +79,7 @@ export function useFeed() {
         response = await feedApi.getFeedByCategory(
           selectedCategory.id,
           currentPage,
-          10,
+          20,
           user?.id,
           selectedCategory.settings?.feedOrder || 'chronological'
         );

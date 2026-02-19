@@ -9,7 +9,7 @@ const _vibeHashtags: Record<string, string> = {
 };
 
 export const feedsApi = {
-  async getForYouFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getForYouFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'foryou' } });
       return transformFeedResponse(data);
@@ -19,7 +19,7 @@ export const feedsApi = {
     }
   },
 
-  async getFollowingFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getFollowingFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'following' } });
       return transformFeedResponse(data);
@@ -29,7 +29,7 @@ export const feedsApi = {
     }
   },
 
-  async getTrendingFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getTrendingFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/trending', { params: { page, limit } });
       return transformFeedResponse(data);
@@ -39,7 +39,7 @@ export const feedsApi = {
     }
   },
 
-  async getDiscoverFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getDiscoverFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'discover' } });
       return transformFeedResponse(data);
@@ -49,7 +49,7 @@ export const feedsApi = {
     }
   },
 
-  async getFriendsFeed(page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getFriendsFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'friends' } });
       return transformFeedResponse(data);
@@ -59,7 +59,7 @@ export const feedsApi = {
     }
   },
 
-  async getSelfFeed(_userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getSelfFeed(_userId: string, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/user/videos', { params: { page, limit } });
       return transformFeedResponse(data);
@@ -69,9 +69,13 @@ export const feedsApi = {
     }
   },
 
-  async getCategoryFeed(categoryId: string, page = 1, limit = 10, feedOrder: FeedOrder = 'chronological'): Promise<PaginatedResponse<Video>> {
+  async getCategoryFeed(categoryId: string, page = 1, limit = 20, feedOrder: FeedOrder = 'chronological'): Promise<PaginatedResponse<Video>> {
     try {
-      const { data } = await apiClient.get<FeedResponse>(`/videos/category/${categoryId}`, { params: { page, limit, order: feedOrder } });
+      // Use /videos?feed=categoryFeed&categoryId=X to match backend expectation
+      // (not /videos/category/:id which is a public tag-based search endpoint)
+      const { data } = await apiClient.get<FeedResponse>('/videos', {
+        params: { page, limit, feed: 'categoryFeed', categoryId, order: feedOrder }
+      });
       return transformFeedResponse(data);
     } catch (error) {
       logger.error('Failed to get category feed:', error);
@@ -79,7 +83,17 @@ export const feedsApi = {
     }
   },
 
-  async getUserVideos(userId: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getFamilyFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
+    try {
+      const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, feed: 'family' } });
+      return transformFeedResponse(data);
+    } catch (error) {
+      logger.error('Failed to get Family feed:', error);
+      return { items: [], page, hasMore: false };
+    }
+  },
+
+  async getUserVideos(userId: string, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedVideoResponse[] | FeedResponse>(`/videos/user/${userId}`, { params: { page, limit } });
       if (Array.isArray(data)) {
@@ -92,7 +106,7 @@ export const feedsApi = {
     }
   },
 
-  async getHashtagFeed(hashtag: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getHashtagFeed(hashtag: string, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>(`/videos/hashtag/${encodeURIComponent(hashtag)}`, { params: { page, limit } });
       return transformFeedResponse(data);
@@ -102,7 +116,7 @@ export const feedsApi = {
     }
   },
 
-  async getVibesFeed(vibe: VibeType, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getVibesFeed(vibe: VibeType, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/videos', { params: { page, limit, vibe } });
       return transformFeedResponse(data);
@@ -112,7 +126,7 @@ export const feedsApi = {
     }
   },
 
-  async searchVideos(query: string, page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async searchVideos(query: string, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     try {
       const { data } = await apiClient.get<FeedResponse>('/search/videos', { params: { q: query, page, limit } });
       return transformFeedResponse(data);
@@ -122,7 +136,7 @@ export const feedsApi = {
     }
   },
 
-  async getFeed(type: FeedType = 'forYou', page = 1, limit = 10): Promise<PaginatedResponse<Video>> {
+  async getFeed(type: FeedType = 'forYou', page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
     switch (type) {
       case 'following': return this.getFollowingFeed(page, limit);
       case 'friends': return this.getFriendsFeed(page, limit);
@@ -132,11 +146,12 @@ export const feedsApi = {
     }
   },
 
-  async getFeedByCategory(categoryId: string, page = 1, limit = 10, userId?: string, feedOrder: FeedOrder = 'chronological'): Promise<PaginatedResponse<Video>> {
+  async getFeedByCategory(categoryId: string, page = 1, limit = 20, userId?: string, feedOrder: FeedOrder = 'chronological'): Promise<PaginatedResponse<Video>> {
     switch (categoryId) {
       case 'foryou': return this.getForYouFeed(page, limit);
       case 'following': return this.getFollowingFeed(page, limit);
       case 'friends': return this.getFriendsFeed(page, limit);
+      case 'family': return this.getFamilyFeed(page, limit);
       case 'self': return userId ? this.getSelfFeed(userId, page, limit) : { items: [], page, hasMore: false };
       default: return this.getCategoryFeed(categoryId, page, limit, feedOrder);
     }
