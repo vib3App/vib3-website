@@ -67,7 +67,11 @@ export function TwoFactorSetup({ enabled, onToggle }: TwoFactorSetupProps) {
     try {
       const { data } = await apiClient.post<{ verified?: boolean; backupCodes?: string[] }>('/auth/2fa/verify', { code: verifyCode });
       if (data.verified !== false) {
-        setBackupCodes(data.backupCodes || generateMockBackupCodes());
+        if (!data.backupCodes?.length) {
+          setError('Server did not return backup codes. Please try again.');
+          return;
+        }
+        setBackupCodes(data.backupCodes);
         setStep('backup');
       } else {
         setError('Invalid code. Please try again.');
@@ -180,11 +184,4 @@ export function TwoFactorSetup({ enabled, onToggle }: TwoFactorSetupProps) {
       )}
     </div>
   );
-}
-
-function generateMockBackupCodes(): string[] {
-  return Array.from({ length: 8 }, () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  });
 }

@@ -31,9 +31,7 @@ export const storiesApi = {
   async uploadStoryMedia(file: File): Promise<{ url: string }> {
     const formData = new FormData();
     formData.append('media', file);
-    const { data } = await apiClient.post('/stories/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const { data } = await apiClient.post('/stories/upload', formData);
     return data;
   },
 

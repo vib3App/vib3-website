@@ -70,9 +70,7 @@ export default function ReportProblemPage() {
         formData.append(`screenshot_${i}`, ss.file);
       });
 
-      await apiClient.post('/reports/problem', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      await apiClient.post('/reports/problem', formData);
       setSubmitted(true);
     } catch (err) {
       logger.error('Failed to submit report:', err);

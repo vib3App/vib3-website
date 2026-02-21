@@ -71,6 +71,9 @@ class WebSocketService {
   private collabChatHandlers: Set<GenericHandler> = new Set();
   private collabReactionHandlers: Set<GenericHandler> = new Set();
 
+  /** Generic event handlers that must survive reconnection */
+  private genericHandlers: Map<string, Set<GenericHandler>> = new Map();
+
   /**
    * Connect to Socket.IO server
    */
@@ -220,6 +223,13 @@ class WebSocketService {
         this.collabReactionHandlers.forEach((handler) => handler(data));
       });
 
+      // Re-register generic .on() handlers on new socket
+      for (const [event, handlers] of this.genericHandlers) {
+        for (const handler of handlers) {
+          this.socket.on(event, handler);
+        }
+      }
+
     } catch (error) {
       logger.error('Failed to create Socket.IO connection:', error);
     }
@@ -234,6 +244,7 @@ class WebSocketService {
       this.socket = null;
     }
     this.currentToken = null;
+    this.messageQueue = [];
   }
 
   /**
@@ -409,10 +420,17 @@ class WebSocketService {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on(event: string, handler: (data: any) => void): () => void {
+    // Track in genericHandlers so it survives reconnection
+    if (!this.genericHandlers.has(event)) {
+      this.genericHandlers.set(event, new Set());
+    }
+    this.genericHandlers.get(event)!.add(handler);
+
     if (this.socket) {
       this.socket.on(event, handler);
     }
     return () => {
+      this.genericHandlers.get(event)?.delete(handler);
       if (this.socket) {
         this.socket.off(event, handler);
       }
