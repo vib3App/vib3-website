@@ -7,6 +7,8 @@ import { SocialProvider } from '@/components/providers/SocialProvider';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useDeepLink } from '@/hooks/useDeepLink';
 import { useCallNotifications } from '@/hooks/useCallNotifications';
+import { useKeyboardShortcuts } from '@/hooks/keyboard/useKeyboardShortcuts';
+import { KeyboardShortcutsModal } from '@/hooks/keyboard/KeyboardShortcutsModal';
 
 /** Resolves ?dl= deep link params into web app routes */
 function DeepLinkResolver({ children }: { children: ReactNode }) {
@@ -18,6 +20,20 @@ function DeepLinkResolver({ children }: { children: ReactNode }) {
 function CallNotificationListener({ children }: { children: ReactNode }) {
   useCallNotifications();
   return <>{children}</>;
+}
+
+/** Global keyboard shortcuts: Alt+nav, ? for help modal */
+function GlobalKeyboardShortcuts({ children }: { children: ReactNode }) {
+  const { showShortcutsModal, setShowShortcutsModal } = useKeyboardShortcuts();
+  return (
+    <>
+      {children}
+      <KeyboardShortcutsModal
+        isOpen={showShortcutsModal}
+        onClose={() => setShowShortcutsModal(false)}
+      />
+    </>
+  );
 }
 
 interface ProvidersProps {
@@ -44,7 +60,9 @@ export function Providers({ children }: ProvidersProps) {
           <ErrorBoundary>
             <Suspense>
               <CallNotificationListener>
-                <DeepLinkResolver>{children}</DeepLinkResolver>
+                <GlobalKeyboardShortcuts>
+                  <DeepLinkResolver>{children}</DeepLinkResolver>
+                </GlobalKeyboardShortcuts>
               </CallNotificationListener>
             </Suspense>
           </ErrorBoundary>

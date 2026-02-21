@@ -14,6 +14,7 @@ import { videoApi, userApi } from '@/services/api';
 import type { Video } from '@/types';
 import { logger } from '@/utils/logger';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { useVideoPageShortcuts } from './useVideoPageShortcuts';
 
 export default function VideoPlayerPage() {
   return (
@@ -216,6 +217,18 @@ function VideoPlayerContent() {
   const handleShare = useCallback((_id: string) => {
     setShareOpen(true);
   }, []);
+
+  // Keyboard shortcuts: space=play, arrows=seek, f=fullscreen, m=mute, etc.
+  useVideoPageShortcuts({
+    scrollContainerRef,
+    currentIndex,
+    videosLength: videos.length,
+    toggleMute,
+    onLike: () => handleLike(currentIndex),
+    onSave: () => handleSave(currentIndex),
+    onComment: () => { if (selectedVideo) setCommentsOpen(true); },
+    onShare: () => { if (selectedVideo) setShareOpen(true); },
+  });
 
   if (isLoading) {
     return (

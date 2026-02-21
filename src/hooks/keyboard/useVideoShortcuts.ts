@@ -16,6 +16,7 @@ interface VideoShortcutHandlers {
   onLike?: () => void;
   onComment?: () => void;
   onShare?: () => void;
+  onSave?: () => void;
 }
 
 export function useVideoShortcuts(handlers: VideoShortcutHandlers) {
@@ -87,6 +88,9 @@ export function useVideoShortcuts(handlers: VideoShortcutHandlers) {
           break;
         case 'S':
           if (e.shiftKey && !e.ctrlKey) { e.preventDefault(); h.onShare?.(); }
+          break;
+        case 'B':
+          if (e.shiftKey) { e.preventDefault(); h.onSave?.(); }
           break;
       }
     };

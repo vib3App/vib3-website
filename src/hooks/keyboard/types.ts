@@ -9,8 +9,13 @@ export interface ShortcutHandler {
   category: string;
 }
 
+/**
+ * Reference list of all keyboard shortcuts for the help modal.
+ * Actual handling is in useKeyboardShortcuts (navigation),
+ * useVideoShortcuts (playback/actions), and useFeedNavigation (feed).
+ */
 export const SHORTCUTS: ShortcutHandler[] = [
-  // Navigation
+  // Navigation (handled by useKeyboardShortcuts in providers)
   { key: 'h', alt: true, handler: () => {}, description: 'Go Home', category: 'Navigation' },
   { key: 'f', alt: true, handler: () => {}, description: 'Go to Feed', category: 'Navigation' },
   { key: 's', alt: true, handler: () => {}, description: 'Go to Search', category: 'Navigation' },
@@ -19,7 +24,7 @@ export const SHORTCUTS: ShortcutHandler[] = [
   { key: 'n', alt: true, handler: () => {}, description: 'Go to Notifications', category: 'Navigation' },
   { key: 'u', alt: true, handler: () => {}, description: 'Upload Video', category: 'Navigation' },
 
-  // Playback
+  // Playback (handled by useVideoShortcuts on video pages, useFeedNavigation on feed)
   { key: ' ', handler: () => {}, description: 'Play/Pause', category: 'Playback' },
   { key: 'ArrowUp', handler: () => {}, description: 'Previous Video', category: 'Playback' },
   { key: 'ArrowDown', handler: () => {}, description: 'Next Video', category: 'Playback' },
@@ -32,13 +37,13 @@ export const SHORTCUTS: ShortcutHandler[] = [
   { key: 'i', handler: () => {}, description: 'Toggle Mini Player', category: 'Playback' },
   { key: 'p', ctrl: true, handler: () => {}, description: 'Picture-in-Picture', category: 'Playback' },
 
-  // Actions
+  // Actions (handled by useVideoShortcuts on video pages, useFeedNavigation on feed)
   { key: 'l', shift: true, handler: () => {}, description: 'Like Video', category: 'Actions' },
   { key: 'c', shift: true, handler: () => {}, description: 'Open Comments', category: 'Actions' },
   { key: 's', shift: true, handler: () => {}, description: 'Share Video', category: 'Actions' },
   { key: 'b', shift: true, handler: () => {}, description: 'Save to Collection', category: 'Actions' },
 
-  // Help
+  // Help (handled by useKeyboardShortcuts in providers)
   { key: '?', handler: () => {}, description: 'Show Shortcuts', category: 'Help' },
   { key: 'Escape', handler: () => {}, description: 'Close Modal', category: 'Help' },
 ];
