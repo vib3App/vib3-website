@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { capsuleApi } from '@/services/api/capsule';
 import type { TimeCapsule } from '@/types/capsule';
 import { logger } from '@/utils/logger';
@@ -11,22 +11,33 @@ export function useCapsules() {
   const [tab, setTab] = useState<CapsuleTab>('upcoming');
   const [capsules, setCapsules] = useState<TimeCapsule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [subscribedIds, setSubscribedIds] = useState<Set<string>>(new Set());
 
+  // Reset and load first page when tab changes
   useEffect(() => {
     const fetchCapsules = async () => {
       setLoading(true);
+      setPage(1);
+      setHasMore(false);
       try {
         let data: TimeCapsule[];
+        let more = false;
         switch (tab) {
-          case 'upcoming':
-            const upcoming = await capsuleApi.getUpcomingCapsules();
-            data = upcoming.capsules;
+          case 'upcoming': {
+            const result = await capsuleApi.getUpcomingCapsules(1, 20);
+            data = result.capsules;
+            more = result.hasMore;
             break;
-          case 'unlocked':
-            const unlocked = await capsuleApi.getUnlockedCapsules();
-            data = unlocked.capsules;
+          }
+          case 'unlocked': {
+            const result = await capsuleApi.getUnlockedCapsules(1, 20);
+            data = result.capsules;
+            more = result.hasMore;
             break;
+          }
           case 'my':
             data = await capsuleApi.getMyCapsules();
             break;
@@ -35,6 +46,7 @@ export function useCapsules() {
             break;
         }
         setCapsules(data);
+        setHasMore(more);
       } catch (err) {
         logger.error('Failed to fetch capsules:', err);
       } finally {
@@ -44,6 +56,34 @@ export function useCapsules() {
 
     fetchCapsules();
   }, [tab]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    try {
+      let data: TimeCapsule[] = [];
+      let more = false;
+      if (tab === 'upcoming') {
+        const result = await capsuleApi.getUpcomingCapsules(nextPage, 20);
+        data = result.capsules;
+        more = result.hasMore;
+      } else if (tab === 'unlocked') {
+        const result = await capsuleApi.getUnlockedCapsules(nextPage, 20);
+        data = result.capsules;
+        more = result.hasMore;
+      }
+      if (data.length > 0) {
+        setCapsules(prev => [...prev, ...data]);
+        setPage(nextPage);
+      }
+      setHasMore(more);
+    } catch (err) {
+      logger.error('Failed to load more capsules:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, page, tab]);
 
   const handleSubscribe = async (capsuleId: string) => {
     try {
@@ -70,6 +110,9 @@ export function useCapsules() {
     setTab,
     capsules,
     loading,
+    loadingMore,
+    hasMore,
+    loadMore,
     handleSubscribe,
     isSubscribed,
   };

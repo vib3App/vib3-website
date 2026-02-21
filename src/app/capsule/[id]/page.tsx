@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Hls from 'hls.js';
-import { useRef } from 'react';
 import { capsuleApi } from '@/services/api/capsule';
 import { useAuthStore } from '@/stores/authStore';
 import { useConfirmStore } from '@/stores/confirmStore';
@@ -27,6 +26,15 @@ function formatCountdown(unlockAt: string): string {
   return `${minutes}m`;
 }
 
+const SHARE_OPTIONS = [
+  { id: 'copy', label: 'Copy Link', icon: '🔗' },
+  { id: 'twitter', label: 'Twitter/X', icon: '𝕏' },
+  { id: 'facebook', label: 'Facebook', icon: '📘' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: '💬' },
+  { id: 'telegram', label: 'Telegram', icon: '✈️' },
+  { id: 'email', label: 'Email', icon: '📧' },
+];
+
 export default function CapsuleDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -39,6 +47,10 @@ export default function CapsuleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState('');
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const capsuleId = params.id as string;
   const isOwner = capsule?.creatorId === user?.id;
@@ -48,6 +60,8 @@ export default function CapsuleDetailPage() {
       try {
         const data = await capsuleApi.getCapsule(capsuleId);
         setCapsule(data);
+        setIsLiked(data.isLiked || false);
+        setLikeCount(data.likeCount || 0);
       } catch (err) {
         logger.error('Failed to fetch capsule:', err);
         setError('Capsule not found');
@@ -85,6 +99,74 @@ export default function CapsuleDetailPage() {
 
     return () => { hlsRef.current?.destroy(); };
   }, [capsule?.videoUrl]);
+
+  const handleLike = async () => {
+    if (!user) { router.push('/login'); return; }
+    const wasLiked = isLiked;
+    setIsLiked(!wasLiked);
+    setLikeCount(prev => wasLiked ? prev - 1 : prev + 1);
+    try {
+      if (wasLiked) {
+        await capsuleApi.unlikeCapsule(capsuleId);
+      } else {
+        await capsuleApi.likeCapsule(capsuleId);
+      }
+    } catch (err) {
+      logger.error('Failed to toggle like:', err);
+      setIsLiked(wasLiked);
+      setLikeCount(prev => wasLiked ? prev + 1 : prev - 1);
+    }
+  };
+
+  const handleShare = async (platform: string) => {
+    const shareUrl = `https://vib3app.net/capsule/${capsuleId}`;
+    const text = encodeURIComponent(capsule?.title || 'Check out this time capsule on VIB3!');
+    const encodedUrl = encodeURIComponent(shareUrl);
+
+    if (platform === 'copy') {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      return;
+    }
+
+    let url = '';
+    switch (platform) {
+      case 'twitter':
+        url = `https://twitter.com/intent/tweet?text=${text}&url=${encodedUrl}`;
+        break;
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        break;
+      case 'whatsapp':
+        url = `https://wa.me/?text=${text}%20${encodedUrl}`;
+        break;
+      case 'telegram':
+        url = `https://t.me/share/url?url=${encodedUrl}&text=${text}`;
+        break;
+      case 'email':
+        url = `mailto:?subject=${text}&body=${text}%20${encodedUrl}`;
+        break;
+    }
+
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    setShowShareModal(false);
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: capsule?.title || 'VIB3 Time Capsule',
+          text: capsule?.description || 'Check out this time capsule on VIB3!',
+          url: `https://vib3app.net/capsule/${capsuleId}`,
+        });
+        setShowShareModal(false);
+      } catch {
+        // User cancelled
+      }
+    }
+  };
 
   const handleDelete = async () => {
     const ok = await confirmDialog({ title: 'Delete Capsule', message: 'Delete this capsule permanently?', variant: 'danger', confirmText: 'Delete' });
@@ -187,6 +269,35 @@ export default function CapsuleDetailPage() {
           </div>
         )}
 
+        {/* Action Buttons (unlocked capsules) */}
+        {!isSealed && (
+          <div className="flex items-center gap-4 mb-6">
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
+                isLiked
+                  ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
+                  : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'
+              }`}
+            >
+              <svg className="w-5 h-5" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span className="text-sm font-medium">{likeCount}</span>
+            </button>
+
+            <button
+              onClick={() => setShowShareModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              <span className="text-sm font-medium">Share</span>
+            </button>
+          </div>
+        )}
+
         {/* Content */}
         <div className="glass-card rounded-2xl p-6 mb-6">
           <h2 className="text-xl font-bold text-white mb-2">{capsule.title}</h2>
@@ -214,7 +325,7 @@ export default function CapsuleDetailPage() {
           {!isSealed && (
             <div className="flex items-center gap-6 text-white/50 text-sm">
               <span>{capsule.viewCount} views</span>
-              <span>{capsule.likeCount} likes</span>
+              <span>{likeCount} likes</span>
             </div>
           )}
         </div>
@@ -229,6 +340,52 @@ export default function CapsuleDetailPage() {
           </button>
         )}
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowShareModal(false)} />
+          <div className="relative w-full max-w-sm glass-card rounded-2xl p-6 animate-scale-in">
+            <h2 className="text-white font-semibold text-lg text-center mb-6">Share Capsule</h2>
+
+            {typeof navigator !== 'undefined' && 'share' in navigator && (
+              <button
+                onClick={handleNativeShare}
+                className="w-full mb-4 py-3 bg-gradient-to-r from-purple-500 to-teal-400 rounded-xl text-white font-medium flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </button>
+            )}
+
+            <div className="grid grid-cols-3 gap-4">
+              {SHARE_OPTIONS.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleShare(option.id)}
+                  className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <span className="text-2xl">{option.icon}</span>
+                  <span className="text-white/70 text-xs">
+                    {option.id === 'copy' && copied ? 'Copied!' : option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:text-white"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

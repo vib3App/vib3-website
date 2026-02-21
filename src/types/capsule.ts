@@ -21,6 +21,7 @@ export interface TimeCapsule {
   viewCount: number;
   likeCount: number;
   commentCount: number;
+  isLiked?: boolean;
   isPrivate: boolean;
   recipientIds?: string[]; // For private capsules sent to specific users
   recipientUsernames?: string[];

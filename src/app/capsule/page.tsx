@@ -111,17 +111,35 @@ export default function CapsulePage() {
             )}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {c.capsules.map(capsule => (
-              <CapsuleCard
-                key={capsule.id}
-                capsule={capsule}
-                isOwner={c.tab === 'my'}
-                isSubscribed={c.isSubscribed(capsule.id)}
-                onSubscribe={c.handleSubscribe}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {c.capsules.map(capsule => (
+                <CapsuleCard
+                  key={capsule.id}
+                  capsule={capsule}
+                  isOwner={c.tab === 'my'}
+                  isSubscribed={c.isSubscribed(capsule.id)}
+                  onSubscribe={c.handleSubscribe}
+                />
+              ))}
+            </div>
+            {c.hasMore && (
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={c.loadMore}
+                  disabled={c.loadingMore}
+                  className="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white/70 hover:bg-white/10 transition disabled:opacity-50"
+                >
+                  {c.loadingMore ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                      Loading...
+                    </span>
+                  ) : 'Load More'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

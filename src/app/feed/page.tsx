@@ -20,6 +20,8 @@ import {
   FollowCategoryPicker,
   SwipeActions,
 } from '@/components/feed';
+import { VIBES } from '@/components/feed/FeedHeader';
+import type { VibeType } from '@/components/feed/FeedHeader';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 import { userApi } from '@/services/api';
@@ -33,6 +35,10 @@ function FeedContent() {
   const { isAuthenticated, user } = useAuthStore();
   const {
     activeTab,
+    selectedVibe,
+    setSelectedVibe,
+    showVibes,
+    setShowVibes,
     videos,
     setVideos,
     currentIndex,
@@ -128,12 +134,63 @@ function FeedContent() {
     return { start, end };
   }, [currentIndex, videos.length]);
 
+  const handleVibeSelect = useCallback((vibe: VibeType) => {
+    setSelectedVibe(vibe);
+    setShowVibes(false);
+  }, [setSelectedVibe, setShowVibes]);
+
   return (
     <>
       <FeedTopActions
         showQueue={showQueue}
         onToggleQueue={toggleQueue}
       />
+
+      {/* Vibes Toggle Button */}
+      <button
+        onClick={() => setShowVibes(!showVibes)}
+        className={`fixed top-20 left-4 z-40 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all backdrop-blur-sm border ${
+          selectedVibe
+            ? 'bg-purple-500/20 border-purple-500/40 text-white'
+            : 'bg-black/30 border-white/10 text-white/70 hover:text-white hover:bg-black/50'
+        }`}
+      >
+        <span>{selectedVibe ? VIBES.find(v => v.id === selectedVibe)?.emoji : '✨'}</span>
+        <span>{selectedVibe || 'Vibes'}</span>
+        <svg className={`w-3 h-3 transition-transform ${showVibes ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Vibes Selector Dropdown */}
+      {showVibes && (
+        <div className="fixed top-[7.5rem] left-4 z-40 flex flex-wrap gap-2 max-w-[calc(100vw-2rem)] animate-in">
+          <button
+            onClick={() => handleVibeSelect(null)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-xl border transition-all ${
+              !selectedVibe
+                ? 'bg-white/20 border-white/30 text-white'
+                : 'bg-black/60 border-white/10 text-white/70 hover:bg-black/80'
+            }`}
+          >
+            All
+          </button>
+          {VIBES.map((vibe) => (
+            <button
+              key={vibe.id}
+              onClick={() => handleVibeSelect(vibe.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-xl border transition-all flex items-center gap-1 ${
+                selectedVibe === vibe.id
+                  ? `bg-gradient-to-r ${vibe.color} border-white/30 text-white`
+                  : 'bg-black/60 border-white/10 text-white/70 hover:bg-black/80'
+              }`}
+            >
+              <span>{vibe.emoji}</span>
+              {vibe.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <FeedQueuePanel
         videos={videos}

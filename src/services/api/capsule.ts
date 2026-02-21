@@ -39,6 +39,7 @@ interface BackendCapsule {
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
+  isLiked?: boolean;
   recipientType?: string;
   isPrivate?: boolean;
   recipientIds?: string[];
@@ -77,6 +78,7 @@ function transformCapsule(c: BackendCapsule): TimeCapsule {
     viewCount: c.viewCount || 0,
     likeCount: c.likeCount || 0,
     commentCount: c.commentCount || 0,
+    isLiked: c.isLiked || false,
     isPrivate: c.recipientType === 'friends' || c.recipientType === 'self' || c.isPrivate || false,
     recipientIds: c.recipientIds,
     recipientUsernames: c.recipientUsernames,
