@@ -9,6 +9,7 @@ import type {
   StartCallResponse,
   AnswerCallResponse,
 } from '@/types/call';
+import { logger } from '@/utils/logger';
 
 export const callsApi = {
   /**
@@ -104,8 +105,9 @@ export const callsApi = {
     try {
       const { data } = await apiClient.get<{ permission: string }>('/user/call-privacy');
       return data;
-    } catch {
-      return { permission: 'everyone' };
+    } catch (err) {
+      logger.error('Failed to fetch call privacy setting:', err);
+      throw err;
     }
   },
 
@@ -122,8 +124,9 @@ export const callsApi = {
         `/calls/availability/${userId}`
       );
       return data;
-    } catch {
-      return { available: true };
+    } catch (err) {
+      logger.error('Failed to check call availability:', err);
+      return { available: false, reason: 'Unable to check availability' };
     }
   },
 };

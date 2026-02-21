@@ -1,15 +1,26 @@
 import { apiClient } from '@/services/api/client';
 import type { StoryGroup, Story, StoryReaction, StoryViewerProfile } from '@/types/story';
+import { logger } from '@/utils/logger';
 
 export const storiesApi = {
   async getStoryFeed(): Promise<StoryGroup[]> {
-    const { data } = await apiClient.get('/stories/feed');
-    return data.storyGroups || data || [];
+    try {
+      const { data } = await apiClient.get('/stories/feed');
+      return data.storyGroups || data || [];
+    } catch (err) {
+      logger.error('Failed to fetch story feed:', err);
+      return [];
+    }
   },
 
   async getUserStories(userId: string): Promise<Story[]> {
-    const { data } = await apiClient.get(`/stories/user/${userId}`);
-    return data.stories || data || [];
+    try {
+      const { data } = await apiClient.get(`/stories/user/${userId}`);
+      return data.stories || data || [];
+    } catch (err) {
+      logger.error('Failed to fetch user stories:', err);
+      return [];
+    }
   },
 
   async createStory(input: { mediaUrl: string; mediaType: 'image' | 'video'; caption?: string; duration?: number }): Promise<Story> {
@@ -31,7 +42,11 @@ export const storiesApi = {
   },
 
   async markViewed(storyId: string): Promise<void> {
-    await apiClient.post(`/stories/${storyId}/view`);
+    try {
+      await apiClient.post(`/stories/${storyId}/view`);
+    } catch (err) {
+      logger.error('Failed to mark story viewed:', err);
+    }
   },
 
   async reactToStory(storyId: string, emoji: string): Promise<StoryReaction> {
@@ -44,7 +59,12 @@ export const storiesApi = {
   },
 
   async getStoryViewers(storyId: string): Promise<StoryViewerProfile[]> {
-    const { data } = await apiClient.get(`/stories/${storyId}/viewers`);
-    return data.viewers || data || [];
+    try {
+      const { data } = await apiClient.get(`/stories/${storyId}/viewers`);
+      return data.viewers || data || [];
+    } catch (err) {
+      logger.error('Failed to fetch story viewers:', err);
+      return [];
+    }
   },
 };

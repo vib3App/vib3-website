@@ -2,6 +2,7 @@
  * Q&A API service for creator Q&A system
  */
 import { apiClient } from './client';
+import { logger } from '@/utils/logger';
 
 export interface Question {
   id: string;
@@ -32,7 +33,8 @@ export const qaApi = {
         `/qa/${creatorId}`, { params: { page, limit } }
       );
       return data;
-    } catch {
+    } catch (err) {
+      logger.error('Failed to fetch questions:', err);
       return { questions: [], hasMore: false };
     }
   },
@@ -41,7 +43,8 @@ export const qaApi = {
     try {
       const { data } = await apiClient.post<Question>(`/qa/${creatorId}/question`, { text });
       return data;
-    } catch {
+    } catch (err) {
+      logger.error('Failed to submit question:', err);
       return null;
     }
   },
@@ -50,7 +53,8 @@ export const qaApi = {
     try {
       await apiClient.post(`/qa/question/${questionId}/like`);
       return true;
-    } catch {
+    } catch (err) {
+      logger.error('Failed to like question:', err);
       return false;
     }
   },
@@ -59,7 +63,8 @@ export const qaApi = {
     try {
       const { data } = await apiClient.post<Answer>(`/qa/question/${questionId}/answer`, input);
       return data;
-    } catch {
+    } catch (err) {
+      logger.error('Failed to answer question:', err);
       return null;
     }
   },
@@ -68,7 +73,8 @@ export const qaApi = {
     try {
       await apiClient.post(`/qa/answer/${answerId}/like`);
       return true;
-    } catch {
+    } catch (err) {
+      logger.error('Failed to like answer:', err);
       return false;
     }
   },

@@ -74,8 +74,7 @@ export function useVideoActionState(
 
   const handleCommentClick = () => { onCommentClick?.(); };
 
-  // TODO: Wire this to comment submission UI
-  const _handleCommentAdded = () => {
+  const handleCommentAdded = () => {
     setIsCommentAnimating(true);
     setHasCommented(true);
     setCommentsCount(prev => prev + 1);
@@ -144,6 +143,6 @@ export function useVideoActionState(
     isSaved, savesCount, isSaveAnimating,
     hasShared, sharesCount, isShareAnimating,
     isDownloading, downloadProgress,
-    handleLike, handleCommentClick, handleSave, handleShare, handleDownload,
+    handleLike, handleCommentClick, handleCommentAdded, handleSave, handleShare, handleDownload,
   };
 }
