@@ -89,6 +89,8 @@ export interface VideoEdits {
   speedRamp?: { time: number; speed: number }[];
   // Voice effect
   voiceEffect?: string;
+  // Gap 23: Drawing canvas overlay (PNG data URL)
+  drawingDataUrl?: string;
 }
 
 export interface TextOverlay {

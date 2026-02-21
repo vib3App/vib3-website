@@ -52,20 +52,40 @@ export function cssFilterToFFmpeg(cssFilter: string): string | null {
   return filters.length > 0 ? filters.join(',') : null;
 }
 
-export function renderOverlaysToImage(
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img') as HTMLImageElement;
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+export async function renderOverlaysToImage(
   texts: TextOverlay[],
   stickers: StickerOverlay[],
   videoWidth: number,
   videoHeight: number,
   displayHeight?: number,
-): Uint8Array | null {
-  if (texts.length === 0 && stickers.length === 0) return null;
+  drawingDataUrl?: string,
+): Promise<Uint8Array | null> {
+  if (texts.length === 0 && stickers.length === 0 && !drawingDataUrl) return null;
 
   const canvas = document.createElement('canvas');
   canvas.width = videoWidth;
   canvas.height = videoHeight;
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
+
+  // Gap 23: Draw drawing canvas overlay first (behind texts/stickers)
+  if (drawingDataUrl) {
+    try {
+      const img = await loadImage(drawingDataUrl);
+      ctx.drawImage(img, 0, 0, videoWidth, videoHeight);
+    } catch {
+      // Drawing image failed to load, continue with texts/stickers
+    }
+  }
 
   const scale = displayHeight ? videoHeight / displayHeight : 1;
 
