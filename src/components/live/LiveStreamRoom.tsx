@@ -9,8 +9,9 @@ import {
   useRoomContext,
   useTracks,
   useParticipants,
+  useConnectionState,
 } from '@livekit/components-react';
-import { Track } from 'livekit-client';
+import { ConnectionState, Track } from 'livekit-client';
 import {
   MicrophoneIcon,
   VideoCameraIcon,
@@ -51,7 +52,6 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
     setVideoEnabled(!videoEnabled);
   }, [localParticipant, videoEnabled]);
 
-  // Gap #59: Record own live stream
   const toggleRecording = useCallback(() => {
     if (isRecording && recorderRef.current) {
       recorderRef.current.stop();
@@ -59,7 +59,6 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
       return;
     }
 
-    // Gather local tracks into a new MediaStream for recording
     const tracks: MediaStreamTrack[] = [];
     for (const pub of localParticipant.trackPublications.values()) {
       if (pub.track?.mediaStreamTrack) tracks.push(pub.track.mediaStreamTrack);
@@ -95,51 +94,26 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/60 backdrop-blur-lg px-6 py-3 rounded-full">
       <button
         onClick={toggleAudio}
-        className={`p-3 rounded-full transition ${
-          audioEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'
-        }`}
+        className={`p-3 rounded-full transition ${audioEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`}
       >
-        {audioEnabled ? (
-          <MicrophoneIcon className="w-6 h-6 text-white" />
-        ) : (
-          <MicOffIcon className="w-6 h-6 text-white" />
-        )}
+        {audioEnabled ? <MicrophoneIcon className="w-6 h-6 text-white" /> : <MicOffIcon className="w-6 h-6 text-white" />}
       </button>
-
       <button
         onClick={toggleVideo}
-        className={`p-3 rounded-full transition ${
-          videoEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'
-        }`}
+        className={`p-3 rounded-full transition ${videoEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`}
       >
-        {videoEnabled ? (
-          <VideoCameraIcon className="w-6 h-6 text-white" />
-        ) : (
-          <VideoOffIcon className="w-6 h-6 text-white" />
-        )}
+        {videoEnabled ? <VideoCameraIcon className="w-6 h-6 text-white" /> : <VideoOffIcon className="w-6 h-6 text-white" />}
       </button>
-
-      {/* Record button */}
       <button
         onClick={toggleRecording}
-        className={`p-3 rounded-full transition ${
-          isRecording ? 'bg-red-500 animate-pulse' : 'bg-white/20 hover:bg-white/30'
-        }`}
+        className={`p-3 rounded-full transition ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-white/20 hover:bg-white/30'}`}
         title={isRecording ? 'Stop Recording' : 'Record Stream'}
       >
-        <div className={`w-6 h-6 flex items-center justify-center ${isRecording ? 'text-white' : 'text-white'}`}>
-          {isRecording ? (
-            <div className="w-4 h-4 bg-white rounded-sm" />
-          ) : (
-            <div className="w-4 h-4 bg-red-500 rounded-full" />
-          )}
+        <div className="w-6 h-6 flex items-center justify-center">
+          {isRecording ? <div className="w-4 h-4 bg-white rounded-sm" /> : <div className="w-4 h-4 bg-red-500 rounded-full" />}
         </div>
       </button>
-
-      <button
-        onClick={onEnd}
-        className="p-3 rounded-full bg-red-500 hover:bg-red-600 transition"
-      >
+      <button onClick={onEnd} className="p-3 rounded-full bg-red-500 hover:bg-red-600 transition">
         <XMarkIcon className="w-6 h-6 text-white" />
       </button>
     </div>
@@ -148,9 +122,7 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
 
 function ViewerCount() {
   const participants = useParticipants();
-  // Subtract 1 for the host
   const viewerCount = Math.max(0, participants.length - 1);
-
   return (
     <div className="flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full">
       <UserGroupIcon className="w-4 h-4 text-white" />
@@ -168,6 +140,18 @@ function LiveIndicator() {
   );
 }
 
+function ReconnectingOverlay() {
+  return (
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white font-medium">Reconnecting...</p>
+        <p className="text-white/50 text-sm mt-1">Please wait</p>
+      </div>
+    </div>
+  );
+}
+
 function HostVideoDisplay() {
   const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
   const videoTrack = tracks.find(t => t.source === Track.Source.Camera);
@@ -176,10 +160,7 @@ function HostVideoDisplay() {
   return (
     <div className="relative w-full h-full bg-black">
       {videoTrack ? (
-        <VideoTrack
-          trackRef={videoTrack}
-          className="w-full h-full object-cover"
-        />
+        <VideoTrack trackRef={videoTrack} className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <div className="text-center text-white/50">
@@ -204,8 +185,8 @@ function RoomContent({
 }) {
   const room = useRoomContext();
   const { localParticipant } = useLocalParticipant();
+  const connectionState = useConnectionState();
 
-  // Enable camera and mic when room connects (for host)
   useEffect(() => {
     if (isHost && room && localParticipant) {
       localParticipant.setCameraEnabled(true);
@@ -215,12 +196,13 @@ function RoomContent({
 
   return (
     <div className="relative w-full h-full">
-      {/* Video Display */}
       <HostVideoDisplay />
+
+      {/* Reconnecting overlay */}
+      {connectionState === ConnectionState.Reconnecting && <ReconnectingOverlay />}
 
       {/* Overlay UI */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Top Bar */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-auto">
           <div className="flex items-center gap-3">
             <LiveIndicator />
@@ -231,7 +213,6 @@ function RoomContent({
           </div>
         </div>
 
-        {/* Host Controls */}
         {isHost && (
           <div className="pointer-events-auto">
             <HostControls onEnd={onEnd} />
@@ -245,7 +226,7 @@ function RoomContent({
 export function LiveStreamRoom({
   token,
   wsUrl,
-  roomName: _roomName,
+  roomName,
   isHost,
   streamTitle,
   onEnd,
@@ -253,13 +234,12 @@ export function LiveStreamRoom({
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const handleError = useCallback((error: Error) => {
-    logger.error('LiveKit error:', error);
+    logger.error(`LiveKit error in room ${roomName}:`, error);
     setConnectionError(error.message);
-  }, []);
+  }, [roomName]);
 
   const handleDisconnected = useCallback(() => {
     if (!isHost) {
-      // Viewer disconnected - maybe stream ended
       onEnd();
     }
   }, [isHost, onEnd]);
@@ -271,10 +251,7 @@ export function LiveStreamRoom({
           <XMarkIcon className="w-16 h-16 mx-auto mb-4 text-red-500" />
           <h2 className="text-xl font-bold mb-2">Connection Error</h2>
           <p className="text-white/70 mb-4">{connectionError}</p>
-          <button
-            onClick={onEnd}
-            className="px-6 py-2 bg-red-500 rounded-full hover:bg-red-600 transition"
-          >
+          <button onClick={onEnd} className="px-6 py-2 bg-red-500 rounded-full hover:bg-red-600 transition">
             Go Back
           </button>
         </div>

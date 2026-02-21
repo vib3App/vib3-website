@@ -10,7 +10,9 @@ interface ARCameraProps {
 }
 
 /**
- * AR-ready camera component with filter support
+ * AR camera component with real-time canvas filter rendering.
+ * When a filter is active, the canvas shows processed frames;
+ * otherwise the raw video feed is displayed.
  */
 export function ARCamera({ className = '', onCapture }: ARCameraProps) {
   const {
@@ -23,6 +25,7 @@ export function ARCamera({ className = '', onCapture }: ARCameraProps) {
     applyFilter,
     removeFilter,
     capturePhoto,
+    isFilterActive,
   } = useAR();
 
   const [showFilters, setShowFilters] = useState(false);
@@ -47,30 +50,20 @@ export function ARCamera({ className = '', onCapture }: ARCameraProps) {
 
   return (
     <div className={`relative overflow-hidden rounded-2xl bg-black ${className}`}>
-      {/* Video preview */}
+      {/* Raw video feed — hidden when filter is rendering to canvas */}
       <video
         ref={videoRef as React.RefObject<HTMLVideoElement>}
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover ${isFilterActive ? 'invisible' : ''}`}
         playsInline
         muted
       />
 
-      {/* Hidden canvas for capture */}
-      <canvas ref={canvasRef as React.RefObject<HTMLCanvasElement>} className="hidden" />
-
-      {/* Filter overlay */}
-      {session.filter && (
-        <motion.div
-          className="absolute inset-0 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: session.filter.intensity }}
-          style={{
-            background: session.filter.type === 'effect'
-              ? 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2))'
-              : 'transparent',
-          }}
-        />
-      )}
+      {/* Canvas for real-time filter rendering — visible when filter is active */}
+      <canvas
+        ref={canvasRef as React.RefObject<HTMLCanvasElement>}
+        className={`absolute inset-0 w-full h-full ${isFilterActive ? '' : 'hidden'}`}
+        style={{ objectFit: 'cover' }}
+      />
 
       {/* Controls overlay */}
       <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
@@ -85,7 +78,6 @@ export function ARCamera({ className = '', onCapture }: ARCameraProps) {
           </motion.button>
         ) : (
           <div className="flex items-center justify-between">
-            {/* Close button */}
             <motion.button
               className="p-3 bg-white/10 rounded-full"
               onClick={stopCamera}
@@ -95,7 +87,6 @@ export function ARCamera({ className = '', onCapture }: ARCameraProps) {
               ✕
             </motion.button>
 
-            {/* Capture button */}
             <motion.button
               className="w-16 h-16 rounded-full bg-white border-4 border-purple-500"
               onClick={handleCapture}
@@ -103,7 +94,6 @@ export function ARCamera({ className = '', onCapture }: ARCameraProps) {
               whileTap={{ scale: 0.9 }}
             />
 
-            {/* Filters button */}
             <motion.button
               className={`p-3 rounded-full ${showFilters ? 'bg-purple-500' : 'bg-white/10'}`}
               onClick={() => setShowFilters(!showFilters)}
@@ -126,7 +116,6 @@ export function ARCamera({ className = '', onCapture }: ARCameraProps) {
             exit={{ opacity: 0, y: 20 }}
           >
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {/* None option */}
               <motion.button
                 className={`flex-shrink-0 w-16 h-16 rounded-xl flex flex-col items-center justify-center ${
                   !session.filter ? 'bg-purple-500' : 'bg-white/10'
