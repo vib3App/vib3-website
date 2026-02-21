@@ -70,9 +70,14 @@ export function useFeed() {
 
       let response;
 
-      // If a vibe is selected, use vibe feed
+      // Read vibe intensity from localStorage (set by vibe-meter page)
+      const storedIntensity = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('vib3_vibe_intensity') || '50', 10)
+        : 50;
+
+      // If a vibe is selected, use vibe feed (with intensity from vibe-meter)
       if (selectedVibe) {
-        response = await feedApi.getVibesFeed(selectedVibe, currentPage);
+        response = await feedApi.getVibesFeed(selectedVibe, currentPage, 20, storedIntensity);
       }
       // Use category-based loading if a category is selected
       else if (selectedCategory) {

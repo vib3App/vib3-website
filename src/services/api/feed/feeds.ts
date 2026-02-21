@@ -29,9 +29,12 @@ function normalizeFeedResponse(data: unknown, page: number, limit: number): Pagi
 }
 
 export const feedsApi = {
-  async getForYouFeed(page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
+  async getForYouFeed(page = 1, limit = 20, vibe?: string, intensity?: number): Promise<PaginatedResponse<Video>> {
     try {
-      const { data } = await apiClient.get('/videos', { params: { page, limit, feed: 'foryou' } });
+      const params: Record<string, unknown> = { page, limit, feed: 'foryou' };
+      if (vibe) params.vibe = vibe;
+      if (intensity != null) params.intensity = intensity;
+      const { data } = await apiClient.get('/videos', { params });
       return normalizeFeedResponse(data, page, limit);
     } catch (error) {
       logger.error('Failed to get ForYou feed:', error);
@@ -168,9 +171,11 @@ export const feedsApi = {
     }
   },
 
-  async getVibesFeed(vibe: VibeType, page = 1, limit = 20): Promise<PaginatedResponse<Video>> {
+  async getVibesFeed(vibe: VibeType, page = 1, limit = 20, intensity?: number): Promise<PaginatedResponse<Video>> {
     try {
-      const { data } = await apiClient.get('/videos', { params: { page, limit, vibe } });
+      const params: Record<string, unknown> = { page, limit, feed: 'foryou', vibe };
+      if (intensity != null) params.intensity = intensity;
+      const { data } = await apiClient.get('/videos', { params });
       return normalizeFeedResponse(data, page, limit);
     } catch (error) {
       logger.error('Failed to get vibe feed:', error);
