@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { translateText } from '@/services/translation';
+import { logger } from '@/utils/logger';
 
 interface CaptionEntry {
   id: string;
@@ -49,40 +51,6 @@ const LANGUAGES = [
   { code: 'cs', label: 'Czech' },
 ];
 
-const LIBRE_TRANSLATE_URL = 'https://libretranslate.com/translate';
-
-// Cache translations to avoid redundant API calls
-const translationCache = new Map<string, string>();
-
-async function translateText(text: string, targetLang: string): Promise<string> {
-  const cacheKey = `${text}|${targetLang}`;
-  if (translationCache.has(cacheKey)) {
-    return translationCache.get(cacheKey)!;
-  }
-
-  try {
-    const res = await fetch(LIBRE_TRANSLATE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q: text, source: 'auto', target: targetLang, format: 'text' }),
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      const translated = data.translatedText || text;
-      translationCache.set(cacheKey, translated);
-      return translated;
-    }
-  } catch {
-    // API unavailable, fall back to mock
-  }
-
-  // Fallback: mock translation (prefix with language code)
-  const mock = `[${targetLang.toUpperCase()}] ${text}`;
-  translationCache.set(cacheKey, mock);
-  return mock;
-}
-
 export function CaptionTranslationPanel({
   sourceCaptions, translationTracks, onTranslationTracksChange, formatTime,
 }: CaptionTranslationPanelProps) {
@@ -110,25 +78,30 @@ export function CaptionTranslationPanel({
     const langLabel = LANGUAGES.find(l => l.code === selectedLang)?.label || selectedLang;
     const translated: CaptionEntry[] = [];
 
-    for (let i = 0; i < sourceCaptions.length; i++) {
-      if (abortRef.current) break;
-      const cap = sourceCaptions[i];
-      const text = await translateText(cap.text, selectedLang);
-      translated.push({ ...cap, id: `${cap.id}-${selectedLang}`, text });
-      setProgress(Math.round(((i + 1) / sourceCaptions.length) * 100));
-    }
+    try {
+      for (let i = 0; i < sourceCaptions.length; i++) {
+        if (abortRef.current) break;
+        const cap = sourceCaptions[i];
+        const text = await translateText(cap.text, selectedLang);
+        translated.push({ ...cap, id: `${cap.id}-${selectedLang}`, text });
+        setProgress(Math.round(((i + 1) / sourceCaptions.length) * 100));
+      }
 
-    if (!abortRef.current) {
-      const newTrack: TranslationTrack = {
-        language: selectedLang,
-        languageLabel: langLabel,
-        captions: translated,
-      };
-      onTranslationTracksChange([...translationTracks, newTrack]);
-      setViewingTrack(selectedLang);
+      if (!abortRef.current) {
+        const newTrack: TranslationTrack = {
+          language: selectedLang,
+          languageLabel: langLabel,
+          captions: translated,
+        };
+        onTranslationTracksChange([...translationTracks, newTrack]);
+        setViewingTrack(selectedLang);
+      }
+    } catch (err) {
+      logger.error('Caption translation failed:', err);
+      setError('Translation failed. Please try again.');
+    } finally {
+      setIsTranslating(false);
     }
-
-    setIsTranslating(false);
   }, [sourceCaptions, selectedLang, translationTracks, onTranslationTracksChange]);
 
   const handleRemoveTrack = useCallback((lang: string) => {

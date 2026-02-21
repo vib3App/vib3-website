@@ -4,6 +4,8 @@
  * Caches translations in memory with 7-day TTL.
  */
 
+import { logger } from '@/utils/logger';
+
 const LIBRE_TRANSLATE_URL = process.env.NEXT_PUBLIC_LIBRE_TRANSLATE_URL || 'https://libretranslate.com';
 
 interface CacheEntry {
@@ -97,8 +99,8 @@ export async function translateText(
     const translated = data.translatedText || text;
     setCache(cacheKey, translated);
     return translated;
-  } catch {
-    // Return original text on failure
+  } catch (err) {
+    logger.error('Translation failed:', err);
     return text;
   }
 }
