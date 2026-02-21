@@ -9,11 +9,12 @@ interface MessageContextMenuProps {
   onDeleteForMe: () => void;
   onDeleteForEveryone: () => void;
   onReply: () => void;
+  onForward?: () => void;
   onClose: () => void;
 }
 
 export function MessageContextMenu({
-  x, y, isOwn, onDeleteForMe, onDeleteForEveryone, onReply, onClose,
+  x, y, isOwn, onDeleteForMe, onDeleteForEveryone, onReply, onForward, onClose,
 }: MessageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +56,18 @@ export function MessageContextMenu({
         </svg>
         Reply
       </button>
+
+      {onForward && (
+        <button
+          onClick={() => { onForward(); onClose(); }}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-white/80 text-sm hover:bg-white/10 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+          Forward
+        </button>
+      )}
 
       <div className="h-px bg-white/5" />
 

@@ -7,8 +7,9 @@ import { useVideoCall } from '@/hooks/useVideoCall';
 import { useVoIPPush } from '@/hooks/useVoIPPush';
 import {
   MessageBubble, formatDateHeader, EmojiPicker, ReplyPreview,
-  ChatCameraCapture, AISuggestions, LiveLocationShare,
+  ChatCameraCapture, AISuggestions, LiveLocationShare, ForwardModal,
 } from '@/components/messages';
+import type { Message } from '@/types';
 import { ConversationHeader } from '@/components/messages/ConversationHeader';
 import { VoiceRecorder } from '@/components/messages/VoiceRecorder';
 import { MediaUploader } from '@/components/messages/MediaUploader';
@@ -43,6 +44,7 @@ export default function ConversationPage() {
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [forwardingMessage, setForwardingMessage] = useState<Message | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && !voipPush.isRegistered) voipPush.register();
@@ -108,6 +110,13 @@ export default function ConversationPage() {
           onToggleSpeaker={toggleSpeaker} onSwitchCamera={switchCamera} onEndCall={endCall}
         />
       )}
+      {forwardingMessage && (
+        <ForwardModal
+          message={forwardingMessage}
+          onClose={() => setForwardingMessage(null)}
+          onForwarded={() => setForwardingMessage(null)}
+        />
+      )}
       {showCamera && <ChatCameraCapture onCapture={handleCameraCapture} onClose={() => setShowCamera(false)} />}
       {showMediaUploader && <MediaUploader onSend={handleMediaUpload} onClose={() => setShowMediaUploader(false)} />}
       {showLocationPicker && <LocationPicker onSend={handleLocationSend} onClose={() => setShowLocationPicker(false)} />}
@@ -143,6 +152,7 @@ export default function ConversationPage() {
                     currentUserId={user?.id}
                     onReact={handleReaction} onReply={handleReply}
                     onDelete={handleDelete} onDeleteForMe={handleDeleteForMe}
+                    onForward={setForwardingMessage}
                   />
                 </div>
               );

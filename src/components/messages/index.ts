@@ -21,3 +21,4 @@ export { MediaUploader } from './MediaUploader';
 export { MediaMessageBubble } from './MediaMessageBubble';
 export { MessageContextMenu } from './MessageContextMenu';
 export { GifPicker } from './GifPicker';
+export { ForwardModal } from './ForwardModal';

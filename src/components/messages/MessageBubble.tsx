@@ -26,10 +26,11 @@ interface MessageBubbleProps {
   onReply?: (message: Message) => void;
   onDelete?: (messageId: string) => void;
   onDeleteForMe?: (messageId: string) => void;
+  onForward?: (message: Message) => void;
 }
 
 export function MessageBubble({
-  message, isOwn, showAvatar, currentUserId, onReact, onReply, onDelete, onDeleteForMe,
+  message, isOwn, showAvatar, currentUserId, onReact, onReply, onDelete, onDeleteForMe, onForward,
 }: MessageBubbleProps) {
   const [showActions, setShowActions] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -60,6 +61,11 @@ export function MessageBubble({
 
   const handleDelete = () => {
     onDelete?.(message.id);
+    setShowActions(false);
+  };
+
+  const handleForward = () => {
+    onForward?.(message);
     setShowActions(false);
   };
 
@@ -113,6 +119,7 @@ export function MessageBubble({
             y={contextMenu.y}
             isOwn={isOwn}
             onReply={handleReply}
+            onForward={onForward ? handleForward : undefined}
             onDeleteForMe={() => onDeleteForMe?.(message.id) || onDelete?.(message.id)}
             onDeleteForEveryone={() => onDelete?.(message.id)}
             onClose={() => setContextMenu(null)}
