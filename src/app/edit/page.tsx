@@ -362,15 +362,13 @@ function EditContent() {
     try {
       const suggestions = await analyzeVideoForSuggestions(videoUrl, duration);
       setAiSuggestions(suggestions);
-    } catch {
-      // Fallback: provide generic suggestions if analysis fails
-      setAiSuggestions([{
-        id: 'sug-fallback',
-        type: 'filter',
-        label: 'Apply "Cinema" filter',
-        description: 'A cinematic color grade can enhance most footage.',
-        value: { filterIndex: 8 },
-      }]);
+    } catch (err) {
+      console.error('AI analysis failed, using defaults:', err);
+      setAiSuggestions([
+        { id: 'sug-f1', type: 'filter', label: 'Apply cinematic color grade', description: 'Warm tones with lifted shadows for a professional look.', value: { filterIndex: 8 } },
+        { id: 'sug-f2', type: 'speed', label: 'Add slow-motion ending', description: 'Slow the last 20% to 0.5x for a dramatic finish.', value: { speed: 0.5, startPercent: 80 } },
+        { id: 'sug-f3', type: 'volume', label: 'Normalize audio levels', description: 'Even out quiet and loud sections.', value: { normalize: true } },
+      ]);
     } finally {
       setIsAnalyzingAI(false);
     }

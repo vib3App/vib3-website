@@ -125,6 +125,14 @@ export function LiveBattleOverlay({ streamId, onSendGift }: LiveBattleOverlayPro
     return () => clearInterval(interval);
   }, [battle]);
 
+  const handleVoteP1 = useCallback(() => {
+    if (battle) websocketService.send('battle:vote', { battleId: battle.id, participantId: battle.participant1.userId });
+  }, [battle]);
+
+  const handleVoteP2 = useCallback(() => {
+    if (battle) websocketService.send('battle:vote', { battleId: battle.id, participantId: battle.participant2.userId });
+  }, [battle]);
+
   const handleGiftP1 = useCallback(() => {
     if (battle && onSendGift) onSendGift(battle.participant1.userId);
   }, [battle, onSendGift]);
@@ -176,21 +184,41 @@ export function LiveBattleOverlay({ streamId, onSendGift }: LiveBattleOverlayPro
           <span>{battle.participant2.score}</span>
         </div>
 
-        {/* Gift buttons for each side */}
-        {!isCompleted && onSendGift && (
-          <div className="flex justify-between mt-3">
-            <button
-              onClick={handleGiftP1}
-              className="px-4 py-2 bg-pink-500/20 text-pink-400 rounded-full text-xs font-medium hover:bg-pink-500/30 transition"
-            >
-              Gift {battle.participant1.username}
-            </button>
-            <button
-              onClick={handleGiftP2}
-              className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium hover:bg-blue-500/30 transition"
-            >
-              Gift {battle.participant2.username}
-            </button>
+        {/* Vote + Gift buttons for each side */}
+        {!isCompleted && (
+          <div className="flex justify-between mt-3 gap-2">
+            <div className="flex flex-col gap-1.5 flex-1">
+              <button
+                onClick={handleVoteP1}
+                className="w-full px-3 py-2 bg-pink-500/30 text-pink-300 rounded-full text-xs font-bold hover:bg-pink-500/40 transition border border-pink-500/20"
+              >
+                Vote {battle.participant1.username}
+              </button>
+              {onSendGift && (
+                <button
+                  onClick={handleGiftP1}
+                  className="w-full px-3 py-1.5 bg-pink-500/10 text-pink-400/70 rounded-full text-[11px] hover:bg-pink-500/20 transition"
+                >
+                  Gift
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1">
+              <button
+                onClick={handleVoteP2}
+                className="w-full px-3 py-2 bg-blue-500/30 text-blue-300 rounded-full text-xs font-bold hover:bg-blue-500/40 transition border border-blue-500/20"
+              >
+                Vote {battle.participant2.username}
+              </button>
+              {onSendGift && (
+                <button
+                  onClick={handleGiftP2}
+                  className="w-full px-3 py-1.5 bg-blue-500/10 text-blue-400/70 rounded-full text-[11px] hover:bg-blue-500/20 transition"
+                >
+                  Gift
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>
