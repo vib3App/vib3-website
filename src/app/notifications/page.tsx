@@ -62,27 +62,26 @@ export default function NotificationsPage() {
           )}
 
           {/* Tabs */}
-          <div className="flex gap-2 p-2">
-            <button
-              onClick={() => n.setActiveTab('all')}
-              className={`flex-1 py-2 text-sm font-medium rounded-xl transition-all ${
-                n.activeTab === 'all'
-                  ? 'glass-heavy text-white'
-                  : 'text-white/50 hover:text-white/70'
-              }`}
-            >
-              All Activity
-            </button>
-            <button
-              onClick={() => n.setActiveTab('mentions')}
-              className={`flex-1 py-2 text-sm font-medium rounded-xl transition-all ${
-                n.activeTab === 'mentions'
-                  ? 'glass-heavy text-white'
-                  : 'text-white/50 hover:text-white/70'
-              }`}
-            >
-              Mentions
-            </button>
+          <div className="flex gap-1.5 p-2 overflow-x-auto scrollbar-hide">
+            {([
+              { id: 'all', label: 'All' },
+              { id: 'likes', label: 'Likes' },
+              { id: 'comments', label: 'Comments' },
+              { id: 'follows', label: 'Follows' },
+              { id: 'mentions', label: 'Mentions' },
+            ] as const).map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => n.setActiveTab(tab.id)}
+                className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                  n.activeTab === tab.id
+                    ? 'glass-heavy text-white'
+                    : 'text-white/50 hover:text-white/70'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </header>
 

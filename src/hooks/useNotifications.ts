@@ -9,7 +9,7 @@ import { desktopNotifications } from '@/services/desktopNotifications';
 import type { Notification } from '@/types';
 import { logger } from '@/utils/logger';
 
-type NotificationTab = 'all' | 'mentions';
+type NotificationTab = 'all' | 'mentions' | 'likes' | 'comments' | 'follows';
 
 export function useNotifications() {
   const router = useRouter();
@@ -108,9 +108,17 @@ export function useNotifications() {
 
   const loadMore = () => loadNotifications(page + 1, true);
 
-  const filteredNotifications = activeTab === 'mentions'
-    ? notifications.filter(n => n.type === 'mention')
-    : notifications;
+  const filteredNotifications = activeTab === 'all'
+    ? notifications
+    : notifications.filter(n => {
+        switch (activeTab) {
+          case 'mentions': return n.type === 'mention';
+          case 'likes': return n.type === 'like';
+          case 'comments': return n.type === 'comment' || n.type === 'reply';
+          case 'follows': return n.type === 'follow';
+          default: return true;
+        }
+      });
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
