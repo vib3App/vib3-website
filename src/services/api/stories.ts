@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/api/client';
-import type { StoryGroup, Story, StoryReaction } from '@/types/story';
+import type { StoryGroup, Story, StoryReaction, StoryViewerProfile } from '@/types/story';
 
 export const storiesApi = {
   async getStoryFeed(): Promise<StoryGroup[]> {
@@ -41,5 +41,10 @@ export const storiesApi = {
 
   async replyToStory(storyId: string, message: string): Promise<void> {
     await apiClient.post(`/stories/${storyId}/reply`, { message });
+  },
+
+  async getStoryViewers(storyId: string): Promise<StoryViewerProfile[]> {
+    const { data } = await apiClient.get(`/stories/${storyId}/viewers`);
+    return data.viewers || data || [];
   },
 };

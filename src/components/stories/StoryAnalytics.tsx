@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import type { Story, StoryReaction } from '@/types/story';
+import type { Story, StoryReaction, StoryViewerProfile } from '@/types/story';
+import { storiesApi } from '@/services/api/stories';
+import { logger } from '@/utils/logger';
 
 interface StoryAnalyticsProps {
   story: Story;
@@ -34,6 +36,19 @@ export function StoryAnalytics({ story, isOwnStory }: StoryAnalyticsProps) {
 
 function StoryAnalyticsPanel({ story, onClose }: { story: Story; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'overview' | 'viewers' | 'reactions'>('overview');
+  const [viewers, setViewers] = useState<StoryViewerProfile[]>([]);
+  const [viewersLoading, setViewersLoading] = useState(false);
+  const [viewersLoaded, setViewersLoaded] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'viewers' && !viewersLoaded) {
+      setViewersLoading(true);
+      storiesApi.getStoryViewers(story.id)
+        .then(data => { setViewers(data); setViewersLoaded(true); })
+        .catch(err => { logger.error('Failed to load viewers:', err); setViewersLoaded(true); })
+        .finally(() => setViewersLoading(false));
+    }
+  }, [activeTab, viewersLoaded, story.id]);
 
   const reactionCounts = getReactionCounts(story.reactions);
   const uniqueViewers = story.viewCount;
@@ -97,12 +112,18 @@ function StoryAnalyticsPanel({ story, onClose }: { story: Story; onClose: () => 
 
           {activeTab === 'viewers' && (
             <div className="space-y-2">
-              {story.viewCount === 0 ? (
-                <p className="text-white/40 text-sm text-center py-8">No viewers yet</p>
-              ) : (
-                <p className="text-white/50 text-sm text-center py-8">
-                  {story.viewCount} people viewed this story
+              {viewersLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                </div>
+              ) : viewers.length === 0 ? (
+                <p className="text-white/40 text-sm text-center py-8">
+                  {story.viewCount > 0 ? `${story.viewCount} views` : 'No viewers yet'}
                 </p>
+              ) : (
+                viewers.map(v => (
+                  <ViewerItem key={v.userId} viewer={v} />
+                ))
               )}
             </div>
           )}
@@ -153,6 +174,26 @@ function ReactionItem({ reaction }: { reaction: StoryReaction }) {
       <span className="text-xl">{reaction.emoji}</span>
       <span className="text-white/30 text-xs">
         {new Date(reaction.createdAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+      </span>
+    </div>
+  );
+}
+
+function ViewerItem({ viewer }: { viewer: StoryViewerProfile }) {
+  return (
+    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5">
+      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+        {viewer.avatar ? (
+          <Image src={viewer.avatar} alt={viewer.username} width={32} height={32} className="object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-purple-500 to-teal-400 flex items-center justify-center text-white text-xs font-bold">
+            {viewer.username[0]?.toUpperCase()}
+          </div>
+        )}
+      </div>
+      <span className="text-white text-sm flex-1">@{viewer.username}</span>
+      <span className="text-white/30 text-xs">
+        {new Date(viewer.viewedAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
       </span>
     </div>
   );

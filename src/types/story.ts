@@ -31,6 +31,13 @@ export interface StoryReaction {
   createdAt: string;
 }
 
+export interface StoryViewerProfile {
+  userId: string;
+  username: string;
+  avatar?: string;
+  viewedAt: string;
+}
+
 export interface CreateStoryInput {
   mediaFile: File;
   mediaType: 'image' | 'video';
