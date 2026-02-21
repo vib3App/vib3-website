@@ -442,6 +442,11 @@ function EditContent() {
       extras.transition = { type: selectedTransition, duration: transitionDuration };
     }
 
+    // Gap 10: 3D transitions (mapped to FFmpeg xfade for export)
+    if (selectedTransition3D !== 'none' && clips.length > 1) {
+      extras.transition3D = { type: selectedTransition3D, duration: transition3DDuration };
+    }
+
     // Gap 32: Opacity
     if (opacity < 1) extras.opacity = opacity;
     if (blendMode !== 'normal') extras.blendMode = blendMode;
@@ -512,7 +517,7 @@ function EditContent() {
     }
 
     return extras;
-  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, clips, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob]);
+  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob]);
 
   // Build video transform CSS
   const videoTransform = [

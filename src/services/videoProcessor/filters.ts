@@ -339,6 +339,24 @@ export function buildTransitionArgs(
   ];
 }
 
+/**
+ * Gap 10: Map 3D transition types to closest FFmpeg xfade equivalents.
+ * True CSS 3D transforms can't be done in FFmpeg, so we use the best visual match.
+ */
+const TRANSITION_3D_TO_XFADE: Record<string, string> = {
+  'cube-rotate': 'circleopen',
+  'flip-h': 'wipeleft',
+  'flip-v': 'wipeup',
+  'fold': 'wipeleft',
+  'zoom-through': 'circlecrop',
+  'door-open': 'slideright',
+  'swing': 'slidedown',
+};
+
+export function mapTransition3DToXfade(type3D: string): string {
+  return TRANSITION_3D_TO_XFADE[type3D] || 'fade';
+}
+
 /** Gap 35: Build FFmpeg args for per-clip speed changes */
 export function buildClipSpeedArgs(speed: number): string[] {
   const { video, audio } = buildSpeedFilter(speed);

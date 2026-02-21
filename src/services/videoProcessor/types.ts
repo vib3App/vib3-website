@@ -89,6 +89,8 @@ export interface VideoEdits {
   speedRamp?: { time: number; speed: number }[];
   // Voice effect
   voiceEffect?: string;
+  // Gap 10: 3D transitions (mapped to closest FFmpeg xfade)
+  transition3D?: { type: string; duration: number };
   // Gap 23: Drawing canvas overlay (PNG data URL)
   drawingDataUrl?: string;
 }

@@ -1,7 +1,7 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import type { ProcessingProgress, VideoEdits, ClipEdit, FreezeFrame } from './types';
-import { buildFFmpegArgs, renderOverlaysToImage } from './filters';
+import { buildFFmpegArgs, renderOverlaysToImage, mapTransition3DToXfade } from './filters';
 import {
   splitVideoImpl,
   applyTransitionImpl,
@@ -75,6 +75,14 @@ export class VideoProcessorService {
     if (!(await this.ensureLoaded(onProgress))) return null;
 
     try {
+      // Gap 10: Map 3D transitions to FFmpeg xfade if no 2D transition is set
+      if (edits.transition3D && !edits.transition) {
+        edits = {
+          ...edits,
+          transition: { type: mapTransition3DToXfade(edits.transition3D.type), duration: edits.transition3D.duration },
+        };
+      }
+
       onProgress?.({ stage: 'processing', percent: 0, message: 'Preparing video...' });
       const inputData = await this.getInputData(inputFile);
       await this.ffmpeg!.writeFile('input.mp4', inputData);
