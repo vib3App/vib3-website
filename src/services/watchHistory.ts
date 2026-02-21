@@ -77,7 +77,7 @@ class WatchHistoryService {
       const completedViews = toSync.filter(entry => entry.completed);
       await Promise.all(
         completedViews.map(entry =>
-          videoApi.recordView(entry.videoId).catch(() => {})
+          videoApi.recordView(entry.videoId).catch(e => logger.error('recordView failed:', e))
         )
       );
     } catch (_error) {

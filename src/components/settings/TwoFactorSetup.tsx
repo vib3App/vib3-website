@@ -72,10 +72,9 @@ export function TwoFactorSetup({ enabled, onToggle }: TwoFactorSetupProps) {
       } else {
         setError('Invalid code. Please try again.');
       }
-    } catch {
-      // Fallback: accept any 6-digit code for demo
-      setBackupCodes(generateMockBackupCodes());
-      setStep('backup');
+    } catch (err) {
+      logger.error('2FA verify failed:', err);
+      setError('Verification failed. Please check the code and try again.');
     } finally {
       setLoading(false);
     }
@@ -91,7 +90,7 @@ export function TwoFactorSetup({ enabled, onToggle }: TwoFactorSetupProps) {
   const disable2FA = useCallback(async () => {
     try {
       await apiClient.post('/auth/2fa/disable');
-    } catch { /* ignore */ }
+    } catch (err) { logger.error('Failed to disable 2FA on server:', err); }
     onToggle(false);
     localStorage.removeItem('vib3_2fa_enabled');
     setStep('idle');

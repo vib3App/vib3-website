@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { detectBeats } from '@/services/audioProcessing/index';
+import { logger } from '@/utils/logger';
 
 interface BeatSyncPanelProps {
   duration: number;
@@ -54,8 +55,8 @@ export function BeatSyncPanel({ duration, beatMarkers, onBeatMarkersChange, form
         // No beats found, fallback to manual
         generateMarkers(bpm);
       }
-    } catch {
-      // Fallback: keep manual BPM
+    } catch (err) {
+      logger.error('Beat detection failed:', err);
       generateMarkers(bpm);
     } finally {
       setIsDetecting(false);

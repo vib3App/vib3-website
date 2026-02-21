@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { shopApi } from '@/services/api';
+import { logger } from '@/utils/logger';
 
 export interface ProductTag {
   id: string;
@@ -53,8 +54,8 @@ export function ShoppingPanel({
           imageUrl: p.images?.[0]?.url || p.imageUrl || '',
         }))
       );
-    } catch {
-      // Use mock data on API failure
+    } catch (err) {
+      logger.error('Product search failed:', err);
       setSearchResults([
         { id: 'mock-1', name: 'VIB3 Hoodie', price: 49.99, imageUrl: '' },
         { id: 'mock-2', name: 'VIB3 Cap', price: 24.99, imageUrl: '' },
