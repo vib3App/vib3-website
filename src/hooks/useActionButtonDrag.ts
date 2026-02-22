@@ -110,6 +110,14 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     }, longPressDelay);
   }, [disabled, longPressDelay, onDragStart, clearLongPressTimer]);
 
+  // Block touch scrolling while dragging
+  useEffect(() => {
+    if (!isDragging) return;
+    const preventScroll = (e: TouchEvent) => { e.preventDefault(); };
+    document.addEventListener('touchmove', preventScroll, { passive: false });
+    return () => document.removeEventListener('touchmove', preventScroll);
+  }, [isDragging]);
+
   // Handle pointer move
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     if (!startPosRef.current) return;
@@ -126,8 +134,10 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       }
     }
 
-    // Update position if dragging
+    // Update position if dragging - prevent default to stop page scroll
     if (dragEnabledRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
       const newPos = clientToPercent(e.clientX, e.clientY);
       setPosition(newPos);
       onDrag?.(newPos);
