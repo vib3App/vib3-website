@@ -27,19 +27,34 @@ interface UseDragReturn {
   };
 }
 
-// Scroll prevention functions used outside React's render cycle
+// Track elements we've locked so we can restore them exactly
+let lockedElements: { el: HTMLElement; overflow: string; touchAction: string }[] = [];
+
 function lockScroll() {
-  document.body.style.overflow = 'hidden';
-  document.body.style.touchAction = 'none';
-  document.documentElement.style.overflow = 'hidden';
-  document.documentElement.style.touchAction = 'none';
+  // Lock body + html
+  for (const el of [document.body, document.documentElement]) {
+    lockedElements.push({ el, overflow: el.style.overflow, touchAction: el.style.touchAction });
+    el.style.overflow = 'hidden';
+    el.style.touchAction = 'none';
+  }
+  // Lock ALL scrollable containers on the page (feed scroll container, etc.)
+  document.querySelectorAll<HTMLElement>('[class*="overflow"]').forEach((el) => {
+    const style = getComputedStyle(el);
+    if (style.overflowX !== 'hidden' && style.overflowX !== 'visible' ||
+        style.overflowY !== 'hidden' && style.overflowY !== 'visible') {
+      lockedElements.push({ el, overflow: el.style.overflow, touchAction: el.style.touchAction });
+      el.style.overflow = 'hidden';
+      el.style.touchAction = 'none';
+    }
+  });
 }
 
 function unlockScroll() {
-  document.body.style.overflow = '';
-  document.body.style.touchAction = '';
-  document.documentElement.style.overflow = '';
-  document.documentElement.style.touchAction = '';
+  for (const { el, overflow, touchAction } of lockedElements) {
+    el.style.overflow = overflow;
+    el.style.touchAction = touchAction;
+  }
+  lockedElements = [];
 }
 
 export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn {
