@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/personalization';
-import { SoundToggle } from '@/components/audio';
 import { DROPDOWNS, Dropdown, FeedCategoryDropdown, Vib3MeterDropdown, ProfileDropdown } from './top-nav';
 
 export function TopNav() {
@@ -57,7 +56,6 @@ export function TopNav() {
         {/* Quick Actions + Profile */}
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <SoundToggle />
           <ProfileDropdown isOpen={openDropdown === 'profile'} onToggle={() => handleToggle('profile')} />
         </div>
       </div>
