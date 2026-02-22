@@ -44,6 +44,8 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const containerRef = useRef<HTMLElement | null>(null);
   // Track the latest pointer position so we can use it when the timer fires
   const latestPointerRef = useRef<{ x: number; y: number } | null>(null);
+  // Grab offset: distance (in px) between cursor and element center when drag starts
+  const grabOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Refs to avoid stale closures in pointer handlers
   const positionRef = useRef<Position | null>(position);
@@ -51,10 +53,13 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const onDragEndRef = useRef(onDragEnd);
   useEffect(() => { onDragEndRef.current = onDragEnd; }, [onDragEnd]);
 
-  // Convert client coordinates to viewport percentage (for fixed positioning)
-  const clientToViewportPercent = useCallback((clientX: number, clientY: number): Position => {
-    const x = Math.max(5, Math.min(95, (clientX / window.innerWidth) * 100));
-    const y = Math.max(5, Math.min(95, (clientY / window.innerHeight) * 100));
+  // Convert client coordinates to viewport percentage, applying grab offset
+  const pointerToPosition = useCallback((clientX: number, clientY: number): Position => {
+    // Subtract the grab offset so the element stays pinned to where you grabbed it
+    const adjustedX = clientX - grabOffsetRef.current.x;
+    const adjustedY = clientY - grabOffsetRef.current.y;
+    const x = Math.max(5, Math.min(95, (adjustedX / window.innerWidth) * 100));
+    const y = Math.max(5, Math.min(95, (adjustedY / window.innerHeight) * 100));
     return { x, y };
   }, []);
 
@@ -87,9 +92,19 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       setIsLongPressing(true);
       setIsDragging(true);
 
-      // Set initial position to wherever the pointer is NOW (may have moved during hold)
-      if (latestPointerRef.current) {
-        const initialPos = clientToViewportPercent(latestPointerRef.current.x, latestPointerRef.current.y);
+      // Calculate grab offset: difference between cursor and element center
+      // This keeps the element pinned to where you grabbed it instead of centering on cursor
+      if (containerRef.current && latestPointerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        grabOffsetRef.current = {
+          x: latestPointerRef.current.x - centerX,
+          y: latestPointerRef.current.y - centerY,
+        };
+
+        // Set initial position to the element's current center (not the cursor)
+        const initialPos = pointerToPosition(latestPointerRef.current.x, latestPointerRef.current.y);
         setPosition(initialPos);
       }
 
@@ -109,7 +124,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
         navigator.vibrate(50);
       }
     }, longPressDelay);
-  }, [disabled, longPressDelay, onDragStart, clearLongPressTimer, clientToViewportPercent]);
+  }, [disabled, longPressDelay, onDragStart, clearLongPressTimer, pointerToPosition]);
 
   // Block touch scrolling while dragging
   useEffect(() => {
@@ -128,11 +143,11 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     if (dragEnabledRef.current) {
       e.preventDefault();
       e.stopPropagation();
-      const newPos = clientToViewportPercent(e.clientX, e.clientY);
+      const newPos = pointerToPosition(e.clientX, e.clientY);
       setPosition(newPos);
       onDrag?.(newPos);
     }
-  }, [clientToViewportPercent, onDrag]);
+  }, [pointerToPosition, onDrag]);
 
   // Handle pointer up - end drag (reads from refs to avoid stale closure)
   const handlePointerUp = useCallback((_e: React.PointerEvent) => {
