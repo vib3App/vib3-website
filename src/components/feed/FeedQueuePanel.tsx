@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import type { Video } from '@/types';
 
@@ -18,12 +19,33 @@ export function FeedQueuePanel({
   onClose,
   onScrollToVideo,
 }: FeedQueuePanelProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    // Delay listener to avoid catching the toggle click itself
+    const timeout = setTimeout(() => {
+      document.addEventListener('click', handleClick);
+    }, 0);
+    return () => {
+      clearTimeout(timeout);
+      document.removeEventListener('click', handleClick);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const upNextVideos = videos.slice(currentIndex + 1, currentIndex + 6);
 
   return (
     <div
+      ref={panelRef}
       className="fixed top-32 right-4 w-80 max-h-[420px] glass-heavy rounded-2xl overflow-hidden z-40 hidden md:block"
       style={{ animation: 'slide-up-scale 0.3s ease-out' }}
     >
@@ -36,15 +58,6 @@ export function FeedQueuePanel({
             <h3 className="text-white font-semibold">Up Next</h3>
             <span className="text-white/40 text-sm">({upNextVideos.length})</span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all"
-            aria-label="Close queue"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
       </div>
 
@@ -53,7 +66,7 @@ export function FeedQueuePanel({
         {upNextVideos.map((video, i) => (
           <button
             key={`${video.id}-${i}`}
-            onClick={() => onScrollToVideo(currentIndex + 1 + i)}
+            onClick={() => { onScrollToVideo(currentIndex + 1 + i); onClose(); }}
             className="group w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/10 transition-all duration-200"
             style={{ animationDelay: `${i * 50}ms`, animation: 'slide-up-scale 0.3s ease-out forwards' }}
           >
