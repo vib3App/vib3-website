@@ -24,7 +24,7 @@ export function FeedQueuePanel({
 
   return (
     <div
-      className="fixed top-20 right-4 w-80 max-h-[420px] glass-heavy rounded-2xl overflow-hidden z-40 hidden md:block"
+      className="fixed top-32 right-4 w-80 max-h-[420px] glass-heavy rounded-2xl overflow-hidden z-40 hidden md:block"
       style={{ animation: 'slide-up-scale 0.3s ease-out' }}
     >
       {/* Header with gradient accent */}

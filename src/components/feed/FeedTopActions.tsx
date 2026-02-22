@@ -9,7 +9,7 @@ interface FeedTopActionsProps {
 
 export function FeedTopActions({ showQueue: _showQueue, onToggleQueue }: FeedTopActionsProps) {
   return (
-    <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+    <div className="fixed top-20 right-4 z-40 flex items-center gap-2">
       <button
         onClick={onToggleQueue}
         className="p-2 bg-black/30 backdrop-blur-sm rounded-full hidden md:block"
