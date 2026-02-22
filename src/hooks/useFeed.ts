@@ -6,8 +6,10 @@ import { feedApi } from '@/services/api';
 import { watchHistoryService } from '@/services/watchHistory';
 import { useFeedCategoryStore } from '@/stores/feedCategoryStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useVibeStore } from '@/stores/vibeStore';
+import type { VibeType } from '@/stores/vibeStore';
 import type { Video } from '@/types';
-import type { FeedTab, VibeType } from '@/components/feed/FeedHeader';
+import type { FeedTab } from '@/components/feed/FeedHeader';
 import { logger } from '@/utils/logger';
 
 // Stable empty array to prevent re-renders when no videos
@@ -18,10 +20,9 @@ export function useFeed() {
   // Store is pre-initialized with defaults - always ready to use
   const { selectedCategory } = useFeedCategoryStore();
   const { user, isAuthVerified } = useAuthStore();
+  const { selectedVibe, setSelectedVibe } = useVibeStore();
 
   const [activeTab, setActiveTab] = useState<FeedTab>('forYou');
-  const [selectedVibe, setSelectedVibe] = useState<VibeType>(null);
-  const [showVibes, setShowVibes] = useState(false);
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -287,8 +288,6 @@ export function useFeed() {
     setActiveTab,
     selectedVibe,
     setSelectedVibe,
-    showVibes,
-    setShowVibes,
     videos,
     setVideos,
     currentIndex,

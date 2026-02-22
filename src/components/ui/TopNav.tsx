@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/personalization';
 import { SoundToggle } from '@/components/audio';
-import { DROPDOWNS, Dropdown, FeedCategoryDropdown, ProfileDropdown } from './top-nav';
+import { DROPDOWNS, Dropdown, FeedCategoryDropdown, Vib3MeterDropdown, ProfileDropdown } from './top-nav';
 
 export function TopNav() {
   const router = useRouter();
@@ -48,6 +48,7 @@ export function TopNav() {
         {/* Dropdown Nav - Desktop */}
         <div className="hidden md:flex items-center gap-2 flex-1 justify-center">
           <FeedCategoryDropdown isOpen={openDropdown === 'feed'} onToggle={() => handleToggle('feed')} onClose={handleClose} />
+          <Vib3MeterDropdown isOpen={openDropdown === 'vib3meter'} onToggle={() => handleToggle('vib3meter')} onClose={handleClose} />
           {DROPDOWNS.map((config) => (
             <Dropdown key={config.id} config={config} isOpen={openDropdown === config.id} onToggle={() => handleToggle(config.id)} />
           ))}
@@ -65,6 +66,7 @@ export function TopNav() {
       <div className="md:hidden overflow-x-auto scrollbar-hide border-t border-white/5">
         <div className="flex items-center gap-2 px-4 py-2">
           <FeedCategoryDropdown isOpen={openDropdown === 'feed'} onToggle={() => handleToggle('feed')} onClose={handleClose} />
+          <Vib3MeterDropdown isOpen={openDropdown === 'vib3meter'} onToggle={() => handleToggle('vib3meter')} onClose={handleClose} />
           {DROPDOWNS.map((config) => (
             <Dropdown key={config.id} config={config} isOpen={openDropdown === config.id} onToggle={() => handleToggle(config.id)} />
           ))}
