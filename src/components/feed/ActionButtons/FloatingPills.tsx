@@ -18,7 +18,7 @@ export function FloatingPills({
   onDragEnd,
 }: LayoutProps) {
   // Drag the whole container as a group
-  const { isDragging, dragProps } = useActionButtonDrag({
+  const { isDragging, position: dragPosition, dragProps } = useActionButtonDrag({
     onDragStart,
     onDragEnd,
   });
@@ -131,9 +131,11 @@ export function FloatingPills({
       {...dragProps}
       className={`absolute z-20 transition-all ${isDragging || globalDragging ? 'ring-2 ring-amber-400 rounded-2xl shadow-lg shadow-amber-400/30' : ''}`}
       style={{
-        left: `${position.x}%`,
-        top: `${position.y}%`,
+        position: isDragging && dragPosition ? 'fixed' : 'absolute',
+        left: `${(isDragging && dragPosition ? dragPosition : position).x}%`,
+        top: `${(isDragging && dragPosition ? dragPosition : position).y}%`,
         transform: 'translate(-50%, -50%)',
+        zIndex: isDragging ? 100 : undefined,
         touchAction: 'none',
       }}
     >

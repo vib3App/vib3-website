@@ -21,7 +21,7 @@ export function CornerCluster({
   onOpenSettings: _onOpenSettings,
 }: LayoutProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isDragging, dragProps } = useActionButtonDrag({
+  const { isDragging, position: dragPosition, dragProps } = useActionButtonDrag({
     onDragStart,
     onDragEnd,
     disabled: false,
@@ -67,12 +67,12 @@ export function CornerCluster({
     };
   };
 
-  // Position style
-  const positionStyle: React.CSSProperties = isDragging
+  // Position style - use drag hook's real-time position during drag
+  const positionStyle: React.CSSProperties = isDragging && dragPosition
     ? {
         position: 'fixed',
-        left: `${position.x}%`,
-        top: `${position.y}%`,
+        left: `${dragPosition.x}%`,
+        top: `${dragPosition.y}%`,
         transform: 'translate(-50%, -50%)',
         zIndex: 100,
       }

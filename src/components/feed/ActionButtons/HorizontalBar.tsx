@@ -19,7 +19,7 @@ export function HorizontalBar({
   onDragEnd,
   onOpenSettings: _onOpenSettings,
 }: LayoutProps) {
-  const { isDragging, dragProps } = useActionButtonDrag({
+  const { isDragging, position: dragPosition, dragProps } = useActionButtonDrag({
     onDragStart,
     onDragEnd,
     disabled: false,
@@ -54,12 +54,12 @@ export function HorizontalBar({
     }
   };
 
-  // Calculate position style
-  const positionStyle: React.CSSProperties = isDragging
+  // Calculate position style - use drag hook's real-time position during drag
+  const positionStyle: React.CSSProperties = isDragging && dragPosition
     ? {
         position: 'fixed',
-        left: `${position.x}%`,
-        top: `${position.y}%`,
+        left: `${dragPosition.x}%`,
+        top: `${dragPosition.y}%`,
         transform: 'translate(-50%, -50%)',
         zIndex: 100,
       }

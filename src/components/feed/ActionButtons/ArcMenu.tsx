@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState } from 'react';
 import { ActionButton } from './ActionButton';
-import type { LayoutProps, Position } from '@/types/actionButtons';
+import { useActionButtonDrag } from '@/hooks/useActionButtonDrag';
+import type { LayoutProps } from '@/types/actionButtons';
 
 export function ArcMenu({
   video,
   buttons,
   size,
-  position: _position,
   isDragging: globalDragging,
   onLike,
   onComment,
@@ -20,10 +20,11 @@ export function ArcMenu({
   onOpenSettings: _onOpenSettings,
 }: LayoutProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragPos, setDragPos] = useState<Position | null>(null);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { isDragging, position: dragPosition, dragProps } = useActionButtonDrag({
+    onDragStart,
+    onDragEnd,
+    disabled: false,
+  });
 
   const getOnClick = (id: string) => {
     switch (id) {
@@ -70,69 +71,25 @@ export function ArcMenu({
     };
   };
 
-  // Handle long press for drag
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    const startX = e.clientX;
-    const startY = e.clientY;
-
-    longPressTimer.current = setTimeout(() => {
-      setIsDragging(true);
-      onDragStart?.();
-      if (navigator.vibrate) navigator.vibrate(50);
-    }, 500);
-
-    const handleMove = (moveE: PointerEvent) => {
-      const dx = Math.abs(moveE.clientX - startX);
-      const dy = Math.abs(moveE.clientY - startY);
-      if (dx > 10 || dy > 10) {
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current);
-          longPressTimer.current = null;
-        }
-      }
-      if (isDragging) {
-        const x = Math.max(10, Math.min(90, (moveE.clientX / window.innerWidth) * 100));
-        const y = Math.max(10, Math.min(90, (moveE.clientY / window.innerHeight) * 100));
-        setDragPos({ x, y });
-      }
-    };
-
-    const handleUp = () => {
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-        longPressTimer.current = null;
-      }
-      if (isDragging && dragPos) {
-        onDragEnd?.(dragPos);
-      }
-      setIsDragging(false);
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-    };
-
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
-  }, [isDragging, dragPos, onDragStart, onDragEnd]);
-
-  // Position style - center-right by default so arc expands into view
-  const positionStyle: React.CSSProperties = isDragging && dragPos
+  // Position style - use drag hook's real-time position during drag
+  const positionStyle: React.CSSProperties = isDragging && dragPosition
     ? {
         position: 'fixed',
-        left: `${dragPos.x}%`,
-        top: `${dragPos.y}%`,
+        left: `${dragPosition.x}%`,
+        top: `${dragPosition.y}%`,
         transform: 'translate(-50%, -50%)',
         zIndex: 100,
       }
     : {
         position: 'absolute',
         right: '1rem',
-        bottom: '50%', // Center vertically so arc has room to expand
+        bottom: '50%',
         transform: 'translateY(50%)',
       };
 
   return (
     <div
-      ref={containerRef}
+      {...dragProps}
       className={`z-20 ${isDragging || globalDragging ? 'ring-2 ring-amber-400 rounded-full shadow-lg shadow-amber-400/30' : ''}`}
       style={{ ...positionStyle, touchAction: 'none' }}
     >
@@ -167,7 +124,6 @@ export function ArcMenu({
         {/* Center trigger button */}
         <button
           onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
-          onPointerDown={handlePointerDown}
           className={`relative z-10 p-3 rounded-full transition-all duration-300 ${
             isExpanded
               ? 'bg-amber-500 text-white rotate-45'
