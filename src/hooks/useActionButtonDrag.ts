@@ -27,6 +27,21 @@ interface UseDragReturn {
   };
 }
 
+// Scroll prevention functions used outside React's render cycle
+function lockScroll() {
+  document.body.style.overflow = 'hidden';
+  document.body.style.touchAction = 'none';
+  document.documentElement.style.overflow = 'hidden';
+  document.documentElement.style.touchAction = 'none';
+}
+
+function unlockScroll() {
+  document.body.style.overflow = '';
+  document.body.style.touchAction = '';
+  document.documentElement.style.overflow = '';
+  document.documentElement.style.touchAction = '';
+}
+
 export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn {
   const {
     onDragStart,
@@ -42,10 +57,10 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
 
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLElement | null>(null);
-  // Track the latest pointer position so we can use it when the timer fires
   const latestPointerRef = useRef<{ x: number; y: number } | null>(null);
-  // Grab offset: distance (in px) between cursor and element center when drag starts
   const grabOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  // Ref for the global touchmove/pointermove blocker so we can add/remove without React timing
+  const scrollBlockerRef = useRef<((e: Event) => void) | null>(null);
 
   // Refs to avoid stale closures in pointer handlers
   const positionRef = useRef<Position | null>(position);
@@ -55,7 +70,6 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
 
   // Convert client coordinates to viewport percentage, applying grab offset
   const pointerToPosition = useCallback((clientX: number, clientY: number): Position => {
-    // Subtract the grab offset so the element stays pinned to where you grabbed it
     const adjustedX = clientX - grabOffsetRef.current.x;
     const adjustedY = clientY - grabOffsetRef.current.y;
     const x = Math.max(5, Math.min(95, (adjustedX / window.innerWidth) * 100));
@@ -71,7 +85,27 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     }
   }, []);
 
-  // Store pointerId for capture/release
+  // Immediately start blocking scroll (called directly, not via useEffect)
+  const startBlockingScroll = useCallback(() => {
+    // Block at the CSS level
+    lockScroll();
+    // Block at the event level
+    const blocker = (e: Event) => { e.preventDefault(); };
+    scrollBlockerRef.current = blocker;
+    document.addEventListener('touchmove', blocker, { passive: false });
+    document.addEventListener('wheel', blocker, { passive: false });
+  }, []);
+
+  // Stop blocking scroll
+  const stopBlockingScroll = useCallback(() => {
+    unlockScroll();
+    if (scrollBlockerRef.current) {
+      document.removeEventListener('touchmove', scrollBlockerRef.current);
+      document.removeEventListener('wheel', scrollBlockerRef.current);
+      scrollBlockerRef.current = null;
+    }
+  }, []);
+
   const pointerIdRef = useRef<number | null>(null);
   const dragEnabledRef = useRef(false);
 
@@ -79,21 +113,21 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (disabled) return;
 
-    // Store the element and pointer for later reference
     containerRef.current = e.currentTarget as HTMLElement;
     latestPointerRef.current = { x: e.clientX, y: e.clientY };
     pointerIdRef.current = e.pointerId;
     dragEnabledRef.current = false;
 
-    // Start long press timer
     clearLongPressTimer();
     longPressTimerRef.current = setTimeout(() => {
       dragEnabledRef.current = true;
       setIsLongPressing(true);
       setIsDragging(true);
 
-      // Calculate grab offset: difference between cursor and element center
-      // This keeps the element pinned to where you grabbed it instead of centering on cursor
+      // Block scrolling IMMEDIATELY — don't wait for React useEffect
+      startBlockingScroll();
+
+      // Calculate grab offset
       if (containerRef.current && latestPointerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
@@ -102,15 +136,13 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
           x: latestPointerRef.current.x - centerX,
           y: latestPointerRef.current.y - centerY,
         };
-
-        // Set initial position to the element's current center (not the cursor)
         const initialPos = pointerToPosition(latestPointerRef.current.x, latestPointerRef.current.y);
         setPosition(initialPos);
       }
 
       onDragStart?.();
 
-      // Capture pointer for tracking outside element during drag
+      // Capture pointer for tracking outside element
       if (containerRef.current && pointerIdRef.current !== null) {
         try {
           containerRef.current.setPointerCapture(pointerIdRef.current);
@@ -119,27 +151,16 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
         }
       }
 
-      // Vibrate on mobile to indicate drag mode
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
     }, longPressDelay);
-  }, [disabled, longPressDelay, onDragStart, clearLongPressTimer, pointerToPosition]);
-
-  // Block touch scrolling while dragging
-  useEffect(() => {
-    if (!isDragging) return;
-    const preventScroll = (e: TouchEvent) => { e.preventDefault(); };
-    document.addEventListener('touchmove', preventScroll, { passive: false });
-    return () => document.removeEventListener('touchmove', preventScroll);
-  }, [isDragging]);
+  }, [disabled, longPressDelay, onDragStart, clearLongPressTimer, pointerToPosition, startBlockingScroll]);
 
   // Handle pointer move
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    // Always track latest pointer position (even before drag activates)
     latestPointerRef.current = { x: e.clientX, y: e.clientY };
 
-    // Update position if dragging - prevent default to stop page scroll
     if (dragEnabledRef.current) {
       e.preventDefault();
       e.stopPropagation();
@@ -149,11 +170,10 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     }
   }, [pointerToPosition, onDrag]);
 
-  // Handle pointer up - end drag (reads from refs to avoid stale closure)
+  // Handle pointer up
   const handlePointerUp = useCallback((_e: React.PointerEvent) => {
     clearLongPressTimer();
 
-    // Release pointer capture if we captured it
     if (dragEnabledRef.current && containerRef.current && pointerIdRef.current !== null) {
       try {
         containerRef.current.releasePointerCapture(pointerIdRef.current);
@@ -166,14 +186,16 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       onDragEndRef.current?.(positionRef.current);
     }
 
+    // Stop blocking scroll immediately
+    stopBlockingScroll();
+
     dragEnabledRef.current = false;
     setIsDragging(false);
     setIsLongPressing(false);
     latestPointerRef.current = null;
     pointerIdRef.current = null;
-  }, [clearLongPressTimer]);
+  }, [clearLongPressTimer, stopBlockingScroll]);
 
-  // Handle pointer cancel (e.g., touch interrupted)
   const handlePointerCancel = useCallback((e: React.PointerEvent) => {
     handlePointerUp(e);
   }, [handlePointerUp]);
@@ -182,10 +204,10 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   useEffect(() => {
     return () => {
       clearLongPressTimer();
+      stopBlockingScroll();
     };
-  }, [clearLongPressTimer]);
+  }, [clearLongPressTimer, stopBlockingScroll]);
 
-  // Compute drag style
   const dragStyle: React.CSSProperties | undefined = isDragging && position
     ? {
         position: 'fixed',
