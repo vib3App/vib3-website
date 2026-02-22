@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
@@ -37,7 +37,7 @@ export function FeedVideoItem({
   onRepost,
   userId,
 }: FeedVideoItemProps) {
-  const videoRef = useRef<React.RefObject<HTMLVideoElement | null> | null>(null);
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
 
   const handleDoubleTap = useCallback(() => {
     if (!video.isLiked) {
@@ -47,7 +47,7 @@ export function FeedVideoItem({
 
   const handleVideoRef = useCallback(
     (ref: React.RefObject<HTMLVideoElement | null>) => {
-      videoRef.current = ref;
+      videoElRef.current = ref.current;
     },
     []
   );
@@ -75,11 +75,11 @@ export function FeedVideoItem({
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
 
-      {/* Mute button */}
-      <MuteButton isMuted={isMuted} onToggle={onMuteToggle} />
-
-      {/* Feed controls (speed) - top area */}
-      <FeedPlayerControls videoRef={videoRef} />
+      {/* Bottom-right controls: speed + mute */}
+      <div className="fixed bottom-4 right-14 z-50 flex items-center gap-2">
+        <SpeedControl videoRef={videoElRef as React.RefObject<HTMLVideoElement | null>} />
+        <MuteButton isMuted={isMuted} onToggle={onMuteToggle} />
+      </div>
 
       {/* Creator info - Top left */}
       <CreatorInfo video={video} userId={userId} onFollow={onFollow} />
@@ -113,32 +113,11 @@ export function FeedVideoItem({
   );
 }
 
-/** Compact speed control overlay for feed videos */
-function FeedPlayerControls({
-  videoRef,
-}: {
-  videoRef: React.RefObject<React.RefObject<HTMLVideoElement | null> | null>;
-}) {
-  // Create a stable ref that points to the actual video element
-  const actualVideoRef = useRef<HTMLVideoElement | null>(null);
-
-  // Update the actual ref when the nested ref changes
-  if (videoRef.current?.current && videoRef.current.current !== actualVideoRef.current) {
-    actualVideoRef.current = videoRef.current.current;
-  }
-
-  return (
-    <div className="absolute top-20 md:top-14 right-16 z-40 flex items-center gap-2">
-      <SpeedControl videoRef={actualVideoRef as React.RefObject<HTMLVideoElement | null>} />
-    </div>
-  );
-}
-
 function MuteButton({ isMuted, onToggle }: { isMuted: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onToggle(); }}
-      className="fixed bottom-4 right-16 z-50 p-3 glass rounded-xl group transition-all hover:bg-white/10"
+      className="p-3 glass rounded-xl group transition-all hover:bg-white/10"
     >
       {isMuted ? (
         <svg className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
