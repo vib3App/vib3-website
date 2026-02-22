@@ -46,7 +46,7 @@ export function Footer() {
                 <Link href="/feed" className="text-white/40 hover:text-white text-sm transition-colors">Open App</Link>
               </li>
               <li>
-                <Link href="/creator/fund" className="text-white/40 hover:text-white text-sm transition-colors">Creator Fund</Link>
+                <Link href="/creator-fund" className="text-white/40 hover:text-white text-sm transition-colors">Creator Fund</Link>
               </li>
             </ul>
           </div>

@@ -76,7 +76,7 @@ export function FeedVideoItem({
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
 
       {/* Bottom-right controls: speed + mute */}
-      <div className="fixed bottom-4 right-14 z-50 flex items-center gap-2">
+      <div className="fixed bottom-4 right-20 z-50 flex items-center gap-2">
         <SpeedControl videoRef={videoElRef as React.RefObject<HTMLVideoElement | null>} />
         <MuteButton isMuted={isMuted} onToggle={onMuteToggle} />
       </div>
