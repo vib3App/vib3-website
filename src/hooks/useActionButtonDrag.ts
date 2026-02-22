@@ -41,9 +41,9 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const [position, setPosition] = useState<Position | null>(null);
 
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const startPosRef = useRef<{ x: number; y: number } | null>(null);
   const containerRef = useRef<HTMLElement | null>(null);
-  const hasDraggedRef = useRef(false);
+  // Track the latest pointer position so we can use it when the timer fires
+  const latestPointerRef = useRef<{ x: number; y: number } | null>(null);
 
   // Refs to avoid stale closures in pointer handlers
   const positionRef = useRef<Position | null>(position);
@@ -51,15 +51,10 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
   const onDragEndRef = useRef(onDragEnd);
   useEffect(() => { onDragEndRef.current = onDragEnd; }, [onDragEnd]);
 
-  // Convert client coordinates to percentage position
-  const clientToPercent = useCallback((clientX: number, clientY: number): Position => {
-    const container = containerRef.current?.parentElement;
-    if (!container) {
-      return { x: 50, y: 50 };
-    }
-    const rect = container.getBoundingClientRect();
-    const x = Math.max(5, Math.min(95, ((clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(5, Math.min(95, ((clientY - rect.top) / rect.height) * 100));
+  // Convert client coordinates to viewport percentage (for fixed positioning)
+  const clientToViewportPercent = useCallback((clientX: number, clientY: number): Position => {
+    const x = Math.max(5, Math.min(95, (clientX / window.innerWidth) * 100));
+    const y = Math.max(5, Math.min(95, (clientY / window.innerHeight) * 100));
     return { x, y };
   }, []);
 
@@ -81,8 +76,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
 
     // Store the element and pointer for later reference
     containerRef.current = e.currentTarget as HTMLElement;
-    startPosRef.current = { x: e.clientX, y: e.clientY };
-    hasDraggedRef.current = false;
+    latestPointerRef.current = { x: e.clientX, y: e.clientY };
     pointerIdRef.current = e.pointerId;
     dragEnabledRef.current = false;
 
@@ -92,6 +86,13 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
       dragEnabledRef.current = true;
       setIsLongPressing(true);
       setIsDragging(true);
+
+      // Set initial position to wherever the pointer is NOW (may have moved during hold)
+      if (latestPointerRef.current) {
+        const initialPos = clientToViewportPercent(latestPointerRef.current.x, latestPointerRef.current.y);
+        setPosition(initialPos);
+      }
+
       onDragStart?.();
 
       // Capture pointer for tracking outside element during drag
@@ -108,7 +109,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
         navigator.vibrate(50);
       }
     }, longPressDelay);
-  }, [disabled, longPressDelay, onDragStart, clearLongPressTimer]);
+  }, [disabled, longPressDelay, onDragStart, clearLongPressTimer, clientToViewportPercent]);
 
   // Block touch scrolling while dragging
   useEffect(() => {
@@ -120,29 +121,18 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
 
   // Handle pointer move
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!startPosRef.current) return;
-
-    // Check if moved significantly (prevents accidental drag on tap)
-    const dx = Math.abs(e.clientX - startPosRef.current.x);
-    const dy = Math.abs(e.clientY - startPosRef.current.y);
-
-    if (dx > 10 || dy > 10) {
-      hasDraggedRef.current = true;
-      // Cancel long press if moved before timer completes
-      if (!dragEnabledRef.current) {
-        clearLongPressTimer();
-      }
-    }
+    // Always track latest pointer position (even before drag activates)
+    latestPointerRef.current = { x: e.clientX, y: e.clientY };
 
     // Update position if dragging - prevent default to stop page scroll
     if (dragEnabledRef.current) {
       e.preventDefault();
       e.stopPropagation();
-      const newPos = clientToPercent(e.clientX, e.clientY);
+      const newPos = clientToViewportPercent(e.clientX, e.clientY);
       setPosition(newPos);
       onDrag?.(newPos);
     }
-  }, [clientToPercent, onDrag, clearLongPressTimer]);
+  }, [clientToViewportPercent, onDrag]);
 
   // Handle pointer up - end drag (reads from refs to avoid stale closure)
   const handlePointerUp = useCallback((_e: React.PointerEvent) => {
@@ -164,7 +154,7 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
     dragEnabledRef.current = false;
     setIsDragging(false);
     setIsLongPressing(false);
-    startPosRef.current = null;
+    latestPointerRef.current = null;
     pointerIdRef.current = null;
   }, [clearLongPressTimer]);
 

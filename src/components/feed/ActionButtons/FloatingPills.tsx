@@ -129,7 +129,7 @@ export function FloatingPills({
   return (
     <div
       {...dragProps}
-      className={`absolute z-20 transition-all ${isDragging || globalDragging ? 'ring-2 ring-amber-400 rounded-2xl shadow-lg shadow-amber-400/30' : ''}`}
+      className={`z-20 ${isDragging ? '' : 'transition-all'} ${isDragging || globalDragging ? 'ring-2 ring-amber-400 rounded-2xl shadow-lg shadow-amber-400/30' : ''}`}
       style={{
         position: isDragging && dragPosition ? 'fixed' : 'absolute',
         left: `${(isDragging && dragPosition ? dragPosition : position).x}%`,
