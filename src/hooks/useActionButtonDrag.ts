@@ -102,21 +102,23 @@ export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn
 
   // Immediately start blocking scroll (called directly, not via useEffect)
   const startBlockingScroll = useCallback(() => {
-    // Block at the CSS level
+    // Block at the CSS level (all scrollable elements)
     lockScroll();
-    // Block at the event level
-    const blocker = (e: Event) => { e.preventDefault(); };
+    // Block at the event level — capture phase so we catch it before any handler
+    const blocker = (e: Event) => { e.preventDefault(); e.stopPropagation(); };
     scrollBlockerRef.current = blocker;
-    document.addEventListener('touchmove', blocker, { passive: false });
-    document.addEventListener('wheel', blocker, { passive: false });
+    document.addEventListener('touchmove', blocker, { passive: false, capture: true });
+    document.addEventListener('wheel', blocker, { passive: false, capture: true });
+    document.addEventListener('scroll', blocker, { capture: true });
   }, []);
 
   // Stop blocking scroll
   const stopBlockingScroll = useCallback(() => {
     unlockScroll();
     if (scrollBlockerRef.current) {
-      document.removeEventListener('touchmove', scrollBlockerRef.current);
-      document.removeEventListener('wheel', scrollBlockerRef.current);
+      document.removeEventListener('touchmove', scrollBlockerRef.current, { capture: true } as EventListenerOptions);
+      document.removeEventListener('wheel', scrollBlockerRef.current, { capture: true } as EventListenerOptions);
+      document.removeEventListener('scroll', scrollBlockerRef.current, { capture: true } as EventListenerOptions);
       scrollBlockerRef.current = null;
     }
   }, []);
