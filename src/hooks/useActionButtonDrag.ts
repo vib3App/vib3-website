@@ -27,34 +27,55 @@ interface UseDragReturn {
   };
 }
 
-// Track elements we've locked so we can restore them exactly
-let lockedElements: { el: HTMLElement; overflow: string; touchAction: string }[] = [];
+// Saved scroll positions to force-reset if browser scrolls during drag
+let savedScrollPositions: { el: Element | Window; x: number; y: number }[] = [];
+let scrollResetHandler: (() => void) | null = null;
+let savedStyles: { el: HTMLElement; prop: string; value: string }[] = [];
 
 function lockScroll() {
-  // Lock body + html
-  for (const el of [document.body, document.documentElement]) {
-    lockedElements.push({ el, overflow: el.style.overflow, touchAction: el.style.touchAction });
-    el.style.overflow = 'hidden';
-    el.style.touchAction = 'none';
-  }
-  // Lock ALL scrollable containers on the page (feed scroll container, etc.)
-  document.querySelectorAll<HTMLElement>('[class*="overflow"]').forEach((el) => {
-    const style = getComputedStyle(el);
-    if (style.overflowX !== 'hidden' && style.overflowX !== 'visible' ||
-        style.overflowY !== 'hidden' && style.overflowY !== 'visible') {
-      lockedElements.push({ el, overflow: el.style.overflow, touchAction: el.style.touchAction });
-      el.style.overflow = 'hidden';
-      el.style.touchAction = 'none';
+  // Save scroll positions: window + every scrollable element
+  savedScrollPositions = [{ el: window, x: window.scrollX, y: window.scrollY }];
+  document.querySelectorAll('*').forEach((el) => {
+    if (el instanceof HTMLElement && (el.scrollLeft !== 0 || el.scrollTop !== 0 || el.scrollWidth > el.clientWidth || el.scrollHeight > el.clientHeight)) {
+      savedScrollPositions.push({ el, x: el.scrollLeft, y: el.scrollTop });
     }
   });
+
+  // Force-reset scroll on ANY scroll event (capture phase)
+  scrollResetHandler = () => {
+    for (const saved of savedScrollPositions) {
+      if (saved.el === window) {
+        window.scrollTo(saved.x, saved.y);
+      } else {
+        (saved.el as HTMLElement).scrollLeft = saved.x;
+        (saved.el as HTMLElement).scrollTop = saved.y;
+      }
+    }
+  };
+  document.addEventListener('scroll', scrollResetHandler, { capture: true });
+
+  // CSS-level locks on body + html
+  for (const el of [document.body, document.documentElement]) {
+    for (const [prop, val] of [['overflow', 'hidden'], ['touchAction', 'none'], ['overscrollBehavior', 'none']] as const) {
+      savedStyles.push({ el, prop, value: ((el.style as unknown as Record<string, string>))[prop] || '' });
+      ((el.style as unknown as Record<string, string>))[prop] = val;
+    }
+  }
 }
 
 function unlockScroll() {
-  for (const { el, overflow, touchAction } of lockedElements) {
-    el.style.overflow = overflow;
-    el.style.touchAction = touchAction;
+  // Remove scroll reset handler
+  if (scrollResetHandler) {
+    document.removeEventListener('scroll', scrollResetHandler, { capture: true });
+    scrollResetHandler = null;
   }
-  lockedElements = [];
+  savedScrollPositions = [];
+
+  // Restore CSS styles
+  for (const { el, prop, value } of savedStyles) {
+    ((el.style as unknown as Record<string, string>))[prop] = value;
+  }
+  savedStyles = [];
 }
 
 export function useActionButtonDrag(options: UseDragOptions = {}): UseDragReturn {
