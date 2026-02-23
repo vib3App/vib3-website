@@ -9,6 +9,7 @@ import { messagesApi } from '@/services/api';
 import { websocketService } from '@/services/websocket';
 import type { Conversation, Message } from '@/types';
 import { TopNav } from '@/components/ui/TopNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import { logger } from '@/utils/logger';
 
@@ -259,6 +260,7 @@ export default function MessagesPage() {
           )}
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 }

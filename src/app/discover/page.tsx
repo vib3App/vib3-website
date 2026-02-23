@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { feedApi, soundsApi, challengesApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 import { AuroraContainer, GlassButton } from '@/components/ui/Glass';
 import {
   DiscoverHeader,
@@ -117,6 +118,7 @@ export default function DiscoverPage() {
           </Link>
         </div>
       </main>
+      <BottomNav />
     </AuroraContainer>
   );
 }

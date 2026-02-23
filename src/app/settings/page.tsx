@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/services/api';
 import { TopNav } from '@/components/ui/TopNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 import {
   AccountSection,
@@ -64,8 +65,20 @@ function ProfileCard({ user }: { user: { username: string; email: string; profil
 
 export default function SettingsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, isAuthVerified, logout } = useAuthStore();
-  const [activeSection, setActiveSection] = useState<SettingsSection>('account');
+  const initialTab = (searchParams.get('tab') as SettingsSection) || 'account';
+  const [activeSection, setActiveSection] = useState<SettingsSection>(
+    SECTIONS.some(s => s.id === initialTab) ? initialTab : 'account'
+  );
+
+  // Update active section when URL tab param changes
+  useEffect(() => {
+    const tab = searchParams.get('tab') as SettingsSection;
+    if (tab && SECTIONS.some(s => s.id === tab)) {
+      setActiveSection(tab);
+    }
+  }, [searchParams]);
 
   const handleLogout = async () => {
     try { await authApi.logout(); } catch { /* ignore */ }
@@ -203,6 +216,7 @@ export default function SettingsPage() {
           </button>
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 }

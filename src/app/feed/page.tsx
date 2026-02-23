@@ -20,6 +20,7 @@ import {
   FollowCategoryPicker,
   SwipeActions,
 } from '@/components/feed';
+import { BottomNav } from '@/components/ui/BottomNav';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
 import { userApi } from '@/services/api';
@@ -261,6 +262,9 @@ export default function FeedPage() {
           </Suspense>
         </ErrorBoundary>
       </main>
+
+      {/* Bottom Navigation - mobile */}
+      <BottomNav />
 
       {/* First-time user onboarding */}
       <OnboardingModal />

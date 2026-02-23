@@ -11,6 +11,7 @@ import { ProfileInfo } from '@/components/profile/ProfileInfo';
 import { ProfileStats, ProfileTabs, ProfileVideos, ProfileCategoryFilter } from '@/components/profile/ProfileSections';
 import { SendTipModal } from '@/components/monetization';
 import { TopNav } from '@/components/ui/TopNav';
+import { BottomNav } from '@/components/ui/BottomNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 export default function ProfilePage() {
@@ -63,6 +64,7 @@ export default function ProfilePage() {
           </>
         )}
       </main>
+      <BottomNav />
     </div>
   );
 }

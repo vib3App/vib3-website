@@ -64,6 +64,7 @@ const navItems = [
 
 const menuItems = [
   { href: '/profile', label: 'Profile', icon: '👤' },
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
   { href: '/collab', label: 'Collab Rooms', icon: '👥' },
   { href: '/watch-party', label: 'Watch Party', icon: '🎉' },
   { href: '/capsule', label: 'Time Capsules', icon: '⏰' },
@@ -75,6 +76,7 @@ const menuItems = [
   { href: '/analytics', label: 'Analytics', icon: '📊' },
   { href: '/creator-fund', label: 'Creator Fund', icon: '💰' },
   { href: '/messages', label: 'Messages', icon: '💬' },
+  { href: '/settings?tab=appearance', label: 'Themes', icon: '🎨' },
 ];
 
 export function BottomNav() {
