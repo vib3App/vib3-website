@@ -34,6 +34,10 @@ export function SwipeActions({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Don't start swiping if the touch is on action buttons or interactive controls
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-no-swipe], button, a, [role="button"]')) return;
+
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     setSwiping(true);
@@ -74,6 +78,10 @@ export function SwipeActions({
   // Mouse support for desktop
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      // Don't start swiping if the click is on action buttons or interactive controls
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-no-swipe], button, a, [role="button"]')) return;
+
       touchStartX.current = e.clientX;
       touchStartY.current = e.clientY;
       setSwiping(true);
