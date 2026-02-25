@@ -53,15 +53,6 @@ export default function ContactPage() {
               <p>Email: <a href="mailto:legal@docsmarketplacellc.com" className="text-purple-400 hover:text-purple-300">legal@docsmarketplacellc.com</a></p>
             </div>
           </section>
-          <section className="p-6 rounded-2xl bg-white/5 border border-white/10">
-            <h2 className="text-lg font-semibold text-white mb-4">Mailing Address</h2>
-            <div className="text-white/70 text-sm space-y-1">
-              <p>Docs Marketplace LLC</p>
-              <p>4605 E 179th Pl S</p>
-              <p>Bixby, OK 74008</p>
-              <p>Phone: (832) 622-0646</p>
-            </div>
-          </section>
         </div>
       </div>
     </div>

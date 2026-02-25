@@ -22,8 +22,6 @@ export default function PrivacyPage() {
             <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 text-sm">
               <p className="font-semibold text-white mb-1">Contact Information</p>
               <p>Email: vibe@docsmarketplacellc.com</p>
-              <p>Address: 4605 E 179th Pl S, Bixby, OK 74008</p>
-              <p>Phone: (832) 622-0646</p>
             </div>
           </section>
           <section>
@@ -186,8 +184,6 @@ export default function PrivacyPage() {
               <p>Privacy: privacy@docsmarketplacellc.com</p>
               <p>General: vibe@docsmarketplacellc.com</p>
               <p>DMCA: dmca@docsmarketplacellc.com</p>
-              <p>Mail: Docs Marketplace LLC, 4605 E 179th Pl S, Bixby, OK 74008</p>
-              <p>Phone: (832) 622-0646</p>
             </div>
           </section>
           <p className="text-center text-white/30 text-sm pt-8 border-t border-white/5">&copy; 2025 Docs Marketplace LLC. All rights reserved.</p>

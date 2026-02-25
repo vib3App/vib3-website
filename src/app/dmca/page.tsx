@@ -24,8 +24,6 @@ export default function DMCAPage() {
               <p><span className="text-white font-medium">Company:</span> Docs Marketplace LLC</p>
               <p><span className="text-white font-medium">Agent Name:</span> Tavis McDonald</p>
               <p><span className="text-white font-medium">Email:</span> vibe@docsmarketplacellc.com</p>
-              <p><span className="text-white font-medium">Address:</span> 4605 E 179th Pl S, Bixby, OK 74008</p>
-              <p><span className="text-white font-medium">Phone:</span> (832) 622-0646</p>
               <p><span className="text-white font-medium">DMCA Registration Number:</span> DMCA-1069216</p>
             </div>
           </section>

@@ -55,8 +55,6 @@ export default function TermsPage() {
               <p className="font-semibold text-white">DMCA Designated Agent</p>
               <p>Docs Marketplace LLC</p>
               <p>Email: dmca@docsmarketplacellc.com</p>
-              <p>Address: 4605 E 179th Pl S, Bixby, OK 74008</p>
-              <p>Phone: (832) 622-0646</p>
               <p>DMCA Registration: DMCA-1069216</p>
             </div>
             <h3 className="text-lg font-medium text-white/90 mb-2">4.1 Repeat Infringer Policy</h3>
@@ -116,7 +114,6 @@ export default function TermsPage() {
               <p>DMCA: dmca@docsmarketplacellc.com</p>
               <p>Appeals: appeals@docsmarketplacellc.com</p>
               <p>Legal: legal@docsmarketplacellc.com</p>
-              <p>Mail: Docs Marketplace LLC, 4605 E 179th Pl S, Bixby, OK 74008</p>
             </div>
           </section>
           <p className="text-center text-white/30 text-sm pt-8 border-t border-white/5">&copy; 2025 Docs Marketplace LLC. All rights reserved.</p>
