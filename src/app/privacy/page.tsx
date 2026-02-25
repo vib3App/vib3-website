@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         <Link href="/" className="text-purple-400 hover:text-purple-300 text-sm mb-8 inline-block">&larr; Back to Home</Link>
         <div className="border-b border-purple-500/30 pb-6 mb-10">
           <h1 className="text-4xl font-bold mb-3">Privacy Policy</h1>
-          <p className="text-white/40 text-sm">Last Updated: December 12, 2025 &middot; Effective: December 12, 2025</p>
+          <p className="text-white/40 text-sm">Last Updated: February 25, 2026 &middot; Effective: December 12, 2025</p>
         </div>
         <div className="space-y-10 text-white/70 leading-relaxed">
           <section>
@@ -47,7 +47,32 @@ export default function PrivacyPage() {
               <li>Cookies and similar technologies</li>
             </ul>
             <h3 className="text-lg font-medium text-white/90 mb-2">2.3 Location Data</h3>
-            <p>Our Discover Nearby feature uses your device&rsquo;s precise location (GPS) to show creators and content near you. Location access is optional and requires your explicit permission. You can disable location access at any time in your device settings.</p>
+            <p className="mb-3">We collect the following location data:</p>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-4">
+              <p className="font-semibold text-white mb-2">Precise Location (GPS)</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Collected when you use the <span className="text-white font-medium">Discover Nearby</span> map feature, which shows creators and content near you</li>
+                <li>Requires your explicit permission via the operating system location prompt</li>
+                <li>Collected only while the app is in the foreground and the feature is active</li>
+                <li>GPS coordinates are stored with your profile to enable the Discover Nearby map</li>
+                <li>You may revoke location permission at any time in your device settings</li>
+                <li>If you deny or revoke permission, Discover Nearby will be unavailable, but all other features work normally</li>
+              </ul>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 mb-4">
+              <p className="font-semibold text-white mb-2">Approximate Location (IP-based)</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Derived automatically from your IP address when you use the Services</li>
+                <li>Used for content recommendations, analytics, and compliance</li>
+                <li>Does not require any special permission</li>
+              </ul>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <p className="font-semibold text-white mb-2">Video Geotagging</p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>When you upload a video with location permission enabled, approximate location metadata may be associated with the video for content discovery</li>
+              </ul>
+            </div>
           </section>
           <section>
             <h2 className="text-xl font-semibold text-white mb-4">3. How We Use Your Information</h2>
@@ -55,6 +80,7 @@ export default function PrivacyPage() {
             <ul className="list-disc list-inside space-y-1">
               <li>Provide and improve our Services</li>
               <li>Personalize content and recommendations</li>
+              <li>Show nearby creators and content (Discover Nearby feature, using precise location)</li>
               <li>Communicate with you</li>
               <li>Ensure safety and security</li>
               <li>Comply with legal obligations</li>
