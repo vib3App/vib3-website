@@ -44,27 +44,37 @@ export async function generateMetadata({
     return { title: 'VIB3 - Video Not Found' };
   }
 
-  const username = video.author?.username;
-  const title = username
-    ? `${username} on VIB3`
-    : 'Watch on VIB3';
-
+  const username = video.author?.username || '';
   const likes = video.likesCount || 0;
   const comments = video.commentsCount || 0;
-  const statsLine = likes > 0 || comments > 0
-    ? `${likes.toLocaleString()} likes, ${comments.toLocaleString()} comments. `
-    : '';
-  const desc = video.caption || '';
-  const description = `${statsLine}${desc || `Watch ${username || 'this'}'s video.`}`;
-
+  const caption = video.caption || '';
   const thumbnailUrl = video.media?.[0]?.thumbnailUrl;
 
+  // Match TikTok's iMessage card pattern:
+  // og:title = creator name (shown as "VIB3 · username" in card footer)
+  // og:description = stats + caption (shown prominently below image)
+  const ogTitle = username || 'VIB3';
+
+  const parts: string[] = [];
+  if (likes > 0 || comments > 0) {
+    parts.push(`${likes.toLocaleString()} likes, ${comments.toLocaleString()} comments.`);
+  }
+  if (caption) {
+    parts.push(caption);
+  } else {
+    parts.push(`Check out ${username ? `${username}'s` : 'this'} video.`);
+  }
+  const ogDescription = parts.join(' ');
+
+  // Page <title> for browser tab
+  const pageTitle = username ? `${username} on VIB3` : 'Watch on VIB3';
+
   return {
-    title,
-    description,
+    title: pageTitle,
+    description: ogDescription,
     openGraph: {
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       type: 'video.other',
       siteName: 'VIB3',
       ...(thumbnailUrl && {
@@ -73,15 +83,15 @@ export async function generateMetadata({
             url: thumbnailUrl,
             width: 720,
             height: 1280,
-            alt: description,
+            alt: ogDescription,
           },
         ],
       }),
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
+      title: ogTitle,
+      description: ogDescription,
       ...(thumbnailUrl && { images: [thumbnailUrl] }),
     },
     other: {
