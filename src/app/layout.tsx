@@ -19,6 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://vib3app.net'),
   title: "VIB3 - Your Ultimate Social Video Experience",
   description: "Create, share, and connect with amazing content creators on VIB3. The next-generation social video platform.",
   keywords: ["VIB3", "social video", "short videos", "content creation", "live streaming"],
