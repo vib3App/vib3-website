@@ -2,15 +2,20 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
-const CDN_BASE = 'https://vz-e2b42522-447.b-cdn.net';
 
 interface VideoData {
   _id: string;
-  description?: string;
   caption?: string;
-  username?: string;
-  bunnyStreamVideoId?: string;
-  thumbnailUrl?: string;
+  author?: {
+    username?: string;
+    displayName?: string;
+    profileImage?: string;
+  };
+  media?: Array<{
+    url?: string;
+    thumbnailUrl?: string;
+    type?: string;
+  }>;
   viewsCount?: number;
   likesCount?: number;
   commentsCount?: number;
@@ -40,8 +45,9 @@ export async function generateMetadata({
     return { title: 'VIB3 - Video Not Found' };
   }
 
-  const title = video.username
-    ? `${video.username} on VIB3`
+  const username = video.author?.username;
+  const title = username
+    ? `${username} on VIB3`
     : 'Watch on VIB3';
 
   const likes = video.likesCount || 0;
@@ -49,13 +55,10 @@ export async function generateMetadata({
   const statsLine = likes > 0 || comments > 0
     ? `${likes.toLocaleString()} likes, ${comments.toLocaleString()} comments. `
     : '';
-  const desc = video.description || video.caption || '';
-  const description = `${statsLine}${desc || `Watch ${video.username || 'this'}'s video.`}`;
+  const desc = video.caption || '';
+  const description = `${statsLine}${desc || `Watch ${username || 'this'}'s video.`}`;
 
-  const thumbnailUrl = video.thumbnailUrl
-    || (video.bunnyStreamVideoId
-      ? `${CDN_BASE}/${video.bunnyStreamVideoId}/thumbnail.jpg`
-      : undefined);
+  const thumbnailUrl = video.media?.[0]?.thumbnailUrl;
 
   return {
     title,
@@ -101,12 +104,9 @@ export default async function ShortVideoPage({
   const { videoId } = await params;
   const video = await fetchVideo(videoId);
 
-  const thumbnailUrl = video?.thumbnailUrl
-    || (video?.bunnyStreamVideoId
-      ? `${CDN_BASE}/${video.bunnyStreamVideoId}/thumbnail.jpg`
-      : null);
-  const description = video?.description || video?.caption || '';
-  const username = video?.username || '';
+  const thumbnailUrl = video?.media?.[0]?.thumbnailUrl || null;
+  const description = video?.caption || '';
+  const username = video?.author?.username || '';
   const deepLink = `vib3://video/${videoId}`;
   const webFallback = `/video/${videoId}`;
 
