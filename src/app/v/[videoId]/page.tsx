@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
 const CDN_BASE = 'https://vz-e2b42522-447.b-cdn.net';
@@ -12,6 +13,7 @@ interface VideoData {
   thumbnailUrl?: string;
   viewsCount?: number;
   likesCount?: number;
+  commentsCount?: number;
 }
 
 async function fetchVideo(videoId: string): Promise<VideoData | null> {
@@ -35,23 +37,25 @@ export async function generateMetadata({
   const video = await fetchVideo(videoId);
 
   if (!video) {
-    return {
-      title: 'VIB3 - Video Not Found',
-      description: 'This video may have been removed or is no longer available.',
-    };
+    return { title: 'VIB3 - Video Not Found' };
   }
 
   const title = video.username
     ? `${video.username} on VIB3`
-    : 'VIB3';
-  const description = video.description || video.caption || 'Watch this on VIB3';
+    : 'Watch on VIB3';
+
+  const likes = video.likesCount || 0;
+  const comments = video.commentsCount || 0;
+  const statsLine = likes > 0 || comments > 0
+    ? `${likes.toLocaleString()} likes, ${comments.toLocaleString()} comments. `
+    : '';
+  const desc = video.description || video.caption || '';
+  const description = `${statsLine}${desc || `Watch ${video.username || 'this'}'s video.`}`;
+
   const thumbnailUrl = video.thumbnailUrl
     || (video.bunnyStreamVideoId
       ? `${CDN_BASE}/${video.bunnyStreamVideoId}/thumbnail.jpg`
       : undefined);
-  const videoUrl = video.bunnyStreamVideoId
-    ? `${CDN_BASE}/${video.bunnyStreamVideoId}/playlist.m3u8`
-    : undefined;
 
   return {
     title,
@@ -68,16 +72,6 @@ export async function generateMetadata({
             width: 720,
             height: 1280,
             alt: description,
-          },
-        ],
-      }),
-      ...(videoUrl && {
-        videos: [
-          {
-            url: videoUrl,
-            width: 720,
-            height: 1280,
-            type: 'application/x-mpegURL',
           },
         ],
       }),
@@ -117,90 +111,62 @@ export default async function ShortVideoPage({
   const webFallback = `/video/${videoId}`;
 
   return (
-    <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body style={{ margin: 0, backgroundColor: '#000', color: '#fff', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-        {/* Auto-redirect to app via custom scheme */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            var deepLink = "${deepLink}";
-            var webFallback = "${webFallback}";
-            var start = Date.now();
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-5">
+      {/* Script: try to open the app immediately */}
+      <script dangerouslySetInnerHTML={{ __html: `
+        (function() {
+          var t = setTimeout(function() {
+            document.getElementById('fallback').style.opacity = '1';
+          }, 1500);
+          window.location.href = "${deepLink}";
+        })();
+      `}} />
 
-            // Try to open the app
-            window.location.href = deepLink;
-
-            // If we're still here after 1.5s, the app didn't open
-            setTimeout(function() {
-              if (Date.now() - start < 3000) {
-                // Page is still visible = app didn't open
-                // Show the content (it's already there, just reveal it)
-                var el = document.getElementById('fallback');
-                if (el) el.style.opacity = '1';
-              }
-            }, 1500);
-          })();
-        `}} />
-
-        <div id="fallback" style={{ opacity: 0, transition: 'opacity 0.3s', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          {/* Thumbnail */}
-          {thumbnailUrl && (
-            <div style={{ position: 'relative', width: '100%', maxWidth: '360px', aspectRatio: '9/16', borderRadius: '16px', overflow: 'hidden', marginBottom: '24px' }}>
-              <img
-                src={thumbnailUrl}
-                alt={description || 'VIB3 video'}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-              {/* Play button overlay */}
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 0, height: 0, borderTop: '16px solid transparent', borderBottom: '16px solid transparent', borderLeft: '24px solid #000', marginLeft: '4px' }} />
-                </div>
+      <div id="fallback" style={{ opacity: 0, transition: 'opacity 0.3s' }} className="flex flex-col items-center max-w-sm w-full">
+        {/* Thumbnail */}
+        {thumbnailUrl && (
+          <div className="relative w-full rounded-2xl overflow-hidden mb-6" style={{ aspectRatio: '9/16', maxHeight: '50vh' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thumbnailUrl}
+              alt={description || 'VIB3 video'}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center">
+                <div className="w-0 h-0 ml-1" style={{ borderTop: '16px solid transparent', borderBottom: '16px solid transparent', borderLeft: '24px solid black' }} />
               </div>
             </div>
-          )}
-
-          {/* Info */}
-          {username && (
-            <p style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 8px' }}>
-              @{username}
-            </p>
-          )}
-          {description && (
-            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', margin: '0 0 32px', textAlign: 'center', maxWidth: '360px' }}>
-              {description.length > 120 ? description.slice(0, 120) + '...' : description}
-            </p>
-          )}
-
-          {/* Open in app button */}
-          <a
-            href={deepLink}
-            style={{ display: 'block', width: '100%', maxWidth: '320px', padding: '16px', background: 'linear-gradient(135deg, #8B5CF6, #EC4899)', borderRadius: '12px', color: '#fff', fontSize: '16px', fontWeight: 600, textAlign: 'center', textDecoration: 'none', marginBottom: '12px' }}
-          >
-            Open in VIB3
-          </a>
-
-          {/* Watch on web */}
-          <a
-            href={webFallback}
-            style={{ display: 'block', width: '100%', maxWidth: '320px', padding: '16px', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', color: '#fff', fontSize: '16px', fontWeight: 600, textAlign: 'center', textDecoration: 'none', marginBottom: '24px' }}
-          >
-            Watch on Web
-          </a>
-
-          {/* Download links */}
-          <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-            <a href="https://apps.apple.com/app/id6744942498" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'underline' }}>
-              App Store
-            </a>
-            <a href="https://play.google.com/store/apps/details?id=com.vib3.vib3" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', textDecoration: 'underline' }}>
-              Google Play
-            </a>
           </div>
+        )}
+
+        {username && (
+          <p className="text-lg font-semibold mb-1">@{username}</p>
+        )}
+        {description && (
+          <p className="text-sm text-white/60 text-center mb-8 line-clamp-3">{description}</p>
+        )}
+
+        <Link
+          href={deepLink}
+          className="block w-full py-4 rounded-xl text-center font-semibold text-white mb-3"
+          style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
+        >
+          Open in VIB3
+        </Link>
+
+        <Link
+          href={webFallback}
+          className="block w-full py-4 rounded-xl text-center font-semibold text-white border border-white/20 mb-8"
+        >
+          Watch on Web
+        </Link>
+
+        <div className="flex gap-6 text-xs text-white/40">
+          <a href="https://apps.apple.com/app/id6744942498" className="underline">App Store</a>
+          <a href="https://play.google.com/store/apps/details?id=com.vib3.vib3" className="underline">Google Play</a>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }
