@@ -1,0 +1,67 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": [
+          "CZFS7C24SV.com.vib3.vib3"
+        ],
+        "components": [
+          {
+            "/": "/v/*",
+            "comment": "Video deep links"
+          },
+          {
+            "/": "/video/*",
+            "comment": "Video deep links (alt)"
+          },
+          {
+            "/": "/@*",
+            "comment": "Profile deep links"
+          },
+          {
+            "/": "/profile/*",
+            "comment": "Profile deep links (alt)"
+          },
+          {
+            "/": "/live/*",
+            "comment": "Live stream deep links"
+          },
+          {
+            "/": "/gauntlet/*",
+            "comment": "Gauntlet deep links"
+          },
+          {
+            "/": "/challenge/*",
+            "comment": "Challenge deep links"
+          },
+          {
+            "/": "/chat/*",
+            "comment": "Chat deep links"
+          },
+          {
+            "/": "/hashtag/*",
+            "comment": "Hashtag deep links"
+          },
+          {
+            "/": "/notifications",
+            "comment": "Notifications"
+          },
+          {
+            "/": "/search",
+            "comment": "Search/Discover"
+          },
+          {
+            "/": "/settings",
+            "comment": "Settings"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "CZFS7C24SV.com.vib3.vib3"
+    ]
+  }
+}

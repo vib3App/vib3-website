@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.vib3.vib3",
+      "sha256_cert_fingerprints": [
+        "01:C5:35:D4:36:9A:BE:C1:B9:F6:99:1E:4A:33:93:EC:CB:29:C4:58:D8:38:FC:E2:39:E3:1C:C9:4A:B9:E8:8C"
+      ]
+    }
+  }
+]
