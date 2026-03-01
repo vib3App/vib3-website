@@ -50,7 +50,6 @@ export async function generateMetadata({
   const caption = video.caption || '';
   const thumbnailUrl = video.media?.[0]?.thumbnailUrl;
 
-  // Match TikTok's iMessage card pattern:
   // og:title = creator name (shown as "VIB3 · username" in card footer)
   // og:description = stats + caption (shown prominently below image)
   const ogTitle = username || 'VIB3';
