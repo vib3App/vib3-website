@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.vib3app.net';
 
@@ -112,17 +111,7 @@ export default async function ShortVideoPage({
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-5">
-      {/* Script: try to open the app immediately */}
-      <script dangerouslySetInnerHTML={{ __html: `
-        (function() {
-          var t = setTimeout(function() {
-            document.getElementById('fallback').style.opacity = '1';
-          }, 1500);
-          window.location.href = "${deepLink}";
-        })();
-      `}} />
-
-      <div id="fallback" style={{ opacity: 0, transition: 'opacity 0.3s' }} className="flex flex-col items-center max-w-sm w-full">
+      <div className="flex flex-col items-center max-w-sm w-full">
         {/* Thumbnail */}
         {thumbnailUrl && (
           <div className="relative w-full rounded-2xl overflow-hidden mb-6" style={{ aspectRatio: '9/16', maxHeight: '50vh' }}>
@@ -147,20 +136,20 @@ export default async function ShortVideoPage({
           <p className="text-sm text-white/60 text-center mb-8 line-clamp-3">{description}</p>
         )}
 
-        <Link
+        <a
           href={deepLink}
           className="block w-full py-4 rounded-xl text-center font-semibold text-white mb-3"
           style={{ background: 'linear-gradient(135deg, #8B5CF6, #EC4899)' }}
         >
           Open in VIB3
-        </Link>
+        </a>
 
-        <Link
+        <a
           href={webFallback}
           className="block w-full py-4 rounded-xl text-center font-semibold text-white border border-white/20 mb-8"
         >
           Watch on Web
-        </Link>
+        </a>
 
         <div className="flex gap-6 text-xs text-white/40">
           <a href="https://apps.apple.com/app/id6744942498" className="underline">App Store</a>
