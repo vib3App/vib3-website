@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Transition3DPreview - Gap #22
@@ -63,56 +63,58 @@ export function Transition3DPreview({
   const animFrameRef = useRef<number>(0);
   const transitionStartRef = useRef<number | null>(null);
   const lastBoundaryRef = useRef<number | null>(null);
-
-  const checkTransition = useCallback(() => {
-    const video = videoRef.current;
-    if (!video || transitionType === 'none' || clipBoundaries.length === 0) {
-      animFrameRef.current = requestAnimationFrame(checkTransition);
-      return;
-    }
-
-    const currentTime = video.currentTime;
-
-    // Check if we're near a clip boundary
-    for (const boundary of clipBoundaries) {
-      const timeToBoundary = currentTime - boundary;
-      const halfDur = duration / 2;
-
-      if (
-        timeToBoundary >= -halfDur &&
-        timeToBoundary <= halfDur &&
-        lastBoundaryRef.current !== boundary
-      ) {
-        // Start transition
-        if (!isTransitioning) {
-          setIsTransitioning(true);
-          transitionStartRef.current = boundary - halfDur;
-          lastBoundaryRef.current = boundary;
-        }
-
-        const elapsed = currentTime - (boundary - halfDur);
-        const p = Math.max(0, Math.min(1, elapsed / duration));
-        setProgress(p);
-        break;
-      }
-    }
-
-    // End transition when progress reaches 1
-    if (isTransitioning && progress >= 0.99) {
-      setIsTransitioning(false);
-      setProgress(0);
-      transitionStartRef.current = null;
-      // Allow same boundary to trigger again after enough time
-      setTimeout(() => { lastBoundaryRef.current = null; }, 500);
-    }
-
-    animFrameRef.current = requestAnimationFrame(checkTransition);
-  }, [videoRef, transitionType, duration, clipBoundaries, isTransitioning, progress]);
+  const isTransitioningRef = useRef(false);
+  const progressRef = useRef(0);
 
   useEffect(() => {
+    const checkTransition = () => {
+      const video = videoRef.current;
+      if (!video || transitionType === 'none' || clipBoundaries.length === 0) {
+        animFrameRef.current = requestAnimationFrame(checkTransition);
+        return;
+      }
+
+      const currentTime = video.currentTime;
+
+      for (const boundary of clipBoundaries) {
+        const timeToBoundary = currentTime - boundary;
+        const halfDur = duration / 2;
+
+        if (
+          timeToBoundary >= -halfDur &&
+          timeToBoundary <= halfDur &&
+          lastBoundaryRef.current !== boundary
+        ) {
+          if (!isTransitioningRef.current) {
+            isTransitioningRef.current = true;
+            setIsTransitioning(true);
+            transitionStartRef.current = boundary - halfDur;
+            lastBoundaryRef.current = boundary;
+          }
+
+          const elapsed = currentTime - (boundary - halfDur);
+          const p = Math.max(0, Math.min(1, elapsed / duration));
+          progressRef.current = p;
+          setProgress(p);
+          break;
+        }
+      }
+
+      if (isTransitioningRef.current && progressRef.current >= 0.99) {
+        isTransitioningRef.current = false;
+        setIsTransitioning(false);
+        progressRef.current = 0;
+        setProgress(0);
+        transitionStartRef.current = null;
+        setTimeout(() => { lastBoundaryRef.current = null; }, 500);
+      }
+
+      animFrameRef.current = requestAnimationFrame(checkTransition);
+    };
+
     animFrameRef.current = requestAnimationFrame(checkTransition);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [checkTransition]);
+  }, [videoRef, transitionType, duration, clipBoundaries]);
 
   if (!isTransitioning || transitionType === 'none') return null;
 

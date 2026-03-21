@@ -20,7 +20,7 @@ const PRESET_AMOUNTS = [10, 50, 100, 500, 1000];
  * Gap #67: Tip Sending UI
  * Bottom sheet for sending tips with preset/custom amounts.
  */
-export function SendTipSheet({ isOpen, onClose, recipientId, recipientName, type = 'profile', onSuccess }: SendTipSheetProps) {
+export function SendTipSheet({ isOpen, onClose, recipientId, recipientName, type: _type = 'profile', onSuccess }: SendTipSheetProps) {
   const [amount, setAmount] = useState<number>(50);
   const [customAmount, setCustomAmount] = useState('');
   const [message, setMessage] = useState('');

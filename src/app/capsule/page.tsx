@@ -40,7 +40,7 @@ export default function CapsulePage() {
               <div key={n.capsuleId} className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-xl animate-pulse">
                 <ClockIcon className="w-6 h-6 text-purple-400 flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-white font-medium">"{n.title}" is ready to open!</p>
+                  <p className="text-white font-medium">&ldquo;{n.title}&rdquo; is ready to open!</p>
                   <p className="text-white/60 text-sm">From @{n.creatorUsername}</p>
                 </div>
                 <Link

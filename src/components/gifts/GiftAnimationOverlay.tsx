@@ -62,17 +62,23 @@ export function GiftAnimationOverlay({ onGiftReceived }: GiftAnimationOverlayPro
 function GiftEffect({ gift }: { gift: GiftAnimation }) {
   const config = GIFT_CONFIGS[gift.type] || GIFT_CONFIGS.heart;
 
+  const [particles] = useState(() => Array.from({ length: 8 }, () => ({
+    left: 20 + Math.random() * 60,
+    duration: 2 + Math.random(),
+    fontSize: 24 + Math.random() * 24,
+  })));
+
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* Floating particles */}
-      {Array.from({ length: 8 }).map((_, i) => (
+      {particles.map((p, i) => (
         <div key={i} className="absolute animate-gift-float"
           style={{
-            left: `${20 + Math.random() * 60}%`,
+            left: `${p.left}%`,
             bottom: '-10%',
             animationDelay: `${i * 0.15}s`,
-            animationDuration: `${2 + Math.random()}s`,
-            fontSize: `${24 + Math.random() * 24}px`,
+            animationDuration: `${p.duration}s`,
+            fontSize: `${p.fontSize}px`,
             opacity: 0.8,
           }}>
           {config.emoji}

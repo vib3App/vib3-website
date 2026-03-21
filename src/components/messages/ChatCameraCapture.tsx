@@ -19,13 +19,7 @@ export function ChatCameraCapture({ onCapture, onClose }: ChatCameraCaptureProps
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Start camera on mount
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: 640, height: 480 },
@@ -38,13 +32,19 @@ export function ChatCameraCapture({ onCapture, onClose }: ChatCameraCaptureProps
     } catch {
       setError('Camera access denied. Please allow camera permissions.');
     }
-  };
+  }, []);
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     if (timerRef.current) clearInterval(timerRef.current);
-  };
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- startCamera is async, setState inside is after await
+    startCamera();
+    return () => stopCamera();
+  }, [startCamera, stopCamera]);
 
   const takePhoto = useCallback(() => {
     const video = videoRef.current;
@@ -62,7 +62,7 @@ export function ChatCameraCapture({ onCapture, onClose }: ChatCameraCaptureProps
         onCapture(file, 'image');
       }
     }, 'image/jpeg', 0.85);
-  }, [onCapture]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onCapture, stopCamera]);
 
   const startRecording = useCallback(() => {
     if (!streamRef.current) return;
@@ -82,7 +82,7 @@ export function ChatCameraCapture({ onCapture, onClose }: ChatCameraCaptureProps
     setIsRecording(true);
     setRecordingTime(0);
     timerRef.current = setInterval(() => setRecordingTime((t) => t + 1), 1000);
-  }, [onCapture]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onCapture, stopCamera]);
 
   const stopRecording = useCallback(() => {
     recorderRef.current?.stop();
@@ -102,7 +102,7 @@ export function ChatCameraCapture({ onCapture, onClose }: ChatCameraCaptureProps
       onCapture(file, type);
     };
     input.click();
-  }, [onCapture]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onCapture, stopCamera]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);

@@ -10,8 +10,7 @@ import type {
   LiveStreamStats,
   StartStreamResponse,
   JoinStreamResponse,
-  LiveKitTokenResponse,
-  LiveKitStatus,
+  AgoraTokenResponse,
 } from '@/types';
 
 export const liveApi = {
@@ -61,7 +60,7 @@ export const liveApi = {
   },
 
   /**
-   * Start broadcasting (creates LiveKit room and returns host token)
+   * Start broadcasting (creates Agora channel and returns host token)
    */
   async startStream(input: CreateLiveStreamInput): Promise<StartStreamResponse> {
     const { data } = await apiClient.post<StartStreamResponse>('/live/start', input);
@@ -69,7 +68,7 @@ export const liveApi = {
   },
 
   /**
-   * Join a stream as viewer (returns LiveKit viewer token)
+   * Join a stream as viewer (returns Agora viewer token)
    */
   async joinStream(streamId: string): Promise<JoinStreamResponse> {
     const { data } = await apiClient.post<JoinStreamResponse>(`/live/${streamId}/join`);
@@ -84,18 +83,10 @@ export const liveApi = {
   },
 
   /**
-   * Get LiveKit token (for reconnecting)
+   * Get Agora token (for reconnecting)
    */
-  async getLiveKitToken(streamId: string): Promise<LiveKitTokenResponse> {
-    const { data } = await apiClient.get<LiveKitTokenResponse>(`/live/${streamId}/token`);
-    return data;
-  },
-
-  /**
-   * Check LiveKit availability
-   */
-  async getLiveKitStatus(): Promise<LiveKitStatus> {
-    const { data } = await apiClient.get<LiveKitStatus>('/live/livekit/status');
+  async getAgoraToken(streamId: string): Promise<AgoraTokenResponse> {
+    const { data } = await apiClient.get<AgoraTokenResponse>(`/live/${streamId}/token`);
     return data;
   },
 

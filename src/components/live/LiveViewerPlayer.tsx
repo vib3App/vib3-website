@@ -7,7 +7,7 @@ import type { LiveStream } from '@/types';
 /**
  * Gap #37: Live Stream Viewer Player
  *
- * Fallback player for when LiveKit is not available.
+ * Fallback player for when Agora is not available.
  * Attempts HLS playback from stream.hlsUrl, otherwise shows placeholder.
  * Displays live video, viewer count, and host info.
  */

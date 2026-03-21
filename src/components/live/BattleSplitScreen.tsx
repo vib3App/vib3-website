@@ -34,8 +34,10 @@ export function BattleSplitScreen({ battle, battleEvent }: BattleSplitScreenProp
 
     const mapped = eventMap[battleEvent];
     if (mapped) {
-      setVisualEvent(mapped.visual);
-      setParticleEffect(mapped.particle);
+      queueMicrotask(() => {
+        setVisualEvent(mapped.visual);
+        setParticleEffect(mapped.particle);
+      });
     }
   }, [battleEvent]);
 

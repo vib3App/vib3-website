@@ -93,7 +93,7 @@ export function LiveLocationShare({
 
   // Track remaining time
   useEffect(() => {
-    if (!isSharing) { setTimeRemaining(null); return; }
+    if (!isSharing) { queueMicrotask(() => setTimeRemaining(null)); return; }
     const tick = () => {
       if (!endTimeRef.current) return;
       const remaining = Math.max(0, endTimeRef.current - Date.now());

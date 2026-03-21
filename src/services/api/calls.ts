@@ -1,6 +1,6 @@
 /**
  * Video/Audio Calls API service
- * Uses LiveKit for real-time communication
+ * Uses Agora for real-time communication
  */
 import { apiClient } from './client';
 import type {

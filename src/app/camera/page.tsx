@@ -24,9 +24,25 @@ import {
 import { TopNav } from '@/components/ui/TopNav';
 
 function CameraPageInner() {
-  const cam = useCamera();
+  const {
+    isAuthenticated, isAuthVerified, cameraMode, handleCameraModeChange,
+    recordingState, cameraFacing, selectedFilter, setSelectedFilter,
+    selectedEffect, setSelectedEffect, selectedSpeed, setSelectedSpeed,
+    recordingDuration, maxDuration, setMaxDuration, flashOn, torchSupported,
+    toggleFlash, timerMode, countdown, showFilters, showEffects, showSpeed,
+    showLenses, showDuration, showEffectCategories, showTemplates,
+    showPhotoPreview, setShowPhotoPreview, previewUrl, error,
+    videoRef, previewVideoRef, effectsCanvasRef, flipCamera,
+    handleRecordButton, pauseRecording, discardRecording, handleNext,
+    formatTime, togglePanel, cycleTimer, goBack, goToUpload,
+    clipCount, totalClipsDuration, remainingDuration, canAddMoreClips,
+    isCombining, mergeProgress, removeLastClip, discardAllClips, goToPreview,
+    cameraKitCanvasRef, isCameraKitActive, cameraKitLenses, activeLensId,
+    cameraKitLoading, cameraKitError, cameraKitLoaded, handleLensSelect,
+    photo, zoom, handsFree, template, challenge, dm, clipOnly,
+  } = useCamera();
 
-  if (!cam.isAuthVerified || !cam.isAuthenticated) {
+  if (!isAuthVerified || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500" />
@@ -34,23 +50,23 @@ function CameraPageInner() {
     );
   }
 
-  if (cam.showPhotoPreview) {
+  if (showPhotoPreview) {
     return (
       <div className="min-h-screen bg-black">
         <PhotoPreview
-          photos={cam.photo.capturedPhotos}
-          onDownload={cam.photo.downloadPhoto}
-          onDelete={cam.photo.deletePhoto}
-          onClearAll={cam.photo.clearPhotos}
-          onClose={() => cam.setShowPhotoPreview(false)}
+          photos={photo.capturedPhotos}
+          onDownload={photo.downloadPhoto}
+          onDelete={photo.deletePhoto}
+          onClearAll={photo.clearPhotos}
+          onClose={() => setShowPhotoPreview(false)}
         />
       </div>
     );
   }
 
-  const isVideoMode = cam.cameraMode === 'video' || cam.cameraMode === 'story';
-  const isRecordingActive = cam.recordingState === 'recording' || cam.recordingState === 'paused';
-  const isPreview = cam.recordingState === 'preview';
+  const isVideoMode = cameraMode === 'video' || cameraMode === 'story';
+  const isRecordingActive = recordingState === 'recording' || recordingState === 'paused';
+  const isPreview = recordingState === 'preview';
 
   return (
     <div className="min-h-screen bg-black">
@@ -59,153 +75,153 @@ function CameraPageInner() {
       {/* Camera/Preview View */}
       <div
         className="absolute inset-0"
-        onTouchStart={cam.zoom.handleTouchStart}
-        onTouchMove={cam.zoom.handleTouchMove}
-        onTouchEnd={cam.zoom.handleTouchEnd}
+        onTouchStart={zoom.handleTouchStart}
+        onTouchMove={zoom.handleTouchMove}
+        onTouchEnd={zoom.handleTouchEnd}
       >
-        {isPreview && cam.previewUrl ? (
+        {isPreview && previewUrl ? (
           <video
-            ref={cam.previewVideoRef}
-            src={cam.previewUrl}
+            ref={previewVideoRef}
+            src={previewUrl}
             className="w-full h-full object-cover"
-            style={{ filter: CAMERA_FILTERS[cam.selectedFilter].filter }}
+            style={{ filter: CAMERA_FILTERS[selectedFilter].filter }}
             autoPlay loop playsInline muted
           />
         ) : (
           <>
             <video
-              ref={cam.videoRef}
+              ref={videoRef}
               className="w-full h-full object-cover"
               style={{
-                filter: CAMERA_FILTERS[cam.selectedFilter].filter,
-                transform: cam.cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
-                display: cam.isCameraKitActive ? 'none' : undefined,
+                filter: CAMERA_FILTERS[selectedFilter].filter,
+                transform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
+                display: isCameraKitActive ? 'none' : undefined,
               }}
               autoPlay playsInline muted
             />
-            {!cam.isCameraKitActive && (
-              <canvas ref={cam.effectsCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+            {!isCameraKitActive && (
+              <canvas ref={effectsCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
             )}
             <canvas
-              ref={cam.cameraKitCanvasRef}
+              ref={cameraKitCanvasRef}
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ display: cam.isCameraKitActive ? undefined : 'none' }}
+              style={{ display: isCameraKitActive ? undefined : 'none' }}
             />
           </>
         )}
       </div>
 
       {/* Error */}
-      {cam.error && (
+      {error && (
         <div className="absolute top-20 left-4 right-4 bg-red-500/90 text-white px-4 py-3 rounded-xl text-sm text-center">
-          {cam.error}
+          {error}
         </div>
       )}
 
       {/* Countdown */}
-      {cam.countdown !== null && (
+      {countdown !== null && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <span className="text-8xl font-bold text-white animate-pulse">{cam.countdown}</span>
+          <span className="text-8xl font-bold text-white animate-pulse">{countdown}</span>
         </div>
       )}
 
       {/* Gap 2/5/6/7: Mode indicators */}
       <ModeIndicators
-        handsFreeEnabled={cam.handsFree.enabled}
-        handsFreeMode={cam.handsFree.mode}
-        lastCommand={cam.handsFree.lastCommand}
-        challengeActive={cam.challenge.isActive}
-        challengeHashtag={cam.challenge.challengeHashtag}
-        challengeMaxDuration={cam.challenge.maxDuration}
-        isDMMode={cam.dm.isDMMode}
-        isClipOnly={cam.clipOnly.isClipOnly}
-        isStoryMode={cam.cameraMode === 'story'}
-        recordingState={cam.recordingState}
+        handsFreeEnabled={handsFree.enabled}
+        handsFreeMode={handsFree.mode}
+        lastCommand={handsFree.lastCommand}
+        challengeActive={challenge.isActive}
+        challengeHashtag={challenge.challengeHashtag}
+        challengeMaxDuration={challenge.maxDuration}
+        isDMMode={dm.isDMMode}
+        isClipOnly={clipOnly.isClipOnly}
+        isStoryMode={cameraMode === 'story'}
+        recordingState={recordingState}
       />
 
       {/* Collage overlay */}
       <CollageOverlay
-        isPhotoMode={cam.cameraMode === 'photo'}
-        photoMode={cam.photo.photoMode}
-        collagePhotos={cam.photo.collagePhotos}
-        collageTarget={cam.photo.collageTarget}
+        isPhotoMode={cameraMode === 'photo'}
+        photoMode={photo.photoMode}
+        collagePhotos={photo.collagePhotos}
+        collageTarget={photo.collageTarget}
       />
 
       {/* Clip timeline */}
       <ClipTimeline
         isVideoMode={isVideoMode}
-        recordingState={cam.recordingState}
-        clipCount={cam.clipCount}
-        totalClipsDuration={cam.totalClipsDuration}
-        recordingDuration={cam.recordingDuration}
-        maxDuration={cam.maxDuration}
-        formatTime={cam.formatTime}
+        recordingState={recordingState}
+        clipCount={clipCount}
+        totalClipsDuration={totalClipsDuration}
+        recordingDuration={recordingDuration}
+        maxDuration={maxDuration}
+        formatTime={formatTime}
       />
 
       {/* Top Controls */}
       {!isPreview && (
         <CameraTopControls
-          flashOn={cam.flashOn}
-          torchSupported={cam.torchSupported}
-          timerMode={cam.timerMode}
-          recordingState={cam.recordingState}
-          recordingDuration={cam.recordingDuration}
-          maxDuration={cam.remainingDuration}
-          onClose={cam.goBack}
-          onFlashToggle={cam.toggleFlash}
-          onTimerCycle={cam.cycleTimer}
-          onFlipCamera={cam.flipCamera}
-          formatTime={cam.formatTime}
-          handsFreeEnabled={cam.handsFree.enabled}
-          handsFreeSupported={cam.handsFree.speechSupported}
-          onHandsFreeToggle={cam.handsFree.toggle}
+          flashOn={flashOn}
+          torchSupported={torchSupported}
+          timerMode={timerMode}
+          recordingState={recordingState}
+          recordingDuration={recordingDuration}
+          maxDuration={remainingDuration}
+          onClose={goBack}
+          onFlashToggle={toggleFlash}
+          onTimerCycle={cycleTimer}
+          onFlipCamera={flipCamera}
+          formatTime={formatTime}
+          handsFreeEnabled={handsFree.enabled}
+          handsFreeSupported={handsFree.speechSupported}
+          onHandsFreeToggle={handsFree.toggle}
         />
       )}
 
       {/* Side Controls */}
       {!isPreview && (
         <CameraSideControls
-          showFilters={cam.showFilters}
-          showEffects={cam.showEffects}
-          showSpeed={cam.showSpeed}
-          showLenses={cam.showLenses}
-          showDuration={cam.showDuration}
-          showEffectCategories={cam.showEffectCategories}
-          showTemplates={cam.showTemplates}
+          showFilters={showFilters}
+          showEffects={showEffects}
+          showSpeed={showSpeed}
+          showLenses={showLenses}
+          showDuration={showDuration}
+          showEffectCategories={showEffectCategories}
+          showTemplates={showTemplates}
           isVideoMode={isVideoMode}
-          onTogglePanel={cam.togglePanel}
+          onTogglePanel={togglePanel}
         />
       )}
 
       {/* Zoom */}
       {!isPreview && (
         <ZoomIndicator
-          zoomLevel={cam.zoom.zoomLevel}
-          zoomSupported={cam.zoom.zoomSupported}
-          zoomPresets={cam.zoom.zoomPresets}
-          onPresetSelect={cam.zoom.setPresetZoom}
+          zoomLevel={zoom.zoomLevel}
+          zoomSupported={zoom.zoomSupported}
+          zoomPresets={zoom.zoomPresets}
+          onPresetSelect={zoom.setPresetZoom}
         />
       )}
 
       {/* Gap 4: Template overlay */}
-      {cam.template.isActive && !isPreview && (
+      {template.isActive && !isPreview && (
         <TemplateSelector
-          templateState={cam.template.templateState}
-          selectedTemplate={cam.template.selectedTemplate}
-          currentSlotIndex={cam.template.currentSlotIndex}
-          currentSlot={cam.template.currentSlot}
-          slotTimeRemaining={cam.template.slotTimeRemaining}
-          completedSlots={cam.template.completedSlots}
-          onSelectTemplate={cam.template.selectTemplate}
-          onStartSlot={() => { cam.template.startSlotRecording(); cam.handleRecordButton(); }}
-          onAdvance={cam.template.advanceToNextSlot}
-          onRetake={cam.template.retakeCurrentSlot}
-          onReset={cam.template.resetTemplate}
+          templateState={template.templateState}
+          selectedTemplate={template.selectedTemplate}
+          currentSlotIndex={template.currentSlotIndex}
+          currentSlot={template.currentSlot}
+          slotTimeRemaining={template.slotTimeRemaining}
+          completedSlots={template.completedSlots}
+          onSelectTemplate={template.selectTemplate}
+          onStartSlot={() => { template.startSlotRecording(); handleRecordButton(); }}
+          onAdvance={template.advanceToNextSlot}
+          onRetake={template.retakeCurrentSlot}
+          onReset={template.resetTemplate}
         />
       )}
 
       {/* Template selector panel */}
-      {cam.showTemplates && !cam.template.isActive && !isPreview && (
+      {showTemplates && !template.isActive && !isPreview && (
         <TemplateSelector
           templateState="selecting"
           selectedTemplate={null}
@@ -213,53 +229,53 @@ function CameraPageInner() {
           currentSlot={null}
           slotTimeRemaining={0}
           completedSlots={0}
-          onSelectTemplate={(t) => { cam.template.selectTemplate(t); cam.togglePanel('templates'); }}
+          onSelectTemplate={(t) => { template.selectTemplate(t); togglePanel('templates'); }}
           onStartSlot={() => {}}
           onAdvance={() => {}}
           onRetake={() => {}}
-          onReset={() => cam.togglePanel('templates')}
+          onReset={() => togglePanel('templates')}
         />
       )}
 
       {/* Panels */}
-      {cam.showLenses && !isPreview && (
+      {showLenses && !isPreview && (
         <LensesPanel
-          lenses={cam.cameraKitLenses}
-          activeLensId={cam.activeLensId}
-          isLoading={cam.cameraKitLoading}
-          error={cam.cameraKitError}
-          onSelect={cam.handleLensSelect}
+          lenses={cameraKitLenses}
+          activeLensId={activeLensId}
+          isLoading={cameraKitLoading}
+          error={cameraKitError}
+          onSelect={handleLensSelect}
         />
       )}
 
-      {cam.showEffectCategories && !isPreview && (
+      {showEffectCategories && !isPreview && (
         <EffectCategoriesPanel
-          lenses={cam.cameraKitLenses}
-          activeLensId={cam.activeLensId}
-          isCameraKitLoaded={cam.cameraKitLoaded}
-          onSelectLens={cam.handleLensSelect}
+          lenses={cameraKitLenses}
+          activeLensId={activeLensId}
+          isCameraKitLoaded={cameraKitLoaded}
+          onSelectLens={handleLensSelect}
         />
       )}
 
-      {cam.showFilters && !isPreview && (
-        <FiltersPanel selectedFilter={cam.selectedFilter} onSelect={cam.setSelectedFilter} />
+      {showFilters && !isPreview && (
+        <FiltersPanel selectedFilter={selectedFilter} onSelect={setSelectedFilter} />
       )}
-      {cam.showEffects && !isPreview && (
-        <EffectsPanel selectedEffect={cam.selectedEffect} onSelect={cam.setSelectedEffect} />
+      {showEffects && !isPreview && (
+        <EffectsPanel selectedEffect={selectedEffect} onSelect={setSelectedEffect} />
       )}
-      {cam.showSpeed && !isPreview && (
-        <SpeedPanel selectedSpeed={cam.selectedSpeed} onSelect={cam.setSelectedSpeed} />
+      {showSpeed && !isPreview && (
+        <SpeedPanel selectedSpeed={selectedSpeed} onSelect={setSelectedSpeed} />
       )}
-      {cam.showDuration && !isPreview && (
-        <DurationSelector maxDuration={cam.maxDuration} onSelect={cam.setMaxDuration} />
+      {showDuration && !isPreview && (
+        <DurationSelector maxDuration={maxDuration} onSelect={setMaxDuration} />
       )}
 
       {/* Mode Selector */}
       {!isPreview && !isRecordingActive && (
         <div className="absolute bottom-28 left-0 right-0 z-10">
           <CameraModeSelector
-            mode={cam.cameraMode}
-            onModeChange={cam.handleCameraModeChange}
+            mode={cameraMode}
+            onModeChange={handleCameraModeChange}
             disabled={isRecordingActive}
           />
         </div>
@@ -268,33 +284,33 @@ function CameraPageInner() {
       {/* Bottom Controls */}
       {isVideoMode ? (
         <CameraBottomControls
-          recordingState={cam.recordingState}
-          clipCount={cam.clipCount}
-          canAddMoreClips={cam.canAddMoreClips}
-          isCombining={cam.isCombining}
-          mergeProgress={cam.mergeProgress}
-          onRecord={cam.handleRecordButton}
-          onPause={cam.pauseRecording}
-          onRemoveLastClip={cam.removeLastClip}
-          onDiscardAll={cam.discardAllClips}
-          onDiscard={cam.discardRecording}
-          onGoToPreview={cam.goToPreview}
-          onNext={cam.handleNext}
-          onGoToUpload={cam.goToUpload}
+          recordingState={recordingState}
+          clipCount={clipCount}
+          canAddMoreClips={canAddMoreClips}
+          isCombining={isCombining}
+          mergeProgress={mergeProgress}
+          onRecord={handleRecordButton}
+          onPause={pauseRecording}
+          onRemoveLastClip={removeLastClip}
+          onDiscardAll={discardAllClips}
+          onDiscard={discardRecording}
+          onGoToPreview={goToPreview}
+          onNext={handleNext}
+          onGoToUpload={goToUpload}
         />
       ) : (
         <PhotoBottomControls
-          photoMode={cam.photo.photoMode}
-          onPhotoModeChange={cam.photo.setPhotoMode}
-          collageLayout={cam.photo.collageLayout}
-          onCollageLayoutChange={cam.photo.setCollageLayout}
-          collageCount={cam.photo.collagePhotos.length}
-          collageTarget={cam.photo.collageTarget}
-          isBurstActive={cam.photo.isBurstActive}
-          capturedCount={cam.photo.capturedPhotos.length}
-          onShutter={cam.photo.handleShutter}
-          onResetCollage={cam.photo.resetCollage}
-          onViewPhotos={() => cam.setShowPhotoPreview(true)}
+          photoMode={photo.photoMode}
+          onPhotoModeChange={photo.setPhotoMode}
+          collageLayout={photo.collageLayout}
+          onCollageLayoutChange={photo.setCollageLayout}
+          collageCount={photo.collagePhotos.length}
+          collageTarget={photo.collageTarget}
+          isBurstActive={photo.isBurstActive}
+          capturedCount={photo.capturedPhotos.length}
+          onShutter={photo.handleShutter}
+          onResetCollage={photo.resetCollage}
+          onViewPhotos={() => setShowPhotoPreview(true)}
         />
       )}
     </div>

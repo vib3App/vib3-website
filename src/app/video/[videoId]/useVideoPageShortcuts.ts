@@ -38,18 +38,18 @@ export function useVideoPageShortcuts({
   }, [scrollContainerRef, videosLength]);
 
   useVideoShortcuts({
-    onPlayPause: () => { const v = getActiveVideo(); if (v) { v.paused ? v.play() : v.pause(); } },
+    onPlayPause: () => { const v = getActiveVideo(); if (v) { if (v.paused) { v.play(); } else { v.pause(); } } },
     onSeekForward: (s) => { const v = getActiveVideo(); if (v) v.currentTime = Math.min(v.duration, v.currentTime + s); },
     onSeekBackward: (s) => { const v = getActiveVideo(); if (v) v.currentTime = Math.max(0, v.currentTime - s); },
     onMute: toggleMute,
     onFullscreen: () => {
       const el = getActiveVideo()?.closest('[data-index]') as HTMLElement | null;
-      if (el) { document.fullscreenElement ? document.exitFullscreen() : el.requestFullscreen(); }
+      if (el) { if (document.fullscreenElement) { document.exitFullscreen(); } else { el.requestFullscreen(); } }
     },
     onPiP: () => {
       const v = getActiveVideo();
       if (v && document.pictureInPictureEnabled) {
-        document.pictureInPictureElement ? document.exitPictureInPicture() : v.requestPictureInPicture();
+        if (document.pictureInPictureElement) { document.exitPictureInPicture(); } else { v.requestPictureInPicture(); }
       }
     },
     onNextVideo: () => scrollToVideo(currentIndex + 1),

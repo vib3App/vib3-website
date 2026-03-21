@@ -34,11 +34,11 @@ export function useChallengeCamera() {
       const hashtag = challenge.startsWith('#') ? challenge : `#${challenge}`;
       const duration = maxDur ? parseInt(maxDur, 10) : null;
 
-      setConstraints({
+      queueMicrotask(() => setConstraints({
         challengeHashtag: hashtag,
         maxDuration: duration && !isNaN(duration) ? duration : null,
         isActive: true,
-      });
+      }));
     }
   }, [searchParams]);
 

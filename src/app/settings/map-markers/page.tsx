@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -47,15 +47,15 @@ const DEFAULT_CONFIG: MapMarkerConfig = {
 export default function MapMarkersPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
-  const [config, setConfig] = useState<MapMarkerConfig>(DEFAULT_CONFIG);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
+  const [config, setConfig] = useState<MapMarkerConfig>(() => {
+    if (typeof window === 'undefined') return DEFAULT_CONFIG;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setConfig({ ...DEFAULT_CONFIG, ...JSON.parse(stored) });
+      if (stored) return { ...DEFAULT_CONFIG, ...JSON.parse(stored) };
     } catch { /* ignore */ }
-  }, []);
+    return DEFAULT_CONFIG;
+  });
+  const [saved, setSaved] = useState(false);
 
   const updateConfig = (updates: Partial<MapMarkerConfig>) => {
     const newConfig = { ...config, ...updates };

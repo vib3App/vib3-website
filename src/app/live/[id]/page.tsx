@@ -42,8 +42,8 @@ function LiveStreamContent() {
     loading,
     error,
     isHost,
-    // LiveKit
-    liveKitCredentials,
+    // Agora
+    agoraCredentials,
     // UI State
     chatMessage,
     setChatMessage,
@@ -99,14 +99,15 @@ function LiveStreamContent() {
     );
   }
 
-  // Use LiveKit for video streaming if credentials are available
-  if (liveKitCredentials && !isHost) {
+  // Use Agora for video streaming if credentials are available
+  if (agoraCredentials && !isHost) {
     return (
       <div className="fixed inset-0 bg-black">
         <LiveViewerRoom
-          token={liveKitCredentials.token}
-          wsUrl={liveKitCredentials.wsUrl}
-          roomName={liveKitCredentials.roomName}
+          appId={agoraCredentials.appId}
+          channelName={agoraCredentials.channelName}
+          token={agoraCredentials.token}
+          uid={agoraCredentials.uid}
           streamTitle={stream.title}
           hostName={stream.hostUsername || 'Host'}
           hostAvatar={stream.hostAvatar}

@@ -31,7 +31,7 @@ export function RemixRecorder({
     recordedUrl,
     error,
     startCamera,
-    stopCamera,
+    stopCamera: _stopCamera,
     startRecording,
     stopRecording,
     retryRecording,

@@ -18,7 +18,7 @@ function formatDateTime(dateStr: string): string {
   });
 }
 
-export function RoundDetail({ round, gauntletId, onClose, onSelectMatch, onSubmitVideo, canSubmit }: RoundDetailProps) {
+export function RoundDetail({ round, gauntletId: _gauntletId, onClose, onSelectMatch, onSubmitVideo, canSubmit }: RoundDetailProps) {
   const isActive = round.status === 'active';
 
   return (

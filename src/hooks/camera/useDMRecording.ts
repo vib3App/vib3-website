@@ -30,10 +30,10 @@ export function useDMRecording() {
     const recipientId = searchParams.get('recipientId');
 
     if (dmMode === 'true') {
-      setState({
+      queueMicrotask(() => setState({
         isDMMode: true,
         recipientId: recipientId ?? null,
-      });
+      }));
     }
   }, [searchParams]);
 

@@ -49,11 +49,6 @@ export function useOfflineTracks() {
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load downloaded tracks on mount
-  useEffect(() => {
-    loadTracks();
-  }, []);
-
   const loadTracks = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -75,6 +70,10 @@ export function useOfflineTracks() {
       setIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    loadTracks();
+  }, [loadTracks]);
 
   const downloadTrack = useCallback(async (track: {
     id: string;

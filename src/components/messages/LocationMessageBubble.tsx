@@ -15,6 +15,7 @@ export function LocationMessageBubble({ lat, lng, address, isOwn }: LocationMess
     <div className={`rounded-2xl overflow-hidden max-w-[260px] ${isOwn ? 'bg-purple-500' : 'glass'}`}>
       <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="block">
         <div className="w-[250px] h-[120px] bg-white/5 relative flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={staticMapUrl}
             alt="Location map"

@@ -36,7 +36,6 @@ export function MusicLibraryPanel({ onSelectTrack, currentTrackId }: MusicLibrar
     setHasApi(musicApiService.hasRealApi());
     loadTrending();
     return () => { audioRef.current?.pause(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTrending = async () => {
@@ -56,7 +55,6 @@ export function MusicLibraryPanel({ onSelectTrack, currentTrackId }: MusicLibrar
       setTracks(results);
     } catch { /* handled */ }
     finally { setIsLoading(false); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSearchChange = useCallback((value: string) => {

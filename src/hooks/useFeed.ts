@@ -236,7 +236,7 @@ export function useFeed() {
         setSelectedVibe(matched);
       }
     }
-  }, [searchParams, videos, selectedVibe]);
+  }, [searchParams, videos, selectedVibe, setSelectedVibe]);
 
   // Intersection observer for detecting current video
   useEffect(() => {

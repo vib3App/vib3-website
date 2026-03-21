@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface CodecOption {
   id: string;
@@ -67,17 +67,14 @@ function getFileSizeBadge(ratio: number): string {
 }
 
 export function CodecSelector({ selectedCodec, onCodecChange }: CodecSelectorProps) {
-  const [supported, setSupported] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
+  const [supported] = useState<Record<string, boolean>>(() => {
     const result: Record<string, boolean> = {};
     for (const codec of CODEC_OPTIONS) {
       result[codec.id] = checkCodecSupport(codec.mimeType);
     }
-    // H.264 is always effectively supported for upload purposes
     result['h264'] = true;
-    setSupported(result);
-  }, []);
+    return result;
+  });
 
   return (
     <div className="space-y-3">

@@ -18,6 +18,7 @@ export function LocationMessage({ lat, lng, address, isOwn }: LocationMessagePro
       <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="block">
         <div className="w-[250px] h-[120px] bg-white/5 relative flex items-center justify-center">
           {/* Map placeholder with pin icon - falls back gracefully if static map fails */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={staticMapUrl}
             alt="Location map"

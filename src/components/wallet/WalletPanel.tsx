@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { walletApi } from '@/services/api/wallet';
 import type { Wallet, Transaction } from '@/types/wallet';
 import { logger } from '@/utils/logger';

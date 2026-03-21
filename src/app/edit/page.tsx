@@ -195,7 +195,7 @@ function EditContent() {
 
   // Gap #7: Drawing
   const drawCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [hasDrawing, setHasDrawing] = useState(false);
+  const [, setHasDrawing] = useState(false);
   const [videoDimensions, setVideoDimensions] = useState<{ width: number; height: number }>({ width: 1080, height: 1920 });
 
   // Gap #10: SFX
@@ -605,6 +605,7 @@ function EditContent() {
               filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
             }}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={gs.url} alt="GIPHY sticker" className="w-24 h-auto pointer-events-none" />
           </DraggableOverlay>
         ))}

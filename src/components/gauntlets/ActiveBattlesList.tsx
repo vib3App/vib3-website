@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { gauntletsApi } from '@/services/api/gauntlets';
 import { logger } from '@/utils/logger';
-import type { Gauntlet, GauntletMatch } from '@/types/gauntlet';
+import type { GauntletMatch } from '@/types/gauntlet';
 
 interface ActiveBattle {
   gauntletId: string;

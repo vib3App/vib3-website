@@ -98,6 +98,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 >
                   Flagged Reporters
                 </Link>
+                <Link
+                  href="/admin/qoe"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                  Video QoE
+                </Link>
+                <Link
+                  href="/admin/player-config"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                  Player Config
+                </Link>
               </nav>
             </div>
             <div className="flex items-center gap-4">

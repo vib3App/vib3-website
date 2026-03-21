@@ -112,6 +112,7 @@ export function ProfileVideos({ activeTab, videos, likedVideos, drafts, schedule
       <div className="grid grid-cols-3 gap-1">
         {drafts.map(d => (
           <div key={d.id} className="relative aspect-[9/16] bg-white/5 rounded overflow-hidden group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             {d.thumbnailUrl ? <img src={d.thumbnailUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20"><DraftIcon /></div>}
             <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-yellow-500/80 text-black text-[10px] font-bold rounded">DRAFT</div>
             <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 p-1.5">
@@ -129,6 +130,7 @@ export function ProfileVideos({ activeTab, videos, likedVideos, drafts, schedule
       <div className="grid grid-cols-3 gap-1">
         {scheduledVideos.map(v => (
           <div key={v.id} className="relative aspect-[9/16] bg-white/5 rounded overflow-hidden group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             {v.thumbnailUrl ? <img src={v.thumbnailUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white/20"><CalendarIcon /></div>}
             <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-blue-500/80 text-white text-[10px] font-bold rounded">SCHEDULED</div>
             {v.scheduledFor && (

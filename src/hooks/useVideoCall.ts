@@ -50,7 +50,7 @@ export function useVideoCall() {
   const rtc = useWebRTCConnection(refs, user?.id, onConnected, onFailed);
   const mediaControls = useCallMediaControls(refs);
 
-  // Gap #59: Call fallback with TURN relay / LiveKit
+  // Gap #59: Call fallback with TURN relay / Agora
   const callFallback = useCallFallback({
     callId: refs.callIdRef.current,
     pcRef: refs.pcRef,
@@ -202,7 +202,7 @@ export function useVideoCall() {
   const toggleSpeaker = useCallback(() => setIsSpeakerOn(v => !v), []);
 
   return {
-    activeCall, incomingCall, liveKitCredentials: null,
+    activeCall, incomingCall, agoraCredentials: null,
     isConnecting, error, callDuration,
     formattedDuration: formatCallDuration(callDuration),
     isMuted, isVideoOff, isSpeakerOn,

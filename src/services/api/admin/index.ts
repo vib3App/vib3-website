@@ -1,5 +1,6 @@
 import { moderationApi } from './moderation';
 import { adminUsersApi } from './users';
+import { qoeApi } from './qoe';
 
 export const adminApi = {
   // Content Moderation
@@ -30,6 +31,9 @@ export const adminApi = {
   changeUserRole: adminUsersApi.changeUserRole,
   getUserStats: adminUsersApi.getUserStats,
   getTeam: adminUsersApi.getTeam,
+
+  // QoE Dashboard
+  getQoESummary: qoeApi.getQoESummary,
 };
 
 export type {
@@ -43,4 +47,9 @@ export type {
   UserStats,
   UserRole,
   ModerationAction,
+  QoEPeriod,
+  QoESummary,
+  QoETimePoint,
+  QoEWorstVideo,
+  QoEDashboard,
 } from './types';

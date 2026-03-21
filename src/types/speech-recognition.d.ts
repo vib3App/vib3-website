@@ -1,6 +1,5 @@
 /** Web Speech API type declarations for browsers that use webkit prefix */
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;

@@ -42,7 +42,7 @@ function StoryAnalyticsPanel({ story, onClose }: { story: Story; onClose: () => 
 
   useEffect(() => {
     if (activeTab === 'viewers' && !viewersLoaded) {
-      setViewersLoading(true);
+      queueMicrotask(() => setViewersLoading(true));
       storiesApi.getStoryViewers(story.id)
         .then(data => { setViewers(data); setViewersLoaded(true); })
         .catch(err => { logger.error('Failed to load viewers:', err); setViewersLoaded(true); })

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -43,15 +43,15 @@ const STORAGE_LIMITS = [
 export default function DownloadsSettingsPage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
-  const [settings, setSettings] = useState<DownloadSettings>(DEFAULT_SETTINGS);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
+  const [settings, setSettings] = useState<DownloadSettings>(() => {
+    if (typeof window === 'undefined') return DEFAULT_SETTINGS;
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
+      if (stored) return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
     } catch { /* ignore */ }
-  }, []);
+    return DEFAULT_SETTINGS;
+  });
+  const [saved, setSaved] = useState(false);
 
   const updateSettings = (updates: Partial<DownloadSettings>) => {
     const newSettings = { ...settings, ...updates };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 interface GiftAnimationProps {
   giftName: string;
@@ -12,7 +12,7 @@ interface GiftAnimationProps {
 
 // Generate random particles for the gift burst effect
 function useParticles(count: number) {
-  return useMemo(() => Array.from({ length: count }, (_, i) => ({
+  const [particles] = useState(() => Array.from({ length: count }, (_, i) => ({
     id: i,
     x: Math.random() * 200 - 100,
     y: Math.random() * -150 - 20,
@@ -20,7 +20,8 @@ function useParticles(count: number) {
     scale: 0.5 + Math.random() * 0.8,
     rotation: Math.random() * 360,
     emoji: ['✨', '⭐', '💫', '🌟', '💖'][Math.floor(Math.random() * 5)],
-  })), [count]);
+  })));
+  return particles;
 }
 
 export function GiftAnimation({ giftName, giftIcon, senderName, value, onComplete }: GiftAnimationProps) {

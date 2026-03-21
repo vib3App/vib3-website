@@ -130,7 +130,7 @@ export function BattleEffectsOverlay({ effect, comboCount = 0 }: BattleEffectsOv
   // Trigger effects
   useEffect(() => {
     if (effect) {
-      setActive(effect);
+      queueMicrotask(() => setActive(effect));
       spawnParticles(effect);
       const timer = setTimeout(() => setActive(null), effect === 'ko' ? 3000 : 2000);
       return () => clearTimeout(timer);

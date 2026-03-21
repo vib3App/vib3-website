@@ -18,7 +18,7 @@ type TabId = 'bracket' | 'leaderboard';
 export default function GauntletDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { gauntlet, rounds, results, isLoading, loadGauntlet, join, leave, vote } = useGauntlet(id);
+  const { gauntlet, rounds, results, isLoading, loadGauntlet, join, leave, vote: _vote } = useGauntlet(id);
 
   const [activeTab, setActiveTab] = useState<TabId>('bracket');
   const [selectedRound, setSelectedRound] = useState<GauntletRound | null>(null);

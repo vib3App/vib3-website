@@ -8,7 +8,7 @@ import {
   ActivityDetector, BackgroundLocationTracker, MapEmojiReactions,
   POIDiscovery, PlaceDetailsSheet, EventDetailsSheet,
   MapCameraControls, MapSettingsPanel, FriendInteractionTracker,
-  MeetupRSVP, ActivityIndicator,
+  MeetupRSVP as _MeetupRSVP, ActivityIndicator as _ActivityIndicator,
 } from '@/components/location';
 import { GhostModeBanner } from '@/components/location/GhostModeToggle';
 import { useLocationMap } from '@/hooks/useLocationMap';
@@ -35,7 +35,7 @@ export default function LocationPage() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showCreateCircle, setShowCreateCircle] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<{ userId: string; username: string } | null>(null);
-  const [currentActivity, setCurrentActivity] = useState<string>('stationary');
+  const [, setCurrentActivity] = useState<string>('stationary');
   const [showPOIPanel, setShowPOIPanel] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<NearbyPlace | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<TicketmasterEvent | null>(null);

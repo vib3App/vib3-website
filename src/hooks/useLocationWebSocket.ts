@@ -83,7 +83,7 @@ export function useLocationWebSocket({
   // Track connection state
   useEffect(() => {
     if (!enabled) {
-      setStatus(prev => ({ ...prev, isConnected: false }));
+      queueMicrotask(() => setStatus(prev => ({ ...prev, isConnected: false })));
       return;
     }
 
@@ -91,7 +91,7 @@ export function useLocationWebSocket({
       setStatus(prev => ({ ...prev, isConnected: connected }));
     });
 
-    setStatus(prev => ({ ...prev, isConnected: websocketService.isConnected() }));
+    queueMicrotask(() => setStatus(prev => ({ ...prev, isConnected: websocketService.isConnected() })));
     return unsub;
   }, [enabled]);
 

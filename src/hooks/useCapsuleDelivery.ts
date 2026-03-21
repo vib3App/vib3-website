@@ -117,7 +117,7 @@ export function useCapsuleDelivery() {
 
   // Start polling
   useEffect(() => {
-    checkCapsules();
+    checkCapsules(); // eslint-disable-line react-hooks/set-state-in-effect
     pollRef.current = setInterval(checkCapsules, POLL_INTERVAL);
 
     return () => {

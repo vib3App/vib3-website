@@ -39,19 +39,21 @@ export interface StartCallInput {
 
 export interface StartCallResponse {
   call: Call;
-  liveKit: {
-    url: string;
+  agora: {
     token: string;
-    roomName: string;
+    channelName: string;
+    uid: number;
+    appId: string;
   };
 }
 
 export interface AnswerCallResponse {
   call: Call;
-  liveKit: {
-    url: string;
+  agora: {
     token: string;
-    roomName: string;
+    channelName: string;
+    uid: number;
+    appId: string;
   };
 }
 

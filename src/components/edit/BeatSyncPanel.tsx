@@ -11,7 +11,7 @@ interface BeatSyncPanelProps {
   formatTime: (t: number) => string;
 }
 
-export function BeatSyncPanel({ duration, beatMarkers, onBeatMarkersChange, formatTime }: BeatSyncPanelProps) {
+export function BeatSyncPanel({ duration, beatMarkers, onBeatMarkersChange, formatTime: _formatTime }: BeatSyncPanelProps) {
   const [bpm, setBpm] = useState(120);
   const [isDetecting, setIsDetecting] = useState(false);
   const [confidence, setConfidence] = useState<number | null>(null);

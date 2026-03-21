@@ -20,14 +20,18 @@ function SnapchatCallbackContent() {
     const errorParam = searchParams.get('error');
 
     if (errorParam) {
-      setStatus('error');
-      setError(errorParam === 'access_denied' ? 'Snapchat login was cancelled.' : `Snapchat error: ${errorParam}`);
+      queueMicrotask(() => {
+        setStatus('error');
+        setError(errorParam === 'access_denied' ? 'Snapchat login was cancelled.' : `Snapchat error: ${errorParam}`);
+      });
       return;
     }
 
     if (!code) {
-      setStatus('error');
-      setError('No authorization code received from Snapchat.');
+      queueMicrotask(() => {
+        setStatus('error');
+        setError('No authorization code received from Snapchat.');
+      });
       return;
     }
 
@@ -37,8 +41,10 @@ function SnapchatCallbackContent() {
       : null;
 
     if (state && savedState && state !== savedState) {
-      setStatus('error');
-      setError('Security validation failed. Please try again.');
+      queueMicrotask(() => {
+        setStatus('error');
+        setError('Security validation failed. Please try again.');
+      });
       return;
     }
 

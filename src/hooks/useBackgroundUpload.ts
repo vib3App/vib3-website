@@ -43,8 +43,9 @@ export function useBackgroundUpload() {
     };
     checkPending();
 
+    const currentPoll = pollRef.current;
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
+      if (currentPoll) clearInterval(currentPoll);
     };
   }, []);
 

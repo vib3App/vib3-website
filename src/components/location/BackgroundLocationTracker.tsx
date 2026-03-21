@@ -29,15 +29,13 @@ export function BackgroundLocationTracker({
   useEffect(() => {
     if (!enabled) {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      setIsTracking(false);
+      queueMicrotask(() => setIsTracking(false));
       return;
     }
 
-    // Track even when tab is not focused using setInterval
-    // (navigator.geolocation.watchPosition pauses in background on most browsers)
     fetchPosition();
     intervalRef.current = setInterval(fetchPosition, intervalMs);
-    setIsTracking(true);
+    queueMicrotask(() => setIsTracking(true));
 
     // Also listen for visibility changes to immediately update on tab focus
     const handleVisibility = () => {

@@ -2,28 +2,21 @@
 
 import { useState } from 'react';
 import {
-  VideoTrack,
-  AudioTrack,
-  useTracks,
-  useParticipants,
-} from '@livekit/components-react';
-import { Track, RemoteParticipant } from 'livekit-client';
-import {
   SignalIcon,
   UserGroupIcon,
   HeartIcon,
   ChatBubbleLeftIcon,
   GiftIcon,
 } from '@heroicons/react/24/solid';
+import { useAgoraContext } from './AgoraProvider';
 
 export function ViewerCount() {
-  const participants = useParticipants();
-  const viewerCount = Math.max(0, participants.length - 1);
+  const { remoteUsers } = useAgoraContext();
 
   return (
     <div className="flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full">
       <UserGroupIcon className="w-4 h-4 text-white" />
-      <span className="text-white text-sm font-medium">{viewerCount}</span>
+      <span className="text-white text-sm font-medium">{remoteUsers.length}</span>
     </div>
   );
 }
@@ -38,16 +31,9 @@ export function LiveIndicator() {
 }
 
 export function HostVideo() {
-  const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
+  const { remoteUsers, hostVideoRef } = useAgoraContext();
 
-  const hostVideoTrack = tracks.find(
-    t => t.source === Track.Source.Camera && t.participant instanceof RemoteParticipant
-  );
-  const hostAudioTrack = tracks.find(
-    t => t.source === Track.Source.Microphone && t.participant instanceof RemoteParticipant
-  );
-
-  if (!hostVideoTrack) {
+  if (remoteUsers.length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 to-pink-900">
         <div className="text-center text-white/70">
@@ -60,11 +46,7 @@ export function HostVideo() {
 
   return (
     <div className="w-full h-full bg-black">
-      <VideoTrack
-        trackRef={hostVideoTrack}
-        className="w-full h-full object-contain"
-      />
-      {hostAudioTrack && <AudioTrack trackRef={hostAudioTrack} />}
+      <div ref={hostVideoRef} className="w-full h-full" />
     </div>
   );
 }

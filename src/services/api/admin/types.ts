@@ -84,3 +84,43 @@ export interface UserStats {
 
 export type UserRole = 'user' | 'moderator' | 'admin';
 export type ModerationAction = 'remove_content' | 'warn_user' | 'ban_user' | 'shadow_ban' | 'dismiss';
+
+export type QoEPeriod = '1h' | '24h' | '7d' | '30d';
+
+export interface QoESummary {
+  totalSessions: number;
+  avgStartupLatencyMs: number;
+  p50StartupLatencyMs: number;
+  p95StartupLatencyMs: number;
+  avgQoeScore: number;
+  p50QoeScore: number;
+  stallRate: number;
+  avgRebufferRatio: number;
+  avgWatchTimeSec: number;
+  errorRate: number;
+  totalErrors: number;
+}
+
+export interface QoETimePoint {
+  time: string;
+  avgQoeScore: number;
+  avgStartupLatencyMs: number;
+  stallRate: number;
+  sessions: number;
+}
+
+export interface QoEWorstVideo {
+  videoId: string;
+  sessions: number;
+  avgQoeScore: number;
+  avgStartupLatencyMs: number;
+  totalStalls: number;
+  avgRebufferRatio: number;
+}
+
+export interface QoEDashboard {
+  period: string;
+  summary: QoESummary;
+  timeSeries: QoETimePoint[];
+  worstVideos: QoEWorstVideo[];
+}

@@ -27,10 +27,10 @@ export function SpeakerSelector({ onSelectDevice, getDevices }: SpeakerSelectorP
     // Check if setSinkId is supported
     const testEl = document.createElement('audio');
     if (!('setSinkId' in testEl)) {
-      setIsSupported(false);
+      queueMicrotask(() => setIsSupported(false));
       return;
     }
-    loadDevices();
+    loadDevices(); // eslint-disable-line react-hooks/set-state-in-effect
 
     // Listen for device changes
     const handleChange = () => loadDevices();

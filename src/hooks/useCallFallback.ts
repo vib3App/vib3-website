@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { websocketService } from '@/services/websocket';
 import { logger } from '@/utils/logger';
 
-export type FallbackState = 'p2p' | 'reconnecting' | 'turn-relay' | 'livekit-fallback' | 'failed';
+export type FallbackState = 'p2p' | 'reconnecting' | 'turn-relay' | 'agora-fallback' | 'failed';
 
 const ICE_TIMEOUT_MS = 15_000;
 const MAX_RETRIES = 2;
@@ -50,12 +50,12 @@ export function useCallFallback({
     }
   }, []);
 
-  // Request LiveKit fallback from server
-  const requestLiveKitFallback = useCallback(() => {
+  // Request Agora fallback from server
+  const requestAgoraFallback = useCallback(() => {
     if (!callId) return;
-    setState('livekit-fallback');
-    logger.info('Requesting LiveKit fallback for call:', callId);
-    websocketService.send('call:request-fallback', { callId, type: 'livekit' });
+    setState('agora-fallback');
+    logger.info('Requesting Agora fallback for call:', callId);
+    websocketService.send('call:request-fallback', { callId, type: 'agora' });
   }, [callId]);
 
   // Use a ref for handleConnectionFailure to break the circular dependency
@@ -130,14 +130,15 @@ export function useCallFallback({
         setState('reconnecting');
         attemptTurnReconnect();
       } else {
-        requestLiveKitFallback();
+        requestAgoraFallback();
       }
       return next;
     });
-  }, [attemptTurnReconnect, requestLiveKitFallback]);
+  }, [attemptTurnReconnect, requestAgoraFallback]);
 
-  // Keep ref in sync
-  handleConnectionFailureRef.current = handleConnectionFailure;
+  useEffect(() => {
+    handleConnectionFailureRef.current = handleConnectionFailure;
+  }, [handleConnectionFailure]);
 
   // Monitor ICE connection state
   const startMonitoring = useCallback(() => {
@@ -170,12 +171,12 @@ export function useCallFallback({
     }, ICE_TIMEOUT_MS);
   }, [pcRef, clearIceTimer, handleConnectionFailure]);
 
-  // Listen for LiveKit fallback credentials from server
+  // Listen for Agora fallback credentials from server
   useEffect(() => {
-    const unsub = websocketService.onCallAccepted((data) => {
-      if (state === 'livekit-fallback') {
-        // Server responded with LiveKit credentials
-        logger.info('LiveKit fallback credentials received');
+    const unsub = websocketService.onCallAccepted((_data) => {
+      if (state === 'agora-fallback') {
+        // Server responded with Agora credentials
+        logger.info('Agora fallback credentials received');
         onReconnected?.();
       }
     });
@@ -190,11 +191,13 @@ export function useCallFallback({
     };
   }, [clearIceTimer]);
 
-  // If all retries fail and LiveKit also fails, call onFailed
+  // If all retries fail and Agora also fails, call onFailed
   useEffect(() => {
     if (retryCount > MAX_RETRIES + 1) {
-      setState('failed');
-      onFailed?.();
+      queueMicrotask(() => {
+        setState('failed');
+        onFailed?.();
+      });
     }
   }, [retryCount, onFailed]);
 
@@ -203,6 +206,6 @@ export function useCallFallback({
     retryCount,
     startMonitoring,
     attemptTurnReconnect,
-    requestLiveKitFallback,
+    requestAgoraFallback,
   };
 }

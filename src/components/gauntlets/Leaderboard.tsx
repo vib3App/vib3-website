@@ -19,7 +19,7 @@ export function Leaderboard({ gauntletId }: LeaderboardProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
+    queueMicrotask(() => setIsLoading(true));
     gauntletsApi.getLeaderboard(gauntletId)
       .then(setEntries)
       .catch((err) => logger.error('Failed to load leaderboard:', err))

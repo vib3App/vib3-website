@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TopNav } from '@/components/ui/TopNav';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -32,14 +32,12 @@ const STORAGE_KEY = 'vib3-language';
 export default function LanguagePage() {
   const router = useRouter();
   const { isAuthenticated, isAuthVerified } = useAuthStore();
-  const [selected, setSelected] = useState('en');
+  const [selected, setSelected] = useState(() => {
+    if (typeof window === 'undefined') return 'en';
+    return localStorage.getItem(STORAGE_KEY) || 'en';
+  });
   const [search, setSearch] = useState('');
   const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) setSelected(stored);
-  }, []);
 
   const handleSelect = (code: string) => {
     setSelected(code);

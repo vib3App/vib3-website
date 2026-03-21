@@ -20,13 +20,20 @@ interface StoryHighlightsProps {
 const HIGHLIGHTS_KEY = (userId: string) => `vib3_highlights_${userId}`;
 
 export function StoryHighlights({ userId, isOwnProfile, onViewHighlight }: StoryHighlightsProps) {
-  const [highlights, setHighlights] = useState<StoryHighlight[]>([]);
+  const [highlights, setHighlights] = useState<StoryHighlight[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem(HIGHLIGHTS_KEY(userId));
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore */ }
+    return [];
+  });
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(HIGHLIGHTS_KEY(userId));
     if (stored) {
-      try { setHighlights(JSON.parse(stored)); } catch { /* ignore */ }
+      try { queueMicrotask(() => setHighlights(JSON.parse(stored))); } catch { /* ignore */ }
     }
   }, [userId]);
 
@@ -136,13 +143,20 @@ function CreateHighlightModal({ onClose, onSave }: { onClose: () => void; onSave
 
 /** Utility to add a story to a highlight from story viewer */
 export function AddToHighlightButton({ userId, storyId }: { userId: string; storyId: string }) {
-  const [highlights, setHighlights] = useState<StoryHighlight[]>([]);
+  const [highlights, setHighlights] = useState<StoryHighlight[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem(HIGHLIGHTS_KEY(userId));
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore */ }
+    return [];
+  });
   const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(HIGHLIGHTS_KEY(userId));
     if (stored) {
-      try { setHighlights(JSON.parse(stored)); } catch { /* ignore */ }
+      try { queueMicrotask(() => setHighlights(JSON.parse(stored))); } catch { /* ignore */ }
     }
   }, [userId]);
 

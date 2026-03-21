@@ -6,7 +6,7 @@ import { liveApi } from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
 import { useToastStore } from '@/stores/toastStore';
 import { useConfirmStore } from '@/stores/confirmStore';
-import type { LiveStream, LiveChatMessage, LiveGift, LiveKitCredentials } from '@/types';
+import type { LiveStream, LiveChatMessage, LiveGift, AgoraCredentials } from '@/types';
 import { logger } from '@/utils/logger';
 
 interface FloatingReaction {
@@ -31,8 +31,8 @@ export function useLiveStream(streamId: string, _isHost?: boolean) {
   const [viewerCount, setViewerCount] = useState(0);
   const [likeCount, setLikeCount] = useState(0);
 
-  // LiveKit credentials
-  const [liveKitCredentials, setLiveKitCredentials] = useState<LiveKitCredentials | null>(null);
+  // Agora credentials
+  const [agoraCredentials, setAgoraCredentials] = useState<AgoraCredentials | null>(null);
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -55,18 +55,18 @@ export function useLiveStream(streamId: string, _isHost?: boolean) {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
 
-  // Join stream and get LiveKit credentials
+  // Join stream and get Agora credentials
   useEffect(() => {
     const joinStream = async () => {
       try {
-        // Join the stream (this increments viewer count and returns LiveKit token)
+        // Join the stream (this increments viewer count and returns Agora token)
         const joinResponse = await liveApi.joinStream(streamId);
         setStream(joinResponse.stream);
         setViewerCount(joinResponse.stream.viewerCount || 0);
         setLikeCount(joinResponse.stream.likeCount || 0);
 
-        if (joinResponse.liveKit) {
-          setLiveKitCredentials(joinResponse.liveKit);
+        if (joinResponse.agora) {
+          setAgoraCredentials(joinResponse.agora);
         }
 
         setLoading(false);
@@ -239,8 +239,8 @@ export function useLiveStream(streamId: string, _isHost?: boolean) {
     loading,
     error,
     isHost,
-    // LiveKit
-    liveKitCredentials,
+    // Agora
+    agoraCredentials,
     // UI State
     chatMessage,
     setChatMessage,

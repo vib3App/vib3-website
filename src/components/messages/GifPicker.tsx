@@ -121,6 +121,7 @@ export function GifPicker({ onSelect, onClose }: GifPickerProps) {
                     onClick={() => handleGifSelect(gif)}
                     className="rounded-lg overflow-hidden hover:ring-2 hover:ring-purple-400 transition-all"
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={gif.images.fixed_height.url}
                       alt={gif.title}

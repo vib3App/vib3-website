@@ -58,7 +58,7 @@ export function useCallNotifications() {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
 
     if (Notification.permission === 'granted') {
-      setPermissionGranted(true);
+      queueMicrotask(() => setPermissionGranted(true));
     } else if (Notification.permission === 'default') {
       Notification.requestPermission().then((result) => {
         setPermissionGranted(result === 'granted');

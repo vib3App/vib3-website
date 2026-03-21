@@ -8,7 +8,7 @@ export function HorizontalBar({
   video,
   buttons,
   size,
-  position,
+  position: _position,
   isDragging: globalDragging,
   onLike,
   onComment,

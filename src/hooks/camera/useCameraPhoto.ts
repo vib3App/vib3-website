@@ -98,28 +98,6 @@ export function useCameraPhoto({
     }, 200);
   }, [captureFrame, isBurstActive]);
 
-  const takeCollagePhoto = useCallback(() => {
-    const maxPhotos = collageLayout === '2x2' ? 4 : 9;
-    if (collagePhotos.length >= maxPhotos) return;
-
-    const dataUrl = captureFrame();
-    if (!dataUrl) return;
-
-    const photo: CapturedPhoto = {
-      id: `collage-${Date.now()}`,
-      dataUrl,
-      timestamp: Date.now(),
-    };
-
-    const updated = [...collagePhotos, photo];
-    setCollagePhotos(updated);
-
-    // When collage is complete, merge into a single image
-    if (updated.length >= maxPhotos) {
-      mergeCollage(updated, collageLayout);
-    }
-  }, [captureFrame, collagePhotos, collageLayout]);
-
   const mergeCollage = useCallback((photos: CapturedPhoto[], layout: CollageLayout) => {
     const cols = layout === '2x2' ? 2 : 3;
     const cellSize = 540;
@@ -154,6 +132,28 @@ export function useCameraPhoto({
       img.src = photo.dataUrl;
     });
   }, []);
+
+  const takeCollagePhoto = useCallback(() => {
+    const maxPhotos = collageLayout === '2x2' ? 4 : 9;
+    if (collagePhotos.length >= maxPhotos) return;
+
+    const dataUrl = captureFrame();
+    if (!dataUrl) return;
+
+    const photo: CapturedPhoto = {
+      id: `collage-${Date.now()}`,
+      dataUrl,
+      timestamp: Date.now(),
+    };
+
+    const updated = [...collagePhotos, photo];
+    setCollagePhotos(updated);
+
+    // When collage is complete, merge into a single image
+    if (updated.length >= maxPhotos) {
+      mergeCollage(updated, collageLayout);
+    }
+  }, [captureFrame, collagePhotos, collageLayout, mergeCollage]);
 
   const handleShutter = useCallback(() => {
     switch (photoMode) {

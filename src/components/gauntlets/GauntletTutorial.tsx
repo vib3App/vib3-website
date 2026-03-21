@@ -50,14 +50,14 @@ export function GauntletTutorial({ forceShow = false, onClose }: GauntletTutoria
 
   useEffect(() => {
     if (forceShow) {
-      setIsVisible(true);
+      queueMicrotask(() => setIsVisible(true));
       return;
     }
     try {
       const seen = localStorage.getItem(TUTORIAL_FLAG);
-      if (!seen) setIsVisible(true);
+      if (!seen) queueMicrotask(() => setIsVisible(true));
     } catch {
-      setIsVisible(true);
+      queueMicrotask(() => setIsVisible(true));
     }
   }, [forceShow]);
 

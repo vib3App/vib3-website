@@ -50,7 +50,7 @@ export function GiphyStickerPanel({ stickers, onAddSticker, onRemoveSticker }: G
       const data = await res.json();
       setResults(data.data || []);
       setHasSearched(true);
-    } catch (e) {
+    } catch (_e) {
       setError('Failed to fetch GIFs. Check your connection.');
       setResults([]);
     } finally {
@@ -112,6 +112,7 @@ export function GiphyStickerPanel({ stickers, onAddSticker, onRemoveSticker }: G
           {results.map(gif => (
             <button key={gif.id} onClick={() => handleSelect(gif)}
               className="aspect-square rounded-lg overflow-hidden bg-white/5 hover:ring-2 hover:ring-purple-500 transition">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={gif.images.fixed_height_small.url} alt={gif.title}
                 className="w-full h-full object-cover" loading="lazy" />
             </button>
@@ -130,6 +131,7 @@ export function GiphyStickerPanel({ stickers, onAddSticker, onRemoveSticker }: G
           <div className="flex flex-wrap gap-2">
             {stickers.map(s => (
               <div key={s.id} className="relative group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={s.url} alt="sticker" className="w-12 h-12 rounded-lg object-cover" />
                 <button onClick={() => onRemoveSticker(s.id)}
                   className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition">

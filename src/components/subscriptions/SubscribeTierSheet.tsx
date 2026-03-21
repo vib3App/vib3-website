@@ -27,12 +27,7 @@ export function SubscribeTierSheet({ isOpen, onClose, creatorId, creatorName, on
   const [subscribing, setSubscribing] = useState(false);
   const addToast = useToastStore(s => s.addToast);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    loadTiers();
-  }, [isOpen, creatorId]);
-
-  const loadTiers = async () => {
+  const loadTiers = useCallback(async () => {
     setLoading(true);
     try {
       const data = await subscriptionsApi.getCreatorTiers(creatorId);
@@ -46,7 +41,12 @@ export function SubscribeTierSheet({ isOpen, onClose, creatorId, creatorName, on
     } finally {
       setLoading(false);
     }
-  };
+  }, [creatorId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    loadTiers();
+  }, [isOpen, loadTiers]);
 
   const handleSubscribe = useCallback(async () => {
     if (!selectedTier) return;

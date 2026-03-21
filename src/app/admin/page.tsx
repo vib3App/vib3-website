@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { adminApi, type ReportStats } from '@/services/api';
+import type { QoESummary } from '@/services/api/admin/types';
 import Link from 'next/link';
 import { logger } from '@/utils/logger';
 
@@ -9,6 +10,7 @@ interface DashboardStats {
   reports: ReportStats;
   dmca: { pending: number; processed: number; rejected: number };
   withdrawals: { pending: number };
+  qoe: QoESummary | null;
 }
 
 export default function AdminDashboard() {
@@ -23,16 +25,18 @@ export default function AdminDashboard() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const [reportStats, dmcaStats, withdrawals] = await Promise.all([
+      const [reportStats, dmcaStats, withdrawals, qoeData] = await Promise.all([
         adminApi.getReportStats().catch(() => ({ pending: 0, reviewing: 0, resolved: 0, dismissed: 0 })),
         adminApi.getDMCAStats().catch(() => ({ pending: 0, processed: 0, rejected: 0 })),
         adminApi.getPendingWithdrawals().catch(() => ({ withdrawals: [] })),
+        adminApi.getQoESummary('24h').catch(() => null),
       ]);
 
       setStats({
         reports: reportStats,
         dmca: dmcaStats,
         withdrawals: { pending: withdrawals.withdrawals?.length || 0 },
+        qoe: qoeData?.summary || null,
       });
     } catch (err) {
       setError('Failed to load dashboard stats');
@@ -163,6 +167,33 @@ export default function AdminDashboard() {
             {stats?.reports.dismissed || 0} dismissed
           </p>
         </div>
+
+        {/* Video QoE */}
+        <Link
+          href="/admin/qoe"
+          className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 hover:border-neutral-700 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-neutral-400 text-sm">Video QoE Score</p>
+              <p className={`text-4xl font-bold mt-2 ${
+                (stats?.qoe?.avgQoeScore ?? 0) >= 80 ? 'text-green-400' :
+                (stats?.qoe?.avgQoeScore ?? 0) >= 60 ? 'text-yellow-400' : 'text-red-400'
+              }`}>
+                {stats?.qoe?.avgQoeScore?.toFixed(1) ?? '--'}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-teal-500/20 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <p className="text-neutral-500 text-sm mt-4">
+            {stats?.qoe?.totalSessions ?? 0} sessions (24h) / {stats?.qoe?.stallRate ?? 0}% stall rate
+          </p>
+        </Link>
       </div>
 
       {/* Quick Actions */}

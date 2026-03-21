@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { websocketService } from '@/services/websocket';
 import { liveApi } from '@/services/api';
-import { logger } from '@/utils/logger';
 import type { GauntletMatch } from '@/types/gauntlet';
-import type { LiveKitCredentials } from '@/types/live';
+import type { AgoraCredentials } from '@/types/live';
 
 interface LiveBattleViewProps {
   match: GauntletMatch;
@@ -17,7 +16,7 @@ interface LiveBattleViewProps {
 }
 
 export function LiveBattleView({ match, gauntletId, spectatorCount, onVote, isVoting }: LiveBattleViewProps) {
-  const [liveKit, setLiveKit] = useState<LiveKitCredentials | null>(null);
+  const [, setAgoraCreds] = useState<AgoraCredentials | null>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
@@ -27,11 +26,11 @@ export function LiveBattleView({ match, gauntletId, spectatorCount, onVote, isVo
   useEffect(() => {
     const checkLive = async () => {
       try {
-        // Try to get LiveKit token for this battle room
+        // Try to get Agora token for this battle room
         const streamId = `battle-${gauntletId}-${match.id}`;
-        const token = await liveApi.getLiveKitToken(streamId);
+        const token = await liveApi.getAgoraToken(streamId);
         if (token) {
-          setLiveKit({ token: token.token, wsUrl: token.wsUrl, roomName: token.roomName });
+          setAgoraCreds({ token: token.token, channelName: token.channelName, uid: token.uid, appId: token.appId, role: token.role as 'host' | 'viewer' });
           setIsLiveMode(true);
         }
       } catch {

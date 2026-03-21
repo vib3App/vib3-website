@@ -1,17 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  LiveKitRoom,
-  VideoTrack,
-  AudioTrack,
-  useLocalParticipant,
-  useRoomContext,
-  useTracks,
-  useParticipants,
-  useConnectionState,
-} from '@livekit/components-react';
-import { ConnectionState, Track } from 'livekit-client';
+import { useCallback, useRef, useState } from 'react';
 import {
   MicrophoneIcon,
   VideoCameraIcon,
@@ -23,34 +12,32 @@ import {
   MicrophoneIcon as MicOffIcon,
   VideoCameraIcon as VideoOffIcon,
 } from '@heroicons/react/24/outline';
+import { AgoraProvider, useAgoraContext } from './AgoraProvider';
 import { logger } from '@/utils/logger';
 
 interface LiveStreamRoomProps {
+  appId: string;
+  channelName: string;
   token: string;
-  wsUrl: string;
-  roomName: string;
+  uid: number;
   isHost: boolean;
   streamTitle: string;
   onEnd: () => void;
 }
 
 function HostControls({ onEnd }: { onEnd: () => void }) {
-  const { localParticipant } = useLocalParticipant();
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const { toggleAudio, toggleVideo, audioEnabled, videoEnabled, localAudioTrack } = useAgoraContext();
   const [isRecording, setIsRecording] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
-  const toggleAudio = useCallback(async () => {
-    await localParticipant.setMicrophoneEnabled(!audioEnabled);
-    setAudioEnabled(!audioEnabled);
-  }, [localParticipant, audioEnabled]);
+  const handleToggleAudio = useCallback(async () => {
+    await toggleAudio();
+  }, [toggleAudio]);
 
-  const toggleVideo = useCallback(async () => {
-    await localParticipant.setCameraEnabled(!videoEnabled);
-    setVideoEnabled(!videoEnabled);
-  }, [localParticipant, videoEnabled]);
+  const handleToggleVideo = useCallback(async () => {
+    await toggleVideo();
+  }, [toggleVideo]);
 
   const toggleRecording = useCallback(() => {
     if (isRecording && recorderRef.current) {
@@ -59,9 +46,11 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
       return;
     }
 
+    // Get the local audio track's media stream track for recording
     const tracks: MediaStreamTrack[] = [];
-    for (const pub of localParticipant.trackPublications.values()) {
-      if (pub.track?.mediaStreamTrack) tracks.push(pub.track.mediaStreamTrack);
+    if (localAudioTrack) {
+      const audioMST = localAudioTrack.getMediaStreamTrack();
+      if (audioMST) tracks.push(audioMST);
     }
     if (tracks.length === 0) return;
 
@@ -88,18 +77,18 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
     recorder.start(1000);
     recorderRef.current = recorder;
     setIsRecording(true);
-  }, [isRecording, localParticipant]);
+  }, [isRecording, localAudioTrack]);
 
   return (
     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-black/60 backdrop-blur-lg px-6 py-3 rounded-full">
       <button
-        onClick={toggleAudio}
+        onClick={handleToggleAudio}
         className={`p-3 rounded-full transition ${audioEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`}
       >
         {audioEnabled ? <MicrophoneIcon className="w-6 h-6 text-white" /> : <MicOffIcon className="w-6 h-6 text-white" />}
       </button>
       <button
-        onClick={toggleVideo}
+        onClick={handleToggleVideo}
         className={`p-3 rounded-full transition ${videoEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-red-500'}`}
       >
         {videoEnabled ? <VideoCameraIcon className="w-6 h-6 text-white" /> : <VideoOffIcon className="w-6 h-6 text-white" />}
@@ -121,12 +110,11 @@ function HostControls({ onEnd }: { onEnd: () => void }) {
 }
 
 function ViewerCount() {
-  const participants = useParticipants();
-  const viewerCount = Math.max(0, participants.length - 1);
+  const { remoteUsers } = useAgoraContext();
   return (
     <div className="flex items-center gap-2 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full">
       <UserGroupIcon className="w-4 h-4 text-white" />
-      <span className="text-white text-sm font-medium">{viewerCount}</span>
+      <span className="text-white text-sm font-medium">{remoteUsers.length}</span>
     </div>
   );
 }
@@ -153,14 +141,12 @@ function ReconnectingOverlay() {
 }
 
 function HostVideoDisplay() {
-  const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
-  const videoTrack = tracks.find(t => t.source === Track.Source.Camera);
-  const audioTrack = tracks.find(t => t.source === Track.Source.Microphone);
+  const { localVideoRef, localVideoTrack, videoEnabled } = useAgoraContext();
 
   return (
     <div className="relative w-full h-full bg-black">
-      {videoTrack ? (
-        <VideoTrack trackRef={videoTrack} className="w-full h-full object-cover" />
+      {localVideoTrack && videoEnabled ? (
+        <div ref={localVideoRef} className="w-full h-full" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <div className="text-center text-white/50">
@@ -169,7 +155,6 @@ function HostVideoDisplay() {
           </div>
         </div>
       )}
-      {audioTrack && <AudioTrack trackRef={audioTrack} />}
     </div>
   );
 }
@@ -183,23 +168,14 @@ function RoomContent({
   streamTitle: string;
   onEnd: () => void;
 }) {
-  const room = useRoomContext();
-  const { localParticipant } = useLocalParticipant();
-  const connectionState = useConnectionState();
-
-  useEffect(() => {
-    if (isHost && room && localParticipant) {
-      localParticipant.setCameraEnabled(true);
-      localParticipant.setMicrophoneEnabled(true);
-    }
-  }, [isHost, room, localParticipant]);
+  const { connectionState } = useAgoraContext();
 
   return (
     <div className="relative w-full h-full">
       <HostVideoDisplay />
 
       {/* Reconnecting overlay */}
-      {connectionState === ConnectionState.Reconnecting && <ReconnectingOverlay />}
+      {connectionState === 'reconnecting' && <ReconnectingOverlay />}
 
       {/* Overlay UI */}
       <div className="absolute inset-0 pointer-events-none">
@@ -224,9 +200,10 @@ function RoomContent({
 }
 
 export function LiveStreamRoom({
+  appId,
+  channelName,
   token,
-  wsUrl,
-  roomName,
+  uid,
   isHost,
   streamTitle,
   onEnd,
@@ -234,9 +211,9 @@ export function LiveStreamRoom({
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const handleError = useCallback((error: Error) => {
-    logger.error(`LiveKit error in room ${roomName}:`, error);
+    logger.error(`Agora error in channel ${channelName}:`, error);
     setConnectionError(error.message);
-  }, [roomName]);
+  }, [channelName]);
 
   const handleDisconnected = useCallback(() => {
     if (!isHost) {
@@ -260,17 +237,16 @@ export function LiveStreamRoom({
   }
 
   return (
-    <LiveKitRoom
+    <AgoraProvider
+      appId={appId}
+      channelName={channelName}
       token={token}
-      serverUrl={wsUrl}
-      connect={true}
-      video={isHost}
-      audio={isHost}
+      uid={uid}
+      role={isHost ? 'host' : 'viewer'}
       onError={handleError}
       onDisconnected={handleDisconnected}
-      className="w-full h-full"
     >
       <RoomContent isHost={isHost} streamTitle={streamTitle} onEnd={onEnd} />
-    </LiveKitRoom>
+    </AgoraProvider>
   );
 }

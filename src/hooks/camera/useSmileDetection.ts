@@ -175,6 +175,7 @@ export function useSmileDetection({
   // Auto start/stop based on enabled flag
   useEffect(() => {
     if (enabled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- startDetection sets state via interval callback, not synchronously
       startDetection();
     } else {
       stopDetection();

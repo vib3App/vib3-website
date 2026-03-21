@@ -51,7 +51,7 @@ export const feedsApi = {
         params: { offset, limit, sort: 'newest' }
       });
       return normalizeFeedResponse(data, page, limit);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to main feed endpoint
       try {
         const { data } = await apiClient.get('/videos', { params: { page, limit, feed: 'following' } });
@@ -92,7 +92,7 @@ export const feedsApi = {
         params: { offset, limit, sort: 'newest' }
       });
       return normalizeFeedResponse(data, page, limit);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to main feed endpoint
       try {
         const { data } = await apiClient.get('/videos', { params: { page, limit, feed: 'friends' } });

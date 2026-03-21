@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { uploadApi, TusUploadManager } from '@/services/api';
+import { TusUploadManager } from '@/services/api';
 import { videoApi } from '@/services/api';
 import { logger } from '@/utils/logger';
 

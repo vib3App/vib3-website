@@ -32,7 +32,7 @@ interface CoinPurchaseModalProps {
  * Gap #65: Stripe Checkout for Coins
  * Shows coin packages, creates Stripe checkout session, redirects to Stripe.
  */
-export function CoinPurchaseModal({ isOpen, onClose, onSuccess }: CoinPurchaseModalProps) {
+export function CoinPurchaseModal({ isOpen, onClose, onSuccess: _onSuccess }: CoinPurchaseModalProps) {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const addToast = useToastStore(s => s.addToast);

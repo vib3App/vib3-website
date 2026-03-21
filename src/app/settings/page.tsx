@@ -76,7 +76,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const tab = searchParams.get('tab') as SettingsSection;
     if (tab && SECTIONS.some(s => s.id === tab)) {
-      setActiveSection(tab);
+      queueMicrotask(() => setActiveSection(tab));
     }
   }, [searchParams]);
 

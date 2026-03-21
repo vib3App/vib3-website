@@ -31,10 +31,10 @@ export function useClipOnlyMode() {
     const projectId = searchParams.get('projectId');
 
     if (clipOnly === 'true') {
-      setState({
+      queueMicrotask(() => setState({
         isClipOnly: true,
         projectId: projectId ?? null,
-      });
+      }));
     }
   }, [searchParams]);
 

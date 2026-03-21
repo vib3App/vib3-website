@@ -121,7 +121,7 @@ export function useCollabWebSocket(roomId: string) {
       }, 3000);
     });
 
-    setIsConnected(websocketService.isConnected());
+    queueMicrotask(() => setIsConnected(websocketService.isConnected()));
 
     return () => {
       unsubConnection();

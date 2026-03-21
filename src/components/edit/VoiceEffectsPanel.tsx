@@ -186,9 +186,9 @@ export function VoiceEffectsPanel({ activeEffect, onEffectChange, videoRef }: Vo
   }, [videoRef, isPreviewPlaying]);
 
   useEffect(() => {
+    const video = videoRef.current;
     return () => {
       cleanupAudioChain();
-      const video = videoRef.current;
       if (video) {
         video.playbackRate = 1;
         video.preservesPitch = true;

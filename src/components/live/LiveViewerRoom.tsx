@@ -2,17 +2,18 @@
 
 import Image from 'next/image';
 import { useCallback, useState } from 'react';
-import { LiveKitRoom } from '@livekit/components-react';
 import { XMarkIcon, SignalIcon } from '@heroicons/react/24/solid';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { AgoraProvider } from './AgoraProvider';
 import { ViewerCount, LiveIndicator, HostVideo, ViewerActions } from './LiveViewerHelpers';
 import { logger } from '@/utils/logger';
 
 interface LiveViewerRoomProps {
+  appId: string;
+  channelName: string;
   token: string;
-  wsUrl: string;
-  roomName: string;
+  uid: number;
   streamTitle: string;
   hostName: string;
   hostAvatar?: string;
@@ -93,8 +94,10 @@ function RoomContent({ streamTitle, hostName, hostAvatar, onLeave }: RoomContent
 }
 
 export function LiveViewerRoom({
+  appId,
+  channelName,
   token,
-  wsUrl,
+  uid,
   streamTitle,
   hostName,
   hostAvatar,
@@ -104,7 +107,7 @@ export function LiveViewerRoom({
   const [streamEnded, setStreamEnded] = useState(false);
 
   const handleError = useCallback((error: Error) => {
-    logger.error('LiveKit error:', error);
+    logger.error('Agora error:', error);
     setConnectionError(error.message);
   }, []);
 
@@ -143,17 +146,16 @@ export function LiveViewerRoom({
   }
 
   return (
-    <LiveKitRoom
+    <AgoraProvider
+      appId={appId}
+      channelName={channelName}
       token={token}
-      serverUrl={wsUrl}
-      connect={true}
-      video={false}
-      audio={false}
+      uid={uid}
+      role="viewer"
       onError={handleError}
       onDisconnected={handleDisconnected}
-      className="w-full h-full"
     >
       <RoomContent streamTitle={streamTitle} hostName={hostName} hostAvatar={hostAvatar} onLeave={onLeave} />
-    </LiveKitRoom>
+    </AgoraProvider>
   );
 }

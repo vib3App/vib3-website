@@ -57,8 +57,8 @@ interface UseRemixRecordingReturn {
  * MediaRecorder, and cleanup.
  */
 export function useRemixRecording({
-  originalVideoUrl,
-  originalVideoId,
+  originalVideoUrl: _originalVideoUrl,
+  originalVideoId: _originalVideoId,
 }: UseRemixRecordingOptions): UseRemixRecordingReturn {
   const originalVideoRef = useRef<HTMLVideoElement | null>(null);
   const cameraVideoRef = useRef<HTMLVideoElement | null>(null);

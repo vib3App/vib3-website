@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 
 export type BattleEvent = 'entrance' | 'fire_border' | 'fireworks' | 'ko' | 'victory' | 'score' | null;
 
@@ -24,8 +24,10 @@ export function BattleVisualEffects({
 
   useEffect(() => {
     if (event) {
-      setCurrentEvent(event);
-      setVisible(true);
+      queueMicrotask(() => {
+        setCurrentEvent(event);
+        setVisible(true);
+      });
       const timeout = event === 'ko' || event === 'victory' ? 3000 : 2000;
       const timer = setTimeout(() => setVisible(false), timeout);
       return () => clearTimeout(timer);
@@ -101,13 +103,13 @@ function FireBorderEffect() {
 }
 
 function FireworksEffect() {
-  const sparks = Array.from({ length: 24 }, (_, i) => ({
+  const [sparks] = useState(() => Array.from({ length: 24 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 60 + 10,
     delay: Math.random() * 0.5,
     color: ['#A855F7', '#14B8A6', '#F59E0B', '#EF4444', '#3B82F6'][i % 5],
-  }));
+  })));
 
   return (
     <div className="absolute inset-0">
@@ -166,14 +168,15 @@ function KOAnimation() {
 }
 
 function VictoryLapEffect({ winnerName }: { winnerName: string }) {
-  const confetti = Array.from({ length: 40 }, (_, i) => ({
+  const [confetti] = useState(() => Array.from({ length: 40 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     delay: Math.random() * 1,
     duration: 1.5 + Math.random(),
     color: ['#A855F7', '#14B8A6', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899'][i % 6],
     size: 4 + Math.random() * 8,
-  }));
+    isRound: Math.random() > 0.5,
+  })));
 
   return (
     <div className="absolute inset-0">
@@ -189,7 +192,7 @@ function VictoryLapEffect({ winnerName }: { winnerName: string }) {
             backgroundColor: c.color,
             animationDelay: `${c.delay}s`,
             animationDuration: `${c.duration}s`,
-            borderRadius: Math.random() > 0.5 ? '50%' : '0',
+            borderRadius: c.isRound ? '50%' : '0',
           }}
         />
       ))}

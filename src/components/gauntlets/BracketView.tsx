@@ -82,8 +82,8 @@ function PlayerRow({ username, avatar, score, isWinner, isEliminated, isActive }
   );
 }
 
-export function BracketView({ rounds, gauntletId, onSelectRound, onSelectMatch }: BracketViewProps) {
-  const [hoveredRound, setHoveredRound] = useState<string | null>(null);
+export function BracketView({ rounds, gauntletId: _gauntletId, onSelectRound, onSelectMatch }: BracketViewProps) {
+  const [, setHoveredRound] = useState<string | null>(null);
 
   if (rounds.length === 0) {
     return (
@@ -121,7 +121,7 @@ export function BracketView({ rounds, gauntletId, onSelectRound, onSelectMatch }
 
             {/* Matchups */}
             <div className="flex flex-col gap-3 relative">
-              {round.matches.map((match, matchIdx) => (
+              {round.matches.map((match, _matchIdx) => (
                 <div key={match.id} className="relative">
                   <MatchupBox
                     match={match}

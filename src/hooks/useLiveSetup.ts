@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { liveApi } from '@/services/api';
-import type { CreateLiveStreamInput, LiveKitCredentials } from '@/types';
+import type { CreateLiveStreamInput, AgoraCredentials } from '@/types';
 import { logger } from '@/utils/logger';
 
 export type StreamMode = 'camera' | 'screen' | 'both';
@@ -35,7 +35,7 @@ export function useLiveSetup() {
   const [error, setError] = useState<string | null>(null);
   const [isScheduling, setIsScheduling] = useState(false);
   const [streamId, setStreamId] = useState<string | null>(null);
-  const [liveKitCredentials, setLiveKitCredentials] = useState<LiveKitCredentials | null>(null);
+  const [agoraCredentials, setAgoraCredentials] = useState<AgoraCredentials | null>(null);
 
   useEffect(() => {
     const getDevices = async () => {
@@ -142,15 +142,15 @@ export function useLiveSetup() {
         await liveApi.createLiveStream(input);
         router.push('/live');
       } else {
-        // Start the stream and get LiveKit credentials
+        // Start the stream and get Agora credentials
         const response = await liveApi.startStream(input);
         const newStreamId = (response.stream as unknown as { _id?: string })._id || response.stream.id;
         setStreamId(newStreamId);
 
-        if (response.liveKit) {
-          setLiveKitCredentials(response.liveKit);
+        if (response.agora) {
+          setAgoraCredentials(response.agora);
           setStep('live');
-          // Don't navigate - stay on page with LiveKit room
+          // Don't navigate - stay on page with Agora room
         } else {
           setError('Live streaming setup failed. Please try again or contact support.');
           setStep('preview');
@@ -184,7 +184,7 @@ export function useLiveSetup() {
     }
     setStep('setup');
     setStreamId(null);
-    setLiveKitCredentials(null);
+    setAgoraCredentials(null);
     router.push('/live');
   }, [streamId, mediaStream, router]);
 
@@ -196,6 +196,6 @@ export function useLiveSetup() {
     selectedCamera, setSelectedCamera, selectedMic, setSelectedMic,
     cameras, mics, step, setStep, error, isScheduling, setIsScheduling,
     startPreview, captureThumbnail, toggleAudio, toggleVideo, handleGoLive,
-    streamId, liveKitCredentials, mediaStream, endStream,
+    streamId, agoraCredentials, mediaStream, endStream,
   };
 }

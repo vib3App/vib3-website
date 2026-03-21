@@ -80,31 +80,31 @@ export interface LiveStreamStats {
   chatMessages: number;
 }
 
-export interface LiveKitCredentials {
+export interface AgoraCredentials {
   token: string;
-  wsUrl: string;
-  roomName: string;
+  channelName: string;
+  uid: number;
+  appId: string;
+  role: 'host' | 'viewer';
 }
 
 export interface StartStreamResponse {
   stream: LiveStream;
-  liveKit: LiveKitCredentials | null;
+  agora: AgoraCredentials | null;
 }
 
 export interface JoinStreamResponse {
   stream: LiveStream;
   roomId: string;
-  liveKit: LiveKitCredentials | null;
+  agora: AgoraCredentials | null;
 }
 
-export interface LiveKitTokenResponse {
+export interface AgoraTokenResponse {
   token: string;
-  wsUrl: string;
-  roomName: string;
+  channelName: string;
+  uid: number;
+  appId: string;
+  role: 'host' | 'viewer';
   isHost: boolean;
-}
-
-export interface LiveKitStatus {
-  available: boolean;
-  wsUrl: string | null;
+  streamId: string;
 }

@@ -7,7 +7,7 @@ interface ZoomConfig {
   videoRef: React.RefObject<HTMLVideoElement | null>;
 }
 
-export function useCameraZoom({ streamRef, videoRef }: ZoomConfig) {
+export function useCameraZoom({ streamRef, videoRef: _videoRef }: ZoomConfig) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [maxZoom, setMaxZoom] = useState(1);
   const [zoomSupported, setZoomSupported] = useState(false);
@@ -22,12 +22,16 @@ export function useCameraZoom({ streamRef, videoRef }: ZoomConfig) {
     const capabilities = track.getCapabilities?.();
     if (capabilities && 'zoom' in capabilities) {
       const zoomCap = capabilities.zoom as { min: number; max: number };
-      setZoomSupported(true);
-      setMaxZoom(Math.min(zoomCap.max, 8));
-      setZoomLevel(zoomCap.min || 1);
+      queueMicrotask(() => {
+        setZoomSupported(true);
+        setMaxZoom(Math.min(zoomCap.max, 8));
+        setZoomLevel(zoomCap.min || 1);
+      });
     } else {
-      setZoomSupported(false);
-      setMaxZoom(1);
+      queueMicrotask(() => {
+        setZoomSupported(false);
+        setMaxZoom(1);
+      });
     }
   }, [streamRef]);
 

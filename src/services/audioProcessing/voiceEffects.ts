@@ -3,8 +3,6 @@
  * Real-time preview via Web Audio API nodes + offline export via OfflineAudioContext.
  */
 
-import { logger } from '@/utils/logger';
-
 export type VoiceEffectId =
   | 'chipmunk' | 'deep' | 'robot' | 'echo'
   | 'alien' | 'helium' | 'giant';

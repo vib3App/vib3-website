@@ -152,7 +152,7 @@ export function VideoCallModal({
                 <span className="text-blue-300 text-xs font-medium">Relay connection</span>
               </>
             )}
-            {fallbackState === 'livekit-fallback' && (
+            {fallbackState === 'agora-fallback' && (
               <>
                 <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
                 <span className="text-purple-300 text-xs font-medium">Server-relayed call</span>

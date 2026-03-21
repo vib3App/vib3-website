@@ -57,7 +57,7 @@ export function useCamera() {
   // Apply challenge duration constraint
   useEffect(() => {
     if (challenge.isActive && challenge.maxDuration) {
-      setMaxDuration(challenge.maxDuration);
+      queueMicrotask(() => setMaxDuration(challenge.maxDuration!));
     }
   }, [challenge.isActive, challenge.maxDuration]);
 

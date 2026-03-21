@@ -40,6 +40,7 @@ export function PhotoPreview({ photos, onDownload, onDelete, onClearAll, onClose
         <div className="grid grid-cols-3 gap-1">
           {photos.map((photo) => (
             <div key={photo.id} className="relative aspect-square group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.dataUrl} alt="" className="w-full h-full object-cover rounded-lg" />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all rounded-lg flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                 <button

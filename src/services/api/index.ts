@@ -36,8 +36,15 @@ export type {
   AdminUser,
   TeamMember,
   UserStats,
-  UserRole
+  UserRole,
 } from './admin';
+export type {
+  QoEPeriod,
+  QoESummary,
+  QoETimePoint,
+  QoEWorstVideo,
+  QoEDashboard,
+} from './admin/types';
 export { callsApi } from './calls';
 export { soundsApi } from './sounds';
 export { creatorSettingsApi } from './creatorSettings';

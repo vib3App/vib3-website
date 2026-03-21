@@ -138,6 +138,7 @@ export function LiveGiftPanel({
                   }`}
                 >
                   {gift.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={gift.iconUrl} alt={gift.name} className="w-12 h-12 object-contain" />
                   ) : (
                     <span className="text-3xl">{emoji}</span>

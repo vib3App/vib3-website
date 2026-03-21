@@ -52,25 +52,13 @@ export function useOnboarding() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const completed = localStorage.getItem(STORAGE_KEY) === 'true';
-    setIsComplete(completed);
-    if (!completed) {
-      setIsOpen(true);
-    }
+    queueMicrotask(() => {
+      setIsComplete(completed);
+      if (!completed) {
+        setIsOpen(true);
+      }
+    });
   }, []);
-
-  const nextStep = useCallback(() => {
-    if (currentStep < ONBOARDING_STEPS.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    } else {
-      completeOnboarding();
-    }
-  }, [currentStep]);
-
-  const prevStep = useCallback(() => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  }, [currentStep]);
 
   const completeOnboarding = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -79,6 +67,20 @@ export function useOnboarding() {
     setIsComplete(true);
     setIsOpen(false);
   }, []);
+
+  const nextStep = useCallback(() => {
+    if (currentStep < ONBOARDING_STEPS.length - 1) {
+      setCurrentStep((prev) => prev + 1);
+    } else {
+      completeOnboarding();
+    }
+  }, [currentStep, completeOnboarding]);
+
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep((prev) => prev - 1);
+    }
+  }, [currentStep]);
 
   const skip = useCallback(() => {
     completeOnboarding();

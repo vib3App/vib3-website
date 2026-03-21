@@ -119,57 +119,6 @@ export function BattleParticleEngine({
     particlesRef.current = [...particlesRef.current, ...newParticles];
   }, [dimensions, originX, originY]);
 
-  // Animation loop
-  const animate = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const effectType = effect;
-    const config = effectType ? EFFECT_CONFIGS[effectType] : null;
-    const gravity = config?.gravity || 0;
-
-    particlesRef.current = particlesRef.current.filter((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += gravity;
-      p.life -= 1;
-      p.rotation += p.rotationSpeed;
-
-      if (p.life <= 0) return false;
-
-      const alpha = Math.min(1, p.life / (p.maxLife * 0.3));
-      ctx.save();
-      ctx.globalAlpha = alpha;
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation);
-      ctx.fillStyle = p.color;
-
-      if (p.shape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(0, 0, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (p.shape === 'rect') {
-        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(0, -p.size);
-        ctx.lineTo(-p.size, p.size);
-        ctx.lineTo(p.size, p.size);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      ctx.restore();
-      return true;
-    });
-
-    animFrameRef.current = requestAnimationFrame(animate);
-  }, [effect]);
-
   // Spawn on effect change
   useEffect(() => {
     if (effect) {
@@ -177,11 +126,60 @@ export function BattleParticleEngine({
     }
   }, [effect, spawnParticles]);
 
-  // Start/stop animation
+  // Animation loop
   useEffect(() => {
+    const animate = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const config = effect ? EFFECT_CONFIGS[effect] : null;
+      const gravity = config?.gravity || 0;
+
+      particlesRef.current = particlesRef.current.filter((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += gravity;
+        p.life -= 1;
+        p.rotation += p.rotationSpeed;
+
+        if (p.life <= 0) return false;
+
+        const alpha = Math.min(1, p.life / (p.maxLife * 0.3));
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rotation);
+        ctx.fillStyle = p.color;
+
+        if (p.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.shape === 'rect') {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.5);
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(0, -p.size);
+          ctx.lineTo(-p.size, p.size);
+          ctx.lineTo(p.size, p.size);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        ctx.restore();
+        return true;
+      });
+
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+
     animFrameRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [animate]);
+  }, [effect]);
 
   return (
     <canvas

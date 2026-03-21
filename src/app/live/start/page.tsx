@@ -42,14 +42,15 @@ export default function StartLivePage() {
     );
   }
 
-  // When streaming is live, show the LiveKit room
-  if (live.step === 'live' && live.liveKitCredentials) {
+  // When streaming is live, show the Agora room
+  if (live.step === 'live' && live.agoraCredentials) {
     return (
       <div className="fixed inset-0 bg-black">
         <LiveStreamRoom
-          token={live.liveKitCredentials.token}
-          wsUrl={live.liveKitCredentials.wsUrl}
-          roomName={live.liveKitCredentials.roomName}
+          appId={live.agoraCredentials.appId}
+          channelName={live.agoraCredentials.channelName}
+          token={live.agoraCredentials.token}
+          uid={live.agoraCredentials.uid}
           isHost={true}
           streamTitle={live.title}
           onEnd={live.endStream}

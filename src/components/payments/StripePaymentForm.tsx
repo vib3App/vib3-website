@@ -51,7 +51,7 @@ export function StripePaymentForm({ amount, currency = 'usd', onSuccess, onCance
     setProcessing(true);
     try {
       // Create payment intent on backend
-      const { clientSecret, paymentIntentId } = await paymentApi.createPaymentIntent(amount, currency);
+      const { paymentIntentId } = await paymentApi.createPaymentIntent(amount, currency);
 
       // In a full integration, Stripe.js would confirm the payment here.
       // For now, we confirm via our API (backend handles Stripe confirmation).

@@ -9,7 +9,7 @@ export function CornerCluster({
   video,
   buttons,
   size,
-  position,
+  position: _position,
   isDragging: globalDragging,
   onLike,
   onComment,

@@ -7,7 +7,7 @@
 const DB_NAME = 'vib3-uploads';
 const DB_VERSION = 1;
 const STORE_NAME = 'active-uploads';
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
+const _CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
 
 function openDB() {
   return new Promise((resolve, reject) => {

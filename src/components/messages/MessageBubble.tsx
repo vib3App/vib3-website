@@ -218,6 +218,7 @@ function MessageContent({ message, isOwn }: { message: Message; isOwn: boolean }
   if (message.type === 'gif' && message.mediaUrl) {
     return (
       <div className="rounded-2xl overflow-hidden max-w-[250px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={message.mediaUrl} alt="GIF" className="w-full object-cover" loading="lazy" />
       </div>
     );

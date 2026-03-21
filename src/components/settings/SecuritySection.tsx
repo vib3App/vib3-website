@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { TwoFactorSetup } from './TwoFactorSetup';
 import { ActiveSessions } from './ActiveSessions';
 import { DataExport } from './DataExport';
 
 export function SecuritySection() {
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('vib3_2fa_enabled');
-    if (stored === 'true') setTwoFactorEnabled(true);
-  }, []);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('vib3_2fa_enabled') === 'true';
+  });
 
   return (
     <div className="space-y-4">
