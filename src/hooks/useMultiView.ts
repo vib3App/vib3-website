@@ -8,6 +8,8 @@ import type { Video } from '@/types';
 import { logger } from '@/utils/logger';
 
 type LayoutMode = 'grid' | 'focus' | 'pip';
+export type ViewMode = 'videos' | 'feeds';
+export type FeedSlotSource = 'foryou' | 'following' | 'trending' | 'discover';
 
 export interface VideoSlot {
   id: string;
@@ -17,7 +19,15 @@ export interface VideoSlot {
   volume: number;
 }
 
+export interface FeedSlotState {
+  id: string;
+  source: FeedSlotSource;
+  isPlaying: boolean;
+}
+
 const MAX_VIDEOS = 4;
+
+const DEFAULT_FEED_SOURCES: FeedSlotSource[] = ['foryou', 'following', 'trending', 'discover'];
 
 export function useMultiView() {
   const searchParams = useSearchParams();
@@ -34,6 +44,32 @@ export function useMultiView() {
   const [searchResults, setSearchResults] = useState<Video[]>([]);
   const [searching, setSearching] = useState(false);
   const [masterMuted, setMasterMuted] = useState(true);
+
+  // Feeds mode: each slot is a scrollable feed pinned to a source.
+  const [viewMode, setViewMode] = useState<ViewMode>('videos');
+  const [feedSlots, setFeedSlots] = useState<FeedSlotState[]>(() =>
+    DEFAULT_FEED_SOURCES.map((src, i) => ({
+      id: `feed-slot-${i}`,
+      source: src,
+      isPlaying: true,
+    })),
+  );
+
+  const setFeedSlotSource = useCallback((index: number, source: FeedSlotSource) => {
+    setFeedSlots(prev => prev.map((s, i) => i === index ? { ...s, source } : s));
+  }, []);
+
+  const toggleFeedSlotPlay = useCallback((index: number) => {
+    setFeedSlots(prev => prev.map((s, i) => i === index ? { ...s, isPlaying: !s.isPlaying } : s));
+  }, []);
+
+  const playAllFeeds = useCallback(() => {
+    setFeedSlots(prev => prev.map(s => ({ ...s, isPlaying: true })));
+  }, []);
+
+  const pauseAllFeeds = useCallback(() => {
+    setFeedSlots(prev => prev.map(s => ({ ...s, isPlaying: false })));
+  }, []);
 
   useEffect(() => {
     const loadInitialVideos = async () => {
@@ -219,5 +255,13 @@ export function useMultiView() {
     getEmptySlotIndex,
     getLayoutClasses,
     closeAddModal,
+    // Feeds mode
+    viewMode,
+    setViewMode,
+    feedSlots,
+    setFeedSlotSource,
+    toggleFeedSlotPlay,
+    playAllFeeds,
+    pauseAllFeeds,
   };
 }

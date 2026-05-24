@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Suspense } from 'react';
 import { useMultiView } from '@/hooks/useMultiView';
 import { MultiViewHeader, VideoSlotCard, AddVideoModal } from '@/components/multi-view';
+import { FeedSlot } from '@/components/multi-view/FeedSlot';
 
 function MultiViewLoading() {
   return (
@@ -22,31 +23,48 @@ function MultiViewContent() {
         slots={mv.slots}
         layoutMode={mv.layoutMode}
         masterMuted={mv.masterMuted}
+        viewMode={mv.viewMode}
         onLayoutChange={mv.setLayoutMode}
+        onViewModeChange={mv.setViewMode}
         onMasterMuteToggle={() => mv.toggleMute()}
-        onPlayAll={mv.playAll}
-        onPauseAll={mv.pauseAll}
+        onPlayAll={mv.viewMode === 'feeds' ? mv.playAllFeeds : mv.playAll}
+        onPauseAll={mv.viewMode === 'feeds' ? mv.pauseAllFeeds : mv.pauseAll}
       />
 
-      <main className={`grid ${mv.getLayoutClasses()} gap-1 h-[calc(100vh-3.5rem)]`}>
-        {mv.slots.map((slot, index) => (
-          <VideoSlotCard
-            key={slot.id}
-            slot={slot}
-            index={index}
-            layoutMode={mv.layoutMode}
-            focusedSlot={mv.focusedSlot}
-            videoRef={el => { mv.videoRefs.current[index] = el; }}
-            onTogglePlay={() => mv.togglePlay(index)}
-            onToggleMute={() => mv.toggleMute(index)}
-            onRemove={() => mv.removeVideoFromSlot(index)}
-            onFocus={() => { mv.setFocusedSlot(index); mv.setLayoutMode('focus'); }}
-            onAddClick={() => mv.setShowAddModal(true)}
-          />
-        ))}
-      </main>
+      {mv.viewMode === 'feeds' ? (
+        <main className="grid grid-cols-2 gap-1 h-[calc(100vh-3.5rem)]">
+          {mv.feedSlots.map((slot, index) => (
+            <FeedSlot
+              key={slot.id}
+              source={slot.source}
+              isPlaying={slot.isPlaying}
+              masterMuted={mv.masterMuted}
+              onChangeSource={(next) => mv.setFeedSlotSource(index, next)}
+              onTogglePlay={() => mv.toggleFeedSlotPlay(index)}
+            />
+          ))}
+        </main>
+      ) : (
+        <main className={`grid ${mv.getLayoutClasses()} gap-1 h-[calc(100vh-3.5rem)]`}>
+          {mv.slots.map((slot, index) => (
+            <VideoSlotCard
+              key={slot.id}
+              slot={slot}
+              index={index}
+              layoutMode={mv.layoutMode}
+              focusedSlot={mv.focusedSlot}
+              videoRef={el => { mv.videoRefs.current[index] = el; }}
+              onTogglePlay={() => mv.togglePlay(index)}
+              onToggleMute={() => mv.toggleMute(index)}
+              onRemove={() => mv.removeVideoFromSlot(index)}
+              onFocus={() => { mv.setFocusedSlot(index); mv.setLayoutMode('focus'); }}
+              onAddClick={() => mv.setShowAddModal(true)}
+            />
+          ))}
+        </main>
+      )}
 
-      {mv.layoutMode === 'focus' && (
+      {mv.viewMode === 'videos' && mv.layoutMode === 'focus' && (
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-black/80 rounded-full">
           {mv.slots.map((slot, i) => (
             <button
