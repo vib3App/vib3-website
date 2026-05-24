@@ -13,9 +13,68 @@ import {
   HandThumbUpIcon,
   SparklesIcon,
   UsersIcon,
+  SunIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { InviteFollowersModal } from './InviteFollowersModal';
+import { useAgoraContext } from './AgoraProvider';
+import type { BeautyPreset } from '@/hooks/live/useBeautyStream';
+
+const BEAUTY_PRESETS: { id: BeautyPreset; label: string }[] = [
+  { id: 'soft', label: 'Soft' },
+  { id: 'glow', label: 'Glow' },
+  { id: 'cool', label: 'Cool' },
+  { id: 'warm', label: 'Warm' },
+];
+
+function BeautyControl() {
+  const { beautyEnabled, beautyPreset, setBeautyEnabled, setBeautyPreset } = useAgoraContext();
+  const [showPresets, setShowPresets] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => {
+          if (!beautyEnabled) setBeautyEnabled(true);
+          setShowPresets((v) => !v);
+        }}
+        onContextMenu={(e) => { e.preventDefault(); setBeautyEnabled(!beautyEnabled); }}
+        className={`p-3 rounded-full transition ${
+          beautyEnabled
+            ? 'bg-gradient-to-r from-pink-400 to-purple-400 text-white'
+            : 'bg-white/20 hover:bg-white/30 text-white/80'
+        }`}
+        title={beautyEnabled ? `Beauty: ${beautyPreset}` : 'Beauty (tap to enable)'}
+        aria-label={`Beauty filter ${beautyEnabled ? 'on' : 'off'}`}
+      >
+        <SunIcon className="w-5 h-5" />
+      </button>
+      {showPresets && (
+        <div className="absolute bottom-full mb-2 right-0 flex flex-col gap-1 p-2 bg-black/90 backdrop-blur rounded-xl border border-white/10 min-w-[120px]">
+          <button
+            onClick={() => { setBeautyEnabled(false); setShowPresets(false); }}
+            className={`text-left text-xs px-3 py-1.5 rounded-lg transition ${
+              !beautyEnabled ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'
+            }`}
+          >
+            Off
+          </button>
+          {BEAUTY_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => { setBeautyEnabled(true); setBeautyPreset(p.id); setShowPresets(false); }}
+              className={`text-left text-xs px-3 py-1.5 rounded-lg transition ${
+                beautyEnabled && beautyPreset === p.id ? 'bg-pink-500/30 text-white' : 'text-white/70 hover:bg-white/10'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const REACTIONS = [
   { type: 'like' as const, icon: HandThumbUpIcon, color: 'text-blue-400' },
@@ -67,6 +126,7 @@ export function HostControls({
       >
         <VideoCameraIcon className="w-5 h-5" />
       </button>
+      <BeautyControl />
       {/* Gap #60: Record toggle */}
       {onToggleRecording && (
         <button

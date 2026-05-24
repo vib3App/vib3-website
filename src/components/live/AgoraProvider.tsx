@@ -15,6 +15,7 @@ import AgoraRTC, {
   type ILocalAudioTrack,
   type ILocalVideoTrack,
 } from 'agora-rtc-sdk-ng';
+import { useBeautyStream, type BeautyPreset } from '@/hooks/live/useBeautyStream';
 import { logger } from '@/utils/logger';
 
 export type AgoraConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting' | 'failed';
@@ -31,6 +32,10 @@ interface AgoraContextValue {
   toggleVideo: () => Promise<void>;
   audioEnabled: boolean;
   videoEnabled: boolean;
+  beautyEnabled: boolean;
+  beautyPreset: BeautyPreset;
+  setBeautyEnabled: (enabled: boolean) => void;
+  setBeautyPreset: (preset: BeautyPreset) => void;
 }
 
 const AgoraContext = createContext<AgoraContextValue | null>(null);
@@ -69,9 +74,16 @@ export function AgoraProvider({
   const [localAudioTrack, setLocalAudioTrack] = useState<ILocalAudioTrack | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
+  const [beautyEnabled, setBeautyEnabled] = useState(false);
+  const [beautyPreset, setBeautyPreset] = useState<BeautyPreset>('soft');
+  const [rawCameraStream, setRawCameraStream] = useState<MediaStream | null>(null);
   const hostVideoRef = useRef<HTMLDivElement | null>(null);
   const localVideoRef = useRef<HTMLDivElement | null>(null);
   const joinedRef = useRef(false);
+
+  // Beauty pipeline only runs when host enables it. Returns a MediaStream
+  // whose tracks come from a canvas rendering the camera feed + filter.
+  const beautyStream = useBeautyStream(rawCameraStream, beautyEnabled && role === 'host', beautyPreset);
 
   // Create client and join channel
   useEffect(() => {
@@ -136,10 +148,14 @@ export function AgoraProvider({
 
         // Publish local tracks if host
         if (role === 'host') {
-          const [audioTrack, videoTrack] = await Promise.all([
-            AgoraRTC.createMicrophoneAudioTrack(),
-            AgoraRTC.createCameraVideoTrack(),
-          ]);
+          const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+          // Grab the raw camera stream first so the beauty hook has
+          // something to work with even if the user toggles it on later.
+          const camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          setRawCameraStream(camStream);
+          const videoTrack = await AgoraRTC.createCustomVideoTrack({
+            mediaStreamTrack: camStream.getVideoTracks()[0],
+          });
 
           setLocalAudioTrack(audioTrack);
           setLocalVideoTrack(videoTrack);
@@ -171,9 +187,49 @@ export function AgoraProvider({
       }
       client.removeAllListeners();
       clientRef.current = null;
+      setRawCameraStream(prev => {
+        prev?.getTracks().forEach(t => t.stop());
+        return null;
+      });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appId, channelName, token, uid, role]);
+
+  // Replace the published video track in-place when the beauty stream
+  // appears/disappears so viewers see the new feed without rejoining.
+  useEffect(() => {
+    const client = clientRef.current;
+    const camStream = rawCameraStream;
+    if (!client || role !== 'host' || !camStream) return;
+    const desiredTrack = beautyEnabled && beautyStream
+      ? beautyStream.getVideoTracks()[0]
+      : camStream.getVideoTracks()[0];
+    if (!desiredTrack) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const newTrack = await AgoraRTC.createCustomVideoTrack({ mediaStreamTrack: desiredTrack });
+        if (cancelled) {
+          newTrack.close();
+          return;
+        }
+        const oldTrack = localVideoTrack;
+        if (oldTrack) {
+          await client.unpublish(oldTrack);
+          oldTrack.close();
+        }
+        await client.publish(newTrack);
+        if (localVideoRef.current) newTrack.play(localVideoRef.current);
+        setLocalVideoTrack(newTrack);
+      } catch (err) {
+        logger.error('Failed to swap beauty/raw video track:', err);
+      }
+    })();
+    return () => { cancelled = true; };
+    // localVideoTrack intentionally omitted — we capture it via closure and avoid loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beautyEnabled, beautyStream, rawCameraStream, role]);
 
   const toggleAudio = useCallback(async () => {
     if (localAudioTrack) {
@@ -203,6 +259,10 @@ export function AgoraProvider({
         toggleVideo,
         audioEnabled,
         videoEnabled,
+        beautyEnabled,
+        beautyPreset,
+        setBeautyEnabled,
+        setBeautyPreset,
       }}
     >
       {children}
