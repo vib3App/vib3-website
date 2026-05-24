@@ -197,15 +197,59 @@ function collectVideoFilters(edits: VideoEdits): string[] {
     videoFilters.push(`colorkey=0x${hex}:${similarity}:0.05`);
   }
 
-  // Gap 11: Speed ramp via setpts (averaged speed for FFmpeg)
+  // Gap 11: Speed ramp via setpts (averaged speed for FFmpeg).
+  // True per-keyframe ramping requires segment-and-concat (see
+  // advancedProcessing.processSpeedRampImpl); single-pass falls back to
+  // duration-weighted average so the playback feels close to the target.
   if (edits.speedRamp && edits.speedRamp.length >= 2) {
-    const avgSpeed = edits.speedRamp.reduce((sum, kf) => sum + kf.speed, 0) / edits.speedRamp.length;
+    const avgSpeed = weightedAverageSpeed(edits.speedRamp);
     if (Math.abs(avgSpeed - 1) > 0.01) {
       videoFilters.push(`setpts=${(1 / avgSpeed).toFixed(4)}*PTS`);
     }
   }
 
+  // Reverse: the reverse filter buffers the whole clip in memory, so this
+  // is best-effort for short videos. Audio reversal lives in collectAudioFilters.
+  if (edits.reversed) {
+    videoFilters.push('reverse');
+  }
+
+  // Beat-driven brightness flash. A single eq filter with a timeline-aware
+  // enable expression: each beat opens a ~60ms window where brightness gets
+  // a +0.3 bump. Capped at 80 markers so the expression doesn't blow up.
+  const beatFilter = buildBeatFlashFilter(edits.beatMarkers);
+  if (beatFilter) videoFilters.push(beatFilter);
+
   return videoFilters;
+}
+
+function buildBeatFlashFilter(markers: number[] | undefined): string | null {
+  if (!markers || markers.length === 0) return null;
+  const trimmed = markers.slice(0, 80);
+  const halfWindow = 0.03;
+  const ranges = trimmed
+    .filter(t => Number.isFinite(t) && t >= 0)
+    .map(t => `between(t,${Math.max(0, t - halfWindow).toFixed(3)},${(t + halfWindow).toFixed(3)})`);
+  if (ranges.length === 0) return null;
+  return `eq=brightness=0.3:enable='${ranges.join('+')}'`;
+}
+
+/**
+ * Duration-weighted average of keyframe speeds. Better than a flat mean
+ * because keyframes are time-anchored, not equally spaced.
+ */
+function weightedAverageSpeed(keyframes: { time: number; speed: number }[]): number {
+  const sorted = [...keyframes].sort((a, b) => a.time - b.time);
+  if (sorted.length === 0) return 1;
+  if (sorted.length === 1) return sorted[0].speed;
+  let weightedSum = 0;
+  let totalWeight = 0;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const weight = Math.max(0, sorted[i + 1].time - sorted[i].time);
+    weightedSum += sorted[i].speed * weight;
+    totalWeight += weight;
+  }
+  return totalWeight > 0 ? weightedSum / totalWeight : sorted[0].speed;
 }
 
 /** Collect audio filter strings from edits (voice effects, volume) */
@@ -221,6 +265,11 @@ function collectAudioFilters(edits: VideoEdits): string[] {
   // Volume adjustment (when no music mixing)
   if (edits.volume !== undefined && edits.volume !== 1) {
     audioFilters.push(`volume=${edits.volume}`);
+  }
+
+  // Reverse the source audio so it stays synced with the reversed video.
+  if (edits.reversed) {
+    audioFilters.push('areverse');
   }
 
   return audioFilters;
@@ -268,14 +317,17 @@ export function buildFFmpegArgs(edits: VideoEdits, hasOverlay = false, hasMusic 
       const origVol = edits.volume !== undefined ? edits.volume : 1;
       const musVol = edits.musicVolume !== undefined ? edits.musicVolume : 0.5;
       const voiceFx = edits.voiceEffect ? buildVoiceEffectFilter(edits.voiceEffect) : null;
+      const srcAudioParts: string[] = [`volume=${origVol}`];
+      if (voiceFx) srcAudioParts.push(voiceFx);
+      if (edits.reversed) srcAudioParts.push('areverse');
+      const musicChain = edits.reversed ? `volume=${musVol},areverse` : `volume=${musVol}`;
 
       if (origVol > 0) {
-        const origChain = voiceFx ? `volume=${origVol},${voiceFx}` : `volume=${origVol}`;
-        filterParts.push(`[0:a]${origChain}[a0]`);
-        filterParts.push(`[${musicIdx}:a]volume=${musVol}[a1]`);
+        filterParts.push(`[0:a]${srcAudioParts.join(',')}[a0]`);
+        filterParts.push(`[${musicIdx}:a]${musicChain}[a1]`);
         filterParts.push(`[a0][a1]amix=inputs=2:duration=first[outa]`);
       } else {
-        filterParts.push(`[${musicIdx}:a]volume=${musVol}[outa]`);
+        filterParts.push(`[${musicIdx}:a]${musicChain}[outa]`);
       }
     }
 

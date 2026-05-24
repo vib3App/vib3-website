@@ -490,6 +490,18 @@ function EditContent() {
       extras.speedRamp = speedRampKeyframes;
     }
 
+    // Reverse playback (audio + video). Was UI-only before.
+    if (reversed) {
+      extras.reversed = true;
+    }
+
+    // Beat-driven brightness flashes. Was state-only before — now visible
+    // in the rendered output. Filter is no-op if BeatSyncPanel produced
+    // no markers.
+    if (beatMarkers.length > 0) {
+      extras.beatMarkers = beatMarkers;
+    }
+
     // Gap 9: Voice effect for export
     if (activeVoiceEffect) {
       extras.voiceEffect = activeVoiceEffect;
@@ -517,7 +529,7 @@ function EditContent() {
     }
 
     return extras;
-  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob]);
+  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
 
   // Build video transform CSS
   const videoTransform = [

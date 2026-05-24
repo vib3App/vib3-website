@@ -170,6 +170,102 @@ export async function insertFreezeFramesImpl(
   }
 }
 
+/**
+ * Speed ramp via segment-and-concat. Each pair of adjacent keyframes
+ * defines a segment played at the LEFT keyframe's speed (piecewise
+ * constant). Anything before the first keyframe is played at 1.0x, and
+ * anything after the last keyframe plays at the last keyframe's speed.
+ *
+ * Best-effort: silently returns null on failure so the caller can fall
+ * back to the average-speed approximation in filters.ts.
+ */
+export async function processSpeedRampImpl(
+  ffmpeg: FFmpeg,
+  getInput: GetInputFn,
+  inputFile: File | Blob | string,
+  keyframes: { time: number; speed: number }[],
+  totalDuration: number,
+  onProgress?: (p: ProcessingProgress) => void,
+): Promise<Blob | null> {
+  if (keyframes.length < 2 || !Number.isFinite(totalDuration) || totalDuration <= 0) return null;
+
+  const sorted = [...keyframes].sort((a, b) => a.time - b.time);
+  const segments: { start: number; end: number; speed: number }[] = [];
+  if (sorted[0].time > 0.01) {
+    segments.push({ start: 0, end: sorted[0].time, speed: 1 });
+  }
+  for (let i = 0; i < sorted.length - 1; i++) {
+    if (sorted[i + 1].time - sorted[i].time > 0.01) {
+      segments.push({ start: sorted[i].time, end: sorted[i + 1].time, speed: sorted[i].speed });
+    }
+  }
+  const lastKf = sorted[sorted.length - 1];
+  if (totalDuration - lastKf.time > 0.01) {
+    segments.push({ start: lastKf.time, end: totalDuration, speed: lastKf.speed });
+  }
+
+  if (segments.length === 0) return null;
+
+  try {
+    onProgress?.({ stage: 'processing', percent: 0, message: 'Building speed ramp...' });
+    await ffmpeg.writeFile('ramp_input.mp4', await getInput(inputFile));
+
+    const written: string[] = [];
+    for (let i = 0; i < segments.length; i++) {
+      const seg = segments[i];
+      const baseName = `ramp_seg_${i}.mp4`;
+
+      await ffmpeg.exec([
+        '-i', 'ramp_input.mp4',
+        '-ss', seg.start.toString(),
+        '-t', Math.max(0.01, seg.end - seg.start).toString(),
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+        '-c:a', 'aac', '-b:a', '128k', baseName,
+      ]);
+
+      if (Math.abs(seg.speed - 1) > 0.01) {
+        const speedName = `ramp_speed_${i}.mp4`;
+        const sArgs = buildClipSpeedArgs(seg.speed);
+        await ffmpeg.exec([
+          '-i', baseName, ...sArgs,
+          '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+          '-c:a', 'aac', '-b:a', '128k', speedName,
+        ]);
+        await ffmpeg.deleteFile(baseName);
+        written.push(speedName);
+      } else {
+        written.push(baseName);
+      }
+      onProgress?.({
+        stage: 'processing',
+        percent: Math.round(((i + 1) / segments.length) * 70),
+        message: `Speed segment ${i + 1}/${segments.length}...`,
+      });
+    }
+
+    await ffmpeg.writeFile('ramp_concat.txt', written.map(f => `file '${f}'`).join('\n'));
+    onProgress?.({ stage: 'encoding', percent: 80, message: 'Joining ramp segments...' });
+    await ffmpeg.exec([
+      '-f', 'concat', '-safe', '0', '-i', 'ramp_concat.txt',
+      '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+      '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', 'ramp_output.mp4',
+    ]);
+
+    const data = await ffmpeg.readFile('ramp_output.mp4');
+    const blob = new Blob([data as BlobPart], { type: 'video/mp4' });
+
+    try { await ffmpeg.deleteFile('ramp_input.mp4'); } catch { /* ok */ }
+    try { await ffmpeg.deleteFile('ramp_concat.txt'); } catch { /* ok */ }
+    try { await ffmpeg.deleteFile('ramp_output.mp4'); } catch { /* ok */ }
+    for (const f of written) { try { await ffmpeg.deleteFile(f); } catch { /* ok */ } }
+
+    return blob;
+  } catch (error) {
+    logger.error('Speed ramp failed:', error);
+    return null;
+  }
+}
+
 /** Gap 35: Process clips with per-clip speed changes */
 export async function processClipSpeedsImpl(
   ffmpeg: FFmpeg,

@@ -87,6 +87,11 @@ export interface VideoEdits {
   cutout?: { mode: 'off' | 'auto' | 'colorkey'; color: string; sensitivity: number };
   // Speed ramp keyframes
   speedRamp?: { time: number; speed: number }[];
+  // Play the clip in reverse (FFmpeg reverse + areverse filters)
+  reversed?: boolean;
+  // Beat-driven brightness pulses (seconds). Each timestamp triggers a brief
+  // brightness flash so users can see their detected beats hit the output.
+  beatMarkers?: number[];
   // Voice effect
   voiceEffect?: string;
   // Gap 10: 3D transitions (mapped to closest FFmpeg xfade)

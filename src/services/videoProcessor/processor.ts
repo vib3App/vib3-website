@@ -7,6 +7,7 @@ import {
   applyTransitionImpl,
   insertFreezeFramesImpl,
   processClipSpeedsImpl,
+  processSpeedRampImpl,
 } from './advancedProcessing';
 import { logger } from '@/utils/logger';
 
@@ -84,7 +85,32 @@ export class VideoProcessorService {
       }
 
       onProgress?.({ stage: 'processing', percent: 0, message: 'Preparing video...' });
-      const inputData = await this.getInputData(inputFile);
+      let workingInput = inputFile;
+
+      // Speed-ramp pre-pass. Produces a piecewise-constant speed-ramped
+      // intermediate, then the rest of the pipeline runs on that.
+      if (edits.speedRamp && edits.speedRamp.length >= 2) {
+        const probeBlob: Blob = workingInput instanceof Blob
+          ? workingInput
+          : new Blob([(await this.getInputData(workingInput)) as BlobPart], { type: 'video/mp4' });
+        const duration = await this.getVideoDuration(probeBlob);
+        if (duration > 0) {
+          const rampedBlob = await processSpeedRampImpl(
+            this.ffmpeg!,
+            this.getInputData.bind(this),
+            workingInput,
+            edits.speedRamp,
+            duration,
+            onProgress,
+          );
+          if (rampedBlob) {
+            workingInput = rampedBlob;
+            edits = { ...edits, speedRamp: undefined };
+          }
+        }
+      }
+
+      const inputData = await this.getInputData(workingInput);
       await this.ffmpeg!.writeFile('input.mp4', inputData);
 
       let hasOverlay = false;
