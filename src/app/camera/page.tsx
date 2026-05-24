@@ -40,6 +40,7 @@ function CameraPageInner() {
     cameraKitCanvasRef, isCameraKitActive, cameraKitLenses, activeLensId,
     cameraKitLoading, cameraKitError, cameraKitLoaded, handleLensSelect,
     photo, zoom, handsFree, template, challenge, dm, clipOnly,
+    echo, echoSubmitting,
   } = useCamera();
 
   if (!isAuthVerified || !isAuthenticated) {
@@ -71,6 +72,29 @@ function CameraPageInner() {
   return (
     <div className="min-h-screen bg-black">
       <TopNav />
+
+      {echo.isActive && echo.originalVideo && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/30 backdrop-blur border border-purple-400/40 text-white text-sm">
+          <span aria-hidden="true">🎙️</span>
+          <span>Echo with @{echo.originalVideo.username}</span>
+        </div>
+      )}
+
+      {echo.isActive && echo.originalVideo?.videoUrl && (
+        <video
+          src={echo.originalVideo.videoUrl}
+          className="absolute bottom-32 right-4 z-30 w-24 aspect-[9/16] rounded-lg shadow-lg object-cover border border-white/20"
+          autoPlay loop playsInline muted
+          aria-label={`Original video by @${echo.originalVideo.username}`}
+        />
+      )}
+
+      {echoSubmitting && (
+        <div className="absolute inset-0 z-40 bg-black/80 flex flex-col items-center justify-center gap-3 text-white">
+          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm">Compositing echo on server…</p>
+        </div>
+      )}
 
       {/* Camera/Preview View */}
       <div

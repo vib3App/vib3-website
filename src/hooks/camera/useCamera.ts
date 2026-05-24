@@ -15,8 +15,11 @@ import { useTemplateRecording } from './useTemplateRecording';
 import { useChallengeCamera } from './useChallengeCamera';
 import { useDMRecording } from './useDMRecording';
 import { useClipOnlyMode } from './useClipOnlyMode';
+import { useEchoMode } from './useEchoMode';
 import { CAMERA_FILTERS } from './types';
 import type { CameraMode } from './types';
+import { echoApi } from '@/services/api/echo';
+import { logger } from '@/utils/logger';
 
 export type PanelName = 'filters' | 'effects' | 'speed' | 'lenses' | 'duration' | 'effectCategories' | 'templates';
 
@@ -51,6 +54,9 @@ export function useCamera() {
   const dm = useDMRecording();
   // Gap 7: Clip-only mode
   const clipOnly = useClipOnlyMode();
+  // Echo (side-by-side) response mode
+  const echo = useEchoMode();
+  const [echoSubmitting, setEchoSubmitting] = useState(false);
   // Gap 4: Template recording
   const template = useTemplateRecording();
 
@@ -198,11 +204,39 @@ export function useCamera() {
   }, []);
 
   // Gap 5/6/7: Smart navigation after recording
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     const blob = recording.getRecordedBlob();
     if (!blob || !recording.previewUrl) return;
 
     sessionStorage.setItem('recordedVideoUrl', recording.previewUrl);
+
+    // Echo mode: ship straight to the compose endpoint instead of /upload.
+    if (echo.isActive && echo.originalVideoId) {
+      setEchoSubmitting(true);
+      try {
+        const result = await echoApi.composeEcho({
+          originalVideoId: echo.originalVideoId,
+          userVideo: blob,
+          layout: 'sideBySide',
+          userOnLeft: false,
+          audioMix: 'both',
+        });
+        if (result?.videoId) {
+          echo.exit();
+          router.push(`/video/${result.videoId}`);
+        } else {
+          // Compose failed; fall through to the normal upload flow so the
+          // user doesn't lose their take.
+          router.push('/upload?from=camera');
+        }
+      } catch (err) {
+        logger.error('Echo compose failed:', err);
+        router.push('/upload?from=camera');
+      } finally {
+        setEchoSubmitting(false);
+      }
+      return;
+    }
 
     // Gap 6: DM mode -- send to messages
     if (dm.isDMMode) {
@@ -228,7 +262,7 @@ export function useCamera() {
         : '/upload?from=camera';
       router.push(url);
     }
-  }, [recording, router, cameraMode, dm, clipOnly, challenge]);
+  }, [recording, router, cameraMode, dm, clipOnly, challenge, echo]);
 
   // Reset zoom on camera flip
   const flipCamera = useCallback(() => {
@@ -316,5 +350,8 @@ export function useCamera() {
     dm,
     // Gap 7: Clip-only mode
     clipOnly,
+    // Echo (side-by-side) mode
+    echo,
+    echoSubmitting,
   };
 }
