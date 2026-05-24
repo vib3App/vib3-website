@@ -14,3 +14,4 @@ export type {
   MaskSettings,
   ClipEdit,
 } from './types';
+export type { SlideshowOptions, SlideshowTransition } from './slideshow';

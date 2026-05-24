@@ -9,6 +9,7 @@ import {
   processClipSpeedsImpl,
   processSpeedRampImpl,
 } from './advancedProcessing';
+import { buildSlideshowImpl, type SlideshowOptions } from './slideshow';
 import { logger } from '@/utils/logger';
 
 export class VideoProcessorService {
@@ -197,6 +198,12 @@ export class VideoProcessorService {
   async processClipSpeeds(input: File | Blob | string, clips: ClipEdit[], onProgress?: (p: ProcessingProgress) => void) {
     if (!(await this.ensureLoaded(onProgress))) return null;
     return processClipSpeedsImpl(this.ffmpeg!, this.getInputData.bind(this), input, clips, onProgress);
+  }
+
+  /** Build a vertical slideshow video from a list of images + transitions + optional music. */
+  async buildSlideshow(opts: SlideshowOptions, onProgress?: (p: ProcessingProgress) => void) {
+    if (!(await this.ensureLoaded(onProgress))) return null;
+    return buildSlideshowImpl(this.ffmpeg!, opts, onProgress);
   }
 
   async generateThumbnail(inputFile: File | Blob | string, time = 0, width = 320): Promise<string | null> {

@@ -7,6 +7,7 @@ export type {
   ProcessingProgress,
   VideoEdits,
   TextOverlay,
+  StickerOverlay,
   TuneSettings,
   CropSettings,
   TransformSettings,
@@ -14,4 +15,6 @@ export type {
   FreezeFrame,
   MaskSettings,
   ClipEdit,
+  SlideshowOptions,
+  SlideshowTransition,
 } from './videoProcessor/index';
