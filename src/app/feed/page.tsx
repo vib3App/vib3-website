@@ -20,6 +20,8 @@ import {
   FollowCategoryPicker,
   SwipeActions,
 } from '@/components/feed';
+import { VideoContextMenu } from '@/components/feed/VideoContextMenu';
+import { useLongPress } from '@/hooks/useLongPress';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
@@ -70,6 +72,19 @@ function FeedContent() {
   // Follow category picker state
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [pickerUser, setPickerUser] = useState<{ id: string; username: string; avatar?: string } | null>(null);
+
+  // Long-press context menu target
+  const [menuVideoIndex, setMenuVideoIndex] = useState<number | null>(null);
+  const menuVideo = menuVideoIndex !== null ? videos[menuVideoIndex] ?? null : null;
+  const longPress = useLongPress({
+    onLongPress: () => {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try { navigator.vibrate?.(15); } catch { /* ignore */ }
+      }
+      setMenuVideoIndex(currentIndex);
+    },
+    threshold: 450,
+  });
 
   // Show category picker after successful follow
   const _handleFollowWithPicker = (userId: string, username: string, avatar?: string) => {
@@ -148,6 +163,12 @@ function FeedContent() {
         ref={scrollContainerRef}
         className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
         style={{ scrollSnapType: 'y mandatory' }}
+        onPointerDown={longPress.onPointerDown}
+        onPointerMove={longPress.onPointerMove}
+        onPointerUp={longPress.onPointerUp}
+        onPointerCancel={longPress.onPointerCancel}
+        onPointerLeave={longPress.onPointerLeave}
+        onContextMenu={longPress.onContextMenu}
       >
         {isLoading && videos.length === 0 ? (
           <FeedLoadingState />
@@ -225,6 +246,19 @@ function FeedContent() {
           followedUserId={pickerUser.id}
           followedUsername={pickerUser.username}
           followedAvatar={pickerUser.avatar}
+        />
+      )}
+
+      {menuVideo && menuVideoIndex !== null && (
+        <VideoContextMenu
+          open
+          isSaved={false}
+          onClose={() => setMenuVideoIndex(null)}
+          onSave={() => handleSave(menuVideoIndex)}
+          onShare={() => handleShare(menuVideo.id)}
+          onNotInterested={() => handleNotInterested(menuVideoIndex)}
+          onReport={() => handleReport(menuVideo.id)}
+          onHideCreator={() => handleHideCreator(menuVideo.userId)}
         />
       )}
 
