@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { VideoCameraIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import type { CreatorVideo } from '@/types/creator';
 import { formatCount } from '@/utils/format';
@@ -26,8 +27,8 @@ function VideoStatusBadge({ status }: { status: string }) {
 export function ContentTab({ videos }: ContentTabProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button className="px-4 py-2 bg-white text-black rounded-full text-sm font-medium">
             All
           </button>
@@ -41,6 +42,15 @@ export function ContentTab({ videos }: ContentTabProps) {
             Scheduled
           </button>
         </div>
+        <Link
+          href="/creator/scheduled"
+          className="text-sm text-teal-300 hover:text-teal-200 inline-flex items-center gap-1"
+        >
+          Manage scheduled
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
       </div>
 
       <div className="space-y-3">

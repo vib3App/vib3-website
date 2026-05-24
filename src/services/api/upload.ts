@@ -150,35 +150,8 @@ export const uploadApi = {
   },
 
   // ========== Scheduled ==========
-
-  /**
-   * Get scheduled videos
-   */
-  async getScheduledVideos(): Promise<VideoDraft[]> {
-    const { data } = await apiClient.get<{ videos: VideoDraft[] }>('/videos/scheduled');
-    return data.videos;
-  },
-
-  /**
-   * Cancel scheduled video
-   */
-  async cancelScheduledVideo(videoId: string): Promise<void> {
-    await apiClient.delete(`/videos/scheduled/${videoId}`);
-  },
-
-  /**
-   * Update scheduled video
-   */
-  async updateScheduledVideo(
-    videoId: string,
-    updates: Partial<PublishVideoInput>
-  ): Promise<VideoDraft> {
-    const { data } = await apiClient.patch<{ video: VideoDraft }>(
-      `/videos/scheduled/${videoId}`,
-      updates
-    );
-    return data.video;
-  },
+  // Real backend routes live on the upload router. See
+  // backend `routes/upload-routes.js` and `scheduledPosts.ts`.
 };
 
 /**

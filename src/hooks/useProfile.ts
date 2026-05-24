@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSocialStore } from '@/stores/socialStore';
 import { userApi, videoApi } from '@/services/api';
 import { uploadApi } from '@/services/api/upload';
+import { scheduledPostsApi } from '@/services/api/scheduledPosts';
 import type { Video } from '@/types';
 import type { VideoDraft } from '@/types/upload';
 import { logger } from '@/utils/logger';
@@ -190,7 +191,14 @@ export function useProfile() {
       uploadApi.getDrafts().then(d => setDrafts(Array.isArray(d) ? d : [])).catch(err => logger.error('Failed to load drafts:', err));
     }
     if (activeTab === 'scheduled' && scheduledVideos.length === 0) {
-      uploadApi.getScheduledVideos().then(v => setScheduledVideos(Array.isArray(v) ? v : [])).catch(err => logger.error('Failed to load scheduled:', err));
+      scheduledPostsApi.list()
+        .then(v => setScheduledVideos(v.map(p => ({
+          id: p.id,
+          caption: p.description,
+          thumbnailUrl: p.thumbnailUrl,
+          scheduledFor: p.scheduledAt,
+        }))))
+        .catch(err => logger.error('Failed to load scheduled:', err));
     }
   }, [activeTab, isOwnProfile, drafts.length, scheduledVideos.length]);
 

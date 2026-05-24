@@ -69,6 +69,22 @@ export interface PublishVideoInput {
   scheduledFor?: string;
 }
 
+export interface ScheduledPost {
+  id: string;
+  description: string;
+  thumbnailUrl?: string;
+  hlsUrl?: string;
+  scheduledAt: string;
+  privacy: string;
+  allowComments: boolean;
+  allowEcho: boolean;
+  allowBounce: boolean;
+  allowDownload: boolean;
+  hashtags: string[];
+  taggedUsers: string[];
+  locationName?: string;
+}
+
 export interface UploadChunkInfo {
   uploadUrl: string;
   uploadId: string;
