@@ -36,15 +36,25 @@ export interface Notification {
   createdAt: string;
 }
 
+export interface DoNotDisturbSettings {
+  enabled: boolean;
+  startTime: string; // 'HH:MM' 24h
+  endTime: string;   // 'HH:MM' 24h
+}
+
 export interface NotificationSettings {
   pushEnabled: boolean;
-  emailEnabled: boolean;
+  emailNotifications: boolean;
   likes: boolean;
   comments: boolean;
   follows: boolean;
   mentions: boolean;
-  messages: boolean;
+  directMessages: boolean;
   liveStreams: boolean;
-  systemUpdates: boolean;
+  videoUploads: boolean;
+  milestones: boolean;
+  echoes: boolean;
+  bounces: boolean;
+  doNotDisturb: DoNotDisturbSettings;
 }
 
