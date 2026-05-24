@@ -38,6 +38,9 @@ export interface ServerPrivacySettings {
   requireFollowApproval: boolean;
   filterOffensiveComments: boolean;
   restrictedMode: boolean;
+  suggestAccount: boolean;
+  syncContacts: boolean;
+  adsPersonalization: boolean;
   lastUpdated: string;
 }
 
