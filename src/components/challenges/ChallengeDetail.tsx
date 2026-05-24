@@ -3,10 +3,18 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { challengesApi } from '@/services/api';
+import { challengesApi, videoApi } from '@/services/api';
 import type { Challenge } from '@/types/challenge';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type VideoSubmission = { _id?: string; id?: string; thumbnailUrl?: string; username?: string; [key: string]: any };
+
+interface VideoSubmission {
+  _id?: string;
+  id?: string;
+  thumbnailUrl?: string;
+  username?: string;
+  likesCount?: number;
+  likes?: number;
+  isLiked?: boolean;
+}
 import { logger } from '@/utils/logger';
 
 interface ChallengeDetailProps {
@@ -191,7 +199,7 @@ export function ChallengeDetail({ challengeId, onClose }: ChallengeDetailProps) 
           </button>
           {challenge.hasJoined && (
             <Link
-              href={`/camera?challenge=${challengeId}&hashtag=${challenge.hashtag}`}
+              href={`/camera?challenge=${encodeURIComponent(challenge.hashtag)}&challengeId=${challengeId}`}
               className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold text-center hover:opacity-90 transition"
             >
               Submit Video
@@ -228,20 +236,67 @@ export function ChallengeDetail({ challengeId, onClose }: ChallengeDetailProps) 
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2">
-              {submissions.map(video => (
-                <Link
-                  key={video._id || video.id}
-                  href={`/video/${video._id || video.id}`}
-                  className="aspect-[9/16] rounded-lg overflow-hidden bg-white/5 relative group"
-                >
-                  {video.thumbnailUrl && (
-                    <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                    <p className="text-white text-xs truncate">@{video.username || 'user'}</p>
-                  </div>
-                </Link>
-              ))}
+              {submissions.map((video) => {
+                const submissionId = String(video._id || video.id || '');
+                const votes = video.likesCount ?? video.likes ?? 0;
+                const handleVote = async (e: React.MouseEvent) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!submissionId) return;
+                  const wasLiked = !!video.isLiked;
+                  // Optimistic update
+                  setSubmissions(prev => prev.map(s => {
+                    if (String(s._id || s.id) !== submissionId) return s;
+                    const currentVotes = s.likesCount ?? s.likes ?? 0;
+                    return {
+                      ...s,
+                      isLiked: !wasLiked,
+                      likesCount: currentVotes + (wasLiked ? -1 : 1),
+                    };
+                  }));
+                  try {
+                    const res = await videoApi.toggleLike(submissionId);
+                    setSubmissions(prev => prev.map(s => {
+                      if (String(s._id || s.id) !== submissionId) return s;
+                      return { ...s, isLiked: res.liked, likesCount: res.likesCount };
+                    }));
+                  } catch (err) {
+                    logger.error('Failed to vote:', err);
+                    setSubmissions(prev => prev.map(s => {
+                      if (String(s._id || s.id) !== submissionId) return s;
+                      const currentVotes = s.likesCount ?? s.likes ?? 0;
+                      return { ...s, isLiked: wasLiked, likesCount: currentVotes + (wasLiked ? 1 : -1) };
+                    }));
+                  }
+                };
+                return (
+                  <Link
+                    key={submissionId}
+                    href={`/video/${submissionId}`}
+                    className="aspect-[9/16] rounded-lg overflow-hidden bg-white/5 relative group"
+                  >
+                    {video.thumbnailUrl && (
+                      <Image src={video.thumbnailUrl} alt="" fill className="object-cover" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleVote}
+                      className={`absolute top-1 right-1 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold transition ${
+                        video.isLiked
+                          ? 'bg-amber-500 text-white'
+                          : 'bg-black/70 text-white hover:bg-black/90'
+                      }`}
+                      aria-label={video.isLiked ? 'Remove vote' : 'Vote'}
+                    >
+                      <span aria-hidden="true">{video.isLiked ? '★' : '☆'}</span>
+                      <span>{formatCount(votes)}</span>
+                    </button>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                      <p className="text-white text-xs truncate">@{video.username || 'user'}</p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
