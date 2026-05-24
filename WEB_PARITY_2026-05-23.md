@@ -54,9 +54,12 @@ A new category of gap has emerged that's arguably worse than "missing": **UI she
 
 ### Privacy
 
-19. **Anonymous mode** — Privacy toggle absent in web settings.
-20. **Hide from recommendations** — Privacy toggle absent in web settings.
-21. **Per-Circle privacy** — Flutter's `location_privacy_service.dart` scopes location/content sharing per Circle. Web only filters Circles on the map; no granular privacy controls per circle.
+19. **Privacy toggles don't actually persist** — Web's `PrivacySection.tsx` saves to `localStorage` only; no backend sync (except `callPermission` per `callsApi`). Flutter's `PrivacyService` calls `/api/privacy/settings` but **the backend route doesn't exist** — so Flutter silently falls back to defaults too. Real fix needs new backend endpoints + a `privacySettings` field on users OR a dedicated collection. **Neither client has working server-persisted privacy settings.**
+20. **7 missing privacy toggles** vs Flutter's `privacy_screen.dart`: "Suggest your account to others" (the actual "hide from recommendations" toggle in Flutter), "Sync contacts", "Ads personalization", "Allow Echo" (separate from Duets), "Allow Bounce", "Allow Downloads", "Filter comments".
+21. **2 missing privacy pickers**: "Who can send you direct messages" (granular: everyone/followers/mutual/nobody — web only has on/off Allow Messages), "Who can view your liked videos".
+22. **2 missing safety links** from privacy screen: Location privacy, Location circles (the destination pages exist at `/location` and `/circles` — just not linked from privacy settings).
+
+> ~~Anonymous mode, Hide from recommendations, Per-Circle privacy~~ — these were in the Feb 15 doc but **don't exist in Flutter either**; the Feb doc was extrapolating from service-file names. Removed from gap list 2026-05-23 after reading `lib/models/privacy_settings.dart` and `lib/screens/settings/privacy_screen.dart`.
 
 ---
 
@@ -133,7 +136,7 @@ If the goal is "make web emulate the Flutter app," attack in this order:
 3. **Echo (real duet)** — replace the remix alias with actual side-by-side recording + FFmpeg compositing.
 4. **AR / Beauty filters on camera AND live** — wire the loaded Snap Camera Kit to actually render. Highest single-feature impact.
 5. **Auto-create / Slideshow mode** — biggest missing creation flow. Pixabay music + beat sync are subcomponents.
-6. **Privacy: Anonymous mode + Hide from recommendations + Per-Circle privacy** — three small toggles, large privacy story.
+6. **Privacy: backend persistence + 7 missing toggles + 2 pickers + 2 links** — current toggles are localStorage-only. Real fix needs a `/api/privacy/settings` endpoint on backend first, then the missing UI from Flutter's `privacy_screen.dart`.
 7. **Notification settings depth** — 12 types + quiet hours + DND.
 8. **Vertical swipe gestures + long-press context menu** — closes the "feels like a website" gap on mobile web.
 9. **Multi-view Feeds-mode** — add the scrollable-feed-per-slot variant on top of existing layout system.

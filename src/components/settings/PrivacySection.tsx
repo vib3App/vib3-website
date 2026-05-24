@@ -1,15 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SettingsCard, SettingsToggle, SettingsLink } from './SettingsComponents';
 import { CallPermissions } from '@/components/call/CallPermissions';
 import { callsApi } from '@/services/api/calls';
+import { privacyApi, type PrivacySettingsUpdate } from '@/services/api/privacy';
 import { logger } from '@/utils/logger';
 
 type CallPermission = 'everyone' | 'followers' | 'mutual' | 'nobody';
 
-interface PrivacySettings {
+// Web-facing privacy state. The fields map to the backend like this:
+//   privateAccount → requireFollowApproval
+//   allowDuets     → allowEcho (Flutter calls it Echo)
+//   allowComments  → allowComments
+//   allowMessages  → allowMessages
+interface PrivacyState {
   privateAccount: boolean;
   allowComments: boolean;
   allowMessages: boolean;
@@ -17,7 +23,7 @@ interface PrivacySettings {
   callPermission: CallPermission;
 }
 
-const defaultSettings: PrivacySettings = {
+const defaultState: PrivacyState = {
   privateAccount: false,
   allowComments: true,
   allowMessages: true,
@@ -25,40 +31,59 @@ const defaultSettings: PrivacySettings = {
   callPermission: 'everyone',
 };
 
-const STORAGE_KEY = 'vib3_privacy_settings';
+const LEGACY_STORAGE_KEY = 'vib3_privacy_settings';
+
+function clearLegacyStorage() {
+  if (typeof window !== 'undefined') {
+    try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch { /* ignore */ }
+  }
+}
 
 export function PrivacySection() {
   const router = useRouter();
-  const [settings, setSettings] = useState<PrivacySettings>(() => {
-    // Load settings from localStorage during initialization
-    if (typeof window === 'undefined') return defaultSettings;
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        return { ...defaultSettings, ...JSON.parse(stored) };
-      } catch {
-        // Use defaults if parse fails
-      }
-    }
-    return defaultSettings;
-  });
+  const [state, setState] = useState<PrivacyState>(defaultState);
+  const [loaded, setLoaded] = useState(false);
 
-  // GAP-13: Load call privacy from server on mount
+  // Load saved settings from the server. Falls back to defaults on failure.
   useEffect(() => {
-    callsApi.getCallPrivacy().then(({ permission }) => {
-      if (permission && permission !== settings.callPermission) {
-        const newSettings = { ...settings, callPermission: permission as CallPermission };
-        setSettings(newSettings);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-      }
-    }).catch(err => logger.error('Failed to load call privacy:', err));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    (async () => {
+      const [privacy, callPrivacy] = await Promise.all([
+        privacyApi.getSettings(),
+        callsApi.getCallPrivacy().catch(() => ({ permission: 'everyone' as CallPermission })),
+      ]);
+      if (cancelled) return;
+      setState({
+        privateAccount: privacy?.requireFollowApproval ?? defaultState.privateAccount,
+        allowComments: privacy?.allowComments ?? defaultState.allowComments,
+        allowMessages: privacy?.allowMessages ?? defaultState.allowMessages,
+        allowDuets: privacy?.allowEcho ?? defaultState.allowDuets,
+        callPermission: (callPrivacy?.permission as CallPermission) ?? defaultState.callPermission,
+      });
+      setLoaded(true);
+      clearLegacyStorage();
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const toggleSetting = (key: keyof PrivacySettings) => {
-    const newSettings = { ...settings, [key]: !settings[key] };
-    setSettings(newSettings);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
+  const persistToggle = async (uiKey: keyof Omit<PrivacyState, 'callPermission'>, next: boolean) => {
+    // Optimistic UI; revert on failure.
+    setState(prev => ({ ...prev, [uiKey]: next }));
+
+    const updates: PrivacySettingsUpdate = (() => {
+      switch (uiKey) {
+        case 'privateAccount': return { requireFollowApproval: next };
+        case 'allowComments': return { allowComments: next };
+        case 'allowMessages': return { allowMessages: next };
+        case 'allowDuets': return { allowEcho: next };
+      }
+    })();
+
+    const result = await privacyApi.updateSettings(updates);
+    if (!result) {
+      setState(prev => ({ ...prev, [uiKey]: !next }));
+      logger.error(`Failed to save privacy toggle: ${uiKey}`);
+    }
   };
 
   return (
@@ -67,26 +92,26 @@ export function PrivacySection() {
         <SettingsToggle
           label="Private Account"
           description="Only approved followers can see your content"
-          enabled={settings.privateAccount}
-          onChange={() => toggleSetting('privateAccount')}
+          enabled={state.privateAccount}
+          onChange={() => loaded && void persistToggle('privateAccount', !state.privateAccount)}
         />
         <SettingsToggle
           label="Allow Comments"
           description="Let others comment on your videos"
-          enabled={settings.allowComments}
-          onChange={() => toggleSetting('allowComments')}
+          enabled={state.allowComments}
+          onChange={() => loaded && void persistToggle('allowComments', !state.allowComments)}
         />
         <SettingsToggle
           label="Allow Messages"
           description="Let others send you direct messages"
-          enabled={settings.allowMessages}
-          onChange={() => toggleSetting('allowMessages')}
+          enabled={state.allowMessages}
+          onChange={() => loaded && void persistToggle('allowMessages', !state.allowMessages)}
         />
         <SettingsToggle
           label="Allow Duets"
           description="Let others create duets with your videos"
-          enabled={settings.allowDuets}
-          onChange={() => toggleSetting('allowDuets')}
+          enabled={state.allowDuets}
+          onChange={() => loaded && void persistToggle('allowDuets', !state.allowDuets)}
         />
       </SettingsCard>
       <SettingsCard>
@@ -101,15 +126,14 @@ export function PrivacySection() {
       </SettingsCard>
       <SettingsCard>
         <CallPermissions
-          currentPermission={settings.callPermission}
+          currentPermission={state.callPermission}
           onPermissionChange={(perm) => {
-            const newSettings = { ...settings, callPermission: perm };
-            setSettings(newSettings);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-            // GAP-13: Persist to server
-            callsApi.updateCallPrivacy(perm).catch(err =>
-              logger.error('Failed to update call privacy:', err)
-            );
+            const prev = state.callPermission;
+            setState(s => ({ ...s, callPermission: perm }));
+            callsApi.updateCallPrivacy(perm).catch(err => {
+              setState(s => ({ ...s, callPermission: prev }));
+              logger.error('Failed to update call privacy:', err);
+            });
           }}
           blockedUsers={[]}
           onUnblockUser={() => {}}
