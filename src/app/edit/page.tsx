@@ -459,9 +459,14 @@ function EditContent() {
     // Gap 34: Freeze frames
     if (freezeFrames.length > 0) extras.freezeFrames = freezeFrames;
 
-    // Gap 35: Per-clip speeds
+    // Per-clip speeds OR a multi-clip layout. Either triggers the merge
+    // pre-pass so the export honors the user's order/cuts; single-clip
+    // single-speed is a no-op and falls through to the standard pipeline.
     const hasClipSpeeds = Object.values(clipSpeeds).some(s => Math.abs(s - 1) > 0.01);
-    if (hasClipSpeeds && clips.length > 0) {
+    const isMultiClip = clips.length > 1;
+    const isTrimmedSingleClip = clips.length === 1
+      && (clips[0].startTime > 0.01 || clips[0].endTime < duration - 0.01);
+    if ((hasClipSpeeds || isMultiClip || isTrimmedSingleClip) && clips.length > 0) {
       extras.clipEdits = clips.map(c => ({
         id: c.id,
         startTime: c.startTime,
@@ -529,7 +534,7 @@ function EditContent() {
     }
 
     return extras;
-  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
+  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
 
   // Build video transform CSS
   const videoTransform = [

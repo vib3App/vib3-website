@@ -266,6 +266,139 @@ export async function processSpeedRampImpl(
   }
 }
 
+/**
+ * Multi-clip merge with optional inter-clip transitions.
+ *
+ * Extracts each clip's range from the source, applies its per-clip speed,
+ * then either concats (transition='none' or absent) or chains xfade
+ * transitions between adjacent segments. The transition takes effect on
+ * BOTH the source segments — so the input video is effectively re-cut to
+ * the user's clip order with smooth transitions wherever requested.
+ *
+ * Returns null on failure so the caller can fall back to the single-pass
+ * pipeline.
+ */
+export async function processClipMergeImpl(
+  ffmpeg: FFmpeg,
+  getInput: GetInputFn,
+  inputFile: File | Blob | string,
+  clipEdits: ClipEdit[],
+  transition: { type: string; duration: number } | null,
+  onProgress?: (p: ProcessingProgress) => void,
+): Promise<Blob | null> {
+  if (clipEdits.length === 0) return null;
+
+  try {
+    onProgress?.({ stage: 'processing', percent: 0, message: 'Cutting clips...' });
+    await ffmpeg.writeFile('merge_input.mp4', await getInput(inputFile));
+
+    // 1. Extract each clip + apply speed if needed.
+    const segmentFiles: string[] = [];
+    for (let i = 0; i < clipEdits.length; i++) {
+      const clip = clipEdits[i];
+      const rawName = `merge_raw_${i}.mp4`;
+      const finalName = `merge_seg_${i}.mp4`;
+
+      await ffmpeg.exec([
+        '-i', 'merge_input.mp4',
+        '-ss', clip.startTime.toString(),
+        '-t', Math.max(0.01, clip.endTime - clip.startTime).toString(),
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+        '-c:a', 'aac', '-b:a', '128k', rawName,
+      ]);
+
+      if (Math.abs(clip.speed - 1) > 0.01) {
+        const sArgs = buildClipSpeedArgs(clip.speed);
+        await ffmpeg.exec([
+          '-i', rawName, ...sArgs,
+          '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+          '-c:a', 'aac', '-b:a', '128k', finalName,
+        ]);
+        await ffmpeg.deleteFile(rawName);
+        segmentFiles.push(finalName);
+      } else {
+        segmentFiles.push(rawName);
+      }
+      onProgress?.({
+        stage: 'processing',
+        percent: Math.round(((i + 1) / clipEdits.length) * 60),
+        message: `Clip ${i + 1}/${clipEdits.length}...`,
+      });
+    }
+
+    // 2. Either concat (no transition / single clip) or xfade chain.
+    const hasTransition = !!transition && transition.type !== 'none' && segmentFiles.length > 1;
+    const transitionType = transition?.type ?? 'fade';
+    const transitionDuration = transition?.duration ?? 0.4;
+
+    if (!hasTransition) {
+      await ffmpeg.writeFile('merge_concat.txt', segmentFiles.map(f => `file '${f}'`).join('\n'));
+      onProgress?.({ stage: 'encoding', percent: 70, message: 'Joining clips...' });
+      await ffmpeg.exec([
+        '-f', 'concat', '-safe', '0', '-i', 'merge_concat.txt',
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+        '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart',
+        'merge_output.mp4',
+      ]);
+      try { await ffmpeg.deleteFile('merge_concat.txt'); } catch { /* ignore */ }
+    } else {
+      onProgress?.({ stage: 'encoding', percent: 70, message: 'Applying transitions...' });
+      // Build inputs and filter chain for xfade.
+      const args: string[] = [];
+      for (const f of segmentFiles) args.push('-i', f);
+
+      // Probe each segment duration so xfade offsets are correct. We re-encoded
+      // each segment so the durations are predictable from the input clip
+      // (allowing for speed change).
+      const segDurations = clipEdits.map(c => {
+        const base = Math.max(0.01, c.endTime - c.startTime);
+        return base / Math.max(0.01, c.speed);
+      });
+
+      // Build filter_complex: chain xfades for video, acrossfade for audio.
+      const filterParts: string[] = [];
+      let vPrev = '[0:v]';
+      let aPrev = '[0:a]';
+      let offset = segDurations[0] - transitionDuration;
+      for (let i = 1; i < segmentFiles.length; i++) {
+        const isLast = i === segmentFiles.length - 1;
+        const vOut = isLast ? '[outv]' : `[v${i}]`;
+        const aOut = isLast ? '[outa]' : `[a${i}]`;
+        filterParts.push(
+          `${vPrev}[${i}:v]xfade=transition=${transitionType}:duration=${transitionDuration.toFixed(2)}:offset=${offset.toFixed(2)}${vOut}`,
+        );
+        filterParts.push(
+          `${aPrev}[${i}:a]acrossfade=d=${transitionDuration.toFixed(2)}${aOut}`,
+        );
+        vPrev = vOut;
+        aPrev = aOut;
+        offset += segDurations[i] - transitionDuration;
+      }
+      args.push('-filter_complex', filterParts.join(';'));
+      args.push('-map', '[outv]', '-map', '[outa]');
+      args.push(
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+        '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart',
+        'merge_output.mp4',
+      );
+      await ffmpeg.exec(args);
+    }
+
+    const data = await ffmpeg.readFile('merge_output.mp4');
+    const blob = new Blob([data as BlobPart], { type: 'video/mp4' });
+
+    try { await ffmpeg.deleteFile('merge_input.mp4'); } catch { /* ignore */ }
+    try { await ffmpeg.deleteFile('merge_output.mp4'); } catch { /* ignore */ }
+    for (const f of segmentFiles) { try { await ffmpeg.deleteFile(f); } catch { /* ignore */ } }
+
+    onProgress?.({ stage: 'complete', percent: 100, message: 'Clips merged' });
+    return blob;
+  } catch (err) {
+    logger.error('Clip merge failed:', err);
+    return null;
+  }
+}
+
 /** Gap 35: Process clips with per-clip speed changes */
 export async function processClipSpeedsImpl(
   ffmpeg: FFmpeg,

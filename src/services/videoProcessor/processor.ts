@@ -8,6 +8,7 @@ import {
   insertFreezeFramesImpl,
   processClipSpeedsImpl,
   processSpeedRampImpl,
+  processClipMergeImpl,
 } from './advancedProcessing';
 import { buildSlideshowImpl, type SlideshowOptions } from './slideshow';
 import { logger } from '@/utils/logger';
@@ -87,6 +88,27 @@ export class VideoProcessorService {
 
       onProgress?.({ stage: 'processing', percent: 0, message: 'Preparing video...' });
       let workingInput = inputFile;
+
+      // Multi-clip merge pre-pass. Honors the user's clip order/cuts and
+      // applies inter-clip transitions if requested. Always runs before
+      // speed ramp so the rest of the pipeline sees the merged video.
+      if (edits.clipEdits && edits.clipEdits.length > 0) {
+        const transition = edits.transition && edits.transition.type !== 'none'
+          ? { type: edits.transition.type, duration: edits.transition.duration }
+          : null;
+        const mergedBlob = await processClipMergeImpl(
+          this.ffmpeg!,
+          this.getInputData.bind(this),
+          workingInput,
+          edits.clipEdits,
+          transition,
+          onProgress,
+        );
+        if (mergedBlob) {
+          workingInput = mergedBlob;
+          edits = { ...edits, clipEdits: undefined, transition: undefined };
+        }
+      }
 
       // Speed-ramp pre-pass. Produces a piecewise-constant speed-ramped
       // intermediate, then the rest of the pipeline runs on that.
