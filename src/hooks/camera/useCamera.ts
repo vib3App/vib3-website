@@ -16,10 +16,19 @@ import { useChallengeCamera } from './useChallengeCamera';
 import { useDMRecording } from './useDMRecording';
 import { useClipOnlyMode } from './useClipOnlyMode';
 import { useEchoMode } from './useEchoMode';
+import { useGreenScreen } from './useGreenScreen';
 import { CAMERA_FILTERS } from './types';
 import type { CameraMode } from './types';
 import { echoApi } from '@/services/api/echo';
 import { logger } from '@/utils/logger';
+
+const GREEN_SCREEN_BG_PRESETS = [
+  { id: 'beach', label: 'Beach', color: '#ffd180' },
+  { id: 'space', label: 'Space', color: '#04122c' },
+  { id: 'city', label: 'City', color: '#5d6d7e' },
+  { id: 'studio', label: 'Studio', color: '#1c1c1e' },
+] as const;
+export type GreenScreenBg = typeof GREEN_SCREEN_BG_PRESETS[number]['id'];
 
 export type PanelName = 'filters' | 'effects' | 'speed' | 'lenses' | 'duration' | 'effectCategories' | 'templates';
 
@@ -57,6 +66,18 @@ export function useCamera() {
   // Echo (side-by-side) response mode
   const echo = useEchoMode();
   const [echoSubmitting, setEchoSubmitting] = useState(false);
+
+  // Green-screen camera effect
+  const [greenScreenEnabled, setGreenScreenEnabled] = useState(false);
+  const [greenScreenBg, setGreenScreenBg] = useState<GreenScreenBg>('beach');
+  const greenScreenBgPreset = GREEN_SCREEN_BG_PRESETS.find(p => p.id === greenScreenBg) ?? GREEN_SCREEN_BG_PRESETS[0];
+  const greenScreenStream = useGreenScreen({
+    sourceStream: stream.streamRef.current,
+    enabled: greenScreenEnabled,
+    keyColor: '#00ff00',
+    sensitivity: 40,
+    background: { type: 'color', value: greenScreenBgPreset.color },
+  });
   // Gap 4: Template recording
   const template = useTemplateRecording();
 
@@ -81,6 +102,7 @@ export function useCamera() {
     effectsCanvasRef: effects.effectsCanvasRef,
     cameraKitCanvasRef: cameraKit.canvasRef,
     isCameraKitActive: cameraKit.isCameraKitActive,
+    effectStream: greenScreenEnabled ? greenScreenStream : null,
     maxDuration,
     selectedSpeed,
     activeFilter,
@@ -353,5 +375,12 @@ export function useCamera() {
     // Echo (side-by-side) mode
     echo,
     echoSubmitting,
+    // Green screen
+    greenScreenEnabled,
+    setGreenScreenEnabled,
+    greenScreenBg,
+    setGreenScreenBg,
+    greenScreenStream,
+    greenScreenBgPresets: GREEN_SCREEN_BG_PRESETS,
   };
 }

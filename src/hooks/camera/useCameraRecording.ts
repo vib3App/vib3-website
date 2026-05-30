@@ -19,6 +19,9 @@ interface RecordingConfig {
   effectsCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   cameraKitCanvasRef: React.RefObject<HTMLCanvasElement | null>;
   isCameraKitActive: boolean;
+  /** Pre-processed stream from a real-time effect (e.g. green screen). When
+   * present, this takes precedence over Camera Kit and the raw camera. */
+  effectStream?: MediaStream | null;
   maxDuration: number;
   selectedSpeed: number;
   activeFilter: string;
@@ -29,6 +32,7 @@ const MAX_CLIPS = 8;
 export function useCameraRecording({
   streamRef, videoRef, effectsCanvasRef,
   cameraKitCanvasRef, isCameraKitActive,
+  effectStream,
   maxDuration, selectedSpeed, activeFilter,
 }: RecordingConfig) {
   const [recordingState, setRecordingState] = useState<RecordingState>('idle');
@@ -68,7 +72,15 @@ export function useCameraRecording({
 
     let recordStream: MediaStream;
 
-    if (isCameraKitActive && cameraKitCanvasRef.current) {
+    if (effectStream && effectStream.getVideoTracks().length > 0) {
+      // Real-time effect (e.g. green screen) — capture its video tracks
+      // and re-attach the camera audio so recording stays in sync.
+      const audioTracks = streamRef.current.getAudioTracks();
+      recordStream = new MediaStream([
+        ...effectStream.getVideoTracks(),
+        ...audioTracks,
+      ]);
+    } else if (isCameraKitActive && cameraKitCanvasRef.current) {
       // Camera Kit path: capture from CK canvas
       const ckStream = cameraKitCanvasRef.current.captureStream(30);
       const audioTracks = streamRef.current.getAudioTracks();
@@ -134,7 +146,7 @@ export function useCameraRecording({
         return newDuration;
       });
     }, 1000);
-  }, [streamRef, videoRef, effectsCanvasRef, cameraKitCanvasRef, isCameraKitActive, activeFilter, stopRecording, pipeline, clips, remainingDuration]);
+  }, [streamRef, videoRef, effectsCanvasRef, cameraKitCanvasRef, isCameraKitActive, effectStream, activeFilter, stopRecording, pipeline, clips, remainingDuration]);
 
   const pauseRecording = useCallback(() => {
     if (mediaRecorderRef.current?.state === 'recording') {
