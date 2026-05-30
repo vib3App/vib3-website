@@ -14,6 +14,27 @@ A new category of gap has emerged that's arguably worse than "missing": **UI she
 
 ---
 
+## POST-SHIP VERIFICATION (2026-05-30) — independent re-audit of the 5 Tier-1 commits
+
+The 5 Tier-1 commits (2eef227…bb9420d) were shipped gated only on `tsc` + `eslint` + "dev server returns 200." None of those gates can exercise canvas / FFmpeg.wasm / getUserMedia paths, which is exactly where the bugs live. CLAUDE.md requires manual browser testing before "done"; that gate was skipped. Independent re-read verdict:
+
+| Commit | Feature | Verdict | Evidence |
+|--------|---------|---------|----------|
+| 2eef227 | Multi-clip merge | ⚠️ **PARTIAL — silent regression** | `advancedProcessing.ts:368` injects the raw UI transition id into `xfade=transition=`, bypassing the correct map at `filters.ts:366`. 13 of 15 transitions throw → returns `null` → silent fallback to single-clip original output. Works only for Fade/None. |
+| d06656e | Green-screen | ✅ REAL | Chroma-keyed canvas stream is fed to the recorder (`useCameraRecording.ts:75`). Caveats: hardcoded `#00ff00`, presets are flat color fills not images. |
+| 3158697 | Face AR | ❌ **LIES in practice** | Built on Shape Detection `FaceDetector` API (`useFaceAR.ts:30`) which ships in no default browser → `faceArStream` null, and `camera/page.tsx:148` hides the live camera when active → blank viewfinder, records nothing. |
+| b56b5f1 | Scene + beat suggestions | ✅ REAL | Real frame-diff scene detection; `audioProcessing/beatDetection.ts` is genuine DSP (OfflineAudioContext, RMS windows, BPM histogram, honest confidence). |
+| bb9420d | Beat-synced slideshow | ✅ REAL | `perSlideDurations` flows into real per-image FFmpeg `-loop 1 -t` args; uses valid xfade names so not exposed to the merge bug. |
+
+### Corrective actions (do BEFORE Tier 2)
+1. **[Task #1] Fix merge transition mapping** — route `advancedProcessing.ts` through the shared `xfadeMap`. (in progress)
+2. **[Task #2] Make Face AR honest** — MediaPipe FaceMesh, or gate the picker + never hide the live camera when stream is null. *Decision needed.*
+3. **[Task #3] Real browser verification** for any media feature — tsc/lint cannot catch these classes of bug.
+4. **[Task #4] Green-screen honesty** — real background images or honest preset names; add camera-side key color control.
+5. **[Task #5] God-file debt** — `edit/page.tsx` (1058), `camera/page.tsx` (463), `useCamera.ts` (401) all break the 300-line rule and grew with this work.
+
+---
+
 ## TIER 1 — Critical (Core Feature Missing or Non-Functional)
 
 ### Creation / Editor

@@ -356,31 +356,40 @@ export function buildFFmpegArgs(edits: VideoEdits, hasOverlay = false, hasMusic 
   return args;
 }
 
+/**
+ * Map our UI transition ids (from TransitionPanel) to valid FFmpeg xfade
+ * transition names. FFmpeg rejects unknown names and aborts the whole exec,
+ * so every caller building an `xfade=transition=` filter MUST route through
+ * this — never pass a raw UI id. Unknown ids fall back to 'fade'.
+ */
+const XFADE_NAME_MAP: Record<string, string> = {
+  'crossfade': 'fade',
+  'fade': 'fade',
+  'fade-black': 'fadeblack',
+  'slide-left': 'slideleft',
+  'slide-right': 'slideright',
+  'slide-up': 'slideup',
+  'slide-down': 'slidedown',
+  'zoom-in': 'circlecrop',
+  'zoom-out': 'squeezev',
+  'dissolve': 'dissolve',
+  'wipe': 'wipeleft',
+  'spin': 'circleopen',
+  'glitch': 'pixelize',
+  'flash': 'fadewhite',
+};
+
+export function mapToXfadeName(transitionType: string): string {
+  return XFADE_NAME_MAP[transitionType] || 'fade';
+}
+
 /** Gap 31: Build FFmpeg args for transition between two clips using xfade */
 export function buildTransitionArgs(
   transitionType: string,
   transitionDuration: number,
   clip1Duration: number,
 ): string[] {
-  // Map our transition names to FFmpeg xfade transition names
-  const xfadeMap: Record<string, string> = {
-    'crossfade': 'fade',
-    'fade': 'fade',
-    'fade-black': 'fadeblack',
-    'slide-left': 'slideleft',
-    'slide-right': 'slideright',
-    'slide-up': 'slideup',
-    'slide-down': 'slidedown',
-    'zoom-in': 'circlecrop',
-    'zoom-out': 'squeezev',
-    'dissolve': 'dissolve',
-    'wipe': 'wipeleft',
-    'spin': 'circleopen',
-    'glitch': 'pixelize',
-    'flash': 'fadewhite',
-  };
-
-  const xfadeName = xfadeMap[transitionType] || 'fade';
+  const xfadeName = mapToXfadeName(transitionType);
   const offset = Math.max(0, clip1Duration - transitionDuration);
 
   return [

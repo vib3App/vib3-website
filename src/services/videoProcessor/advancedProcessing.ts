@@ -4,7 +4,7 @@
  */
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
 import type { ProcessingProgress, ClipEdit, FreezeFrame } from './types';
-import { buildTransitionArgs, buildClipSpeedArgs } from './filters';
+import { buildTransitionArgs, buildClipSpeedArgs, mapToXfadeName } from './filters';
 import { logger } from '@/utils/logger';
 
 type GetInputFn = (input: File | Blob | string) => Promise<Uint8Array>;
@@ -328,7 +328,10 @@ export async function processClipMergeImpl(
 
     // 2. Either concat (no transition / single clip) or xfade chain.
     const hasTransition = !!transition && transition.type !== 'none' && segmentFiles.length > 1;
-    const transitionType = transition?.type ?? 'fade';
+    // Map the UI transition id to a valid FFmpeg xfade name. Passing the raw id
+    // (e.g. 'crossfade', 'slide-left') makes FFmpeg abort the whole exec, which
+    // would silently fall back to single-clip output and drop the merge.
+    const transitionType = mapToXfadeName(transition?.type ?? 'fade');
     const transitionDuration = transition?.duration ?? 0.4;
 
     if (!hasTransition) {
