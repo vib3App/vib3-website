@@ -26,8 +26,19 @@ interface FaceBox {
   height: number;
 }
 
-function detectorAvailable(): boolean {
+/**
+ * Whether real-time face AR can run in this browser. It depends on the
+ * Shape Detection `FaceDetector` API, which currently ships in NO browser by
+ * default (not Chrome stable, Safari, or Firefox). Callers must use this to
+ * gate the face-FX UI — otherwise selecting an effect produces a null stream
+ * and a blank viewfinder. Exported so the camera page can hide the picker.
+ */
+export function isFaceArSupported(): boolean {
   return typeof globalThis !== 'undefined' && 'FaceDetector' in globalThis;
+}
+
+function detectorAvailable(): boolean {
+  return isFaceArSupported();
 }
 
 /**

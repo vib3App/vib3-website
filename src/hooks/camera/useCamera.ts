@@ -17,7 +17,7 @@ import { useDMRecording } from './useDMRecording';
 import { useClipOnlyMode } from './useClipOnlyMode';
 import { useEchoMode } from './useEchoMode';
 import { useGreenScreen } from './useGreenScreen';
-import { useFaceAR, type FaceFx } from './useFaceAR';
+import { useFaceAR, isFaceArSupported, type FaceFx } from './useFaceAR';
 import { CAMERA_FILTERS } from './types';
 import type { CameraMode } from './types';
 import { echoApi } from '@/services/api/echo';
@@ -68,8 +68,12 @@ export function useCamera() {
   const echo = useEchoMode();
   const [echoSubmitting, setEchoSubmitting] = useState(false);
 
-  // Face-tracking AR effect
+  // Face-tracking AR effect. Only usable where the FaceDetector API exists;
+  // computed after mount so SSR and first client render agree (no hydration
+  // mismatch) and the picker stays hidden on unsupported browsers.
   const [faceFx, setFaceFx] = useState<FaceFx>('off');
+  const [faceArSupported, setFaceArSupported] = useState(false);
+  useEffect(() => { setFaceArSupported(isFaceArSupported()); }, []);
   const faceArStream = useFaceAR({
     sourceStream: stream.streamRef.current,
     effect: faceFx,
@@ -397,5 +401,6 @@ export function useCamera() {
     faceFx,
     setFaceFx,
     faceArStream,
+    faceArSupported,
   };
 }

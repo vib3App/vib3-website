@@ -44,7 +44,7 @@ function CameraPageInner() {
     echo, echoSubmitting,
     greenScreenEnabled, setGreenScreenEnabled, greenScreenBg, setGreenScreenBg,
     greenScreenStream, greenScreenBgPresets,
-    faceFx, setFaceFx, faceArStream,
+    faceFx, setFaceFx, faceArStream, faceArSupported,
   } = useCamera();
 
   const greenScreenVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -70,7 +70,10 @@ function CameraPageInner() {
       el.srcObject = null;
     }
   }, [faceArStream]);
-  const faceArActive = faceFx !== 'off';
+  // The AR effect is only actually *showing* when it produced a real stream.
+  // Keying the live-camera hide on this (not just "an effect is selected")
+  // means an unsupported browser keeps the normal camera instead of blanking.
+  const faceArShowing = !!faceArStream && !greenScreenEnabled;
 
   if (!isAuthVerified || !isAuthenticated) {
     return (
@@ -148,7 +151,7 @@ function CameraPageInner() {
               style={{
                 filter: CAMERA_FILTERS[selectedFilter].filter,
                 transform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
-                display: (isCameraKitActive || greenScreenEnabled || faceArActive) ? 'none' : undefined,
+                display: (isCameraKitActive || greenScreenEnabled || faceArShowing) ? 'none' : undefined,
               }}
               autoPlay playsInline muted
             />
@@ -165,11 +168,11 @@ function CameraPageInner() {
               ref={faceArVideoRef}
               className="absolute inset-0 w-full h-full object-cover"
               style={{
-                display: faceArActive && !greenScreenEnabled ? undefined : 'none',
+                display: faceArShowing ? undefined : 'none',
               }}
               autoPlay playsInline muted
             />
-            {!isCameraKitActive && !greenScreenEnabled && !faceArActive && (
+            {!isCameraKitActive && !greenScreenEnabled && !faceArShowing && (
               <canvas ref={effectsCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
             )}
             <canvas
@@ -273,8 +276,9 @@ function CameraPageInner() {
         />
       )}
 
-      {/* Face AR picker */}
-      {!isPreview && (
+      {/* Face AR picker — only shown where the FaceDetector API exists, so we
+          never offer an effect that would blank the viewfinder and record nothing. */}
+      {!isPreview && faceArSupported && (
         <div className="absolute top-28 left-4 z-20 flex flex-col gap-1 p-1 rounded-xl bg-black/70 backdrop-blur border border-white/10">
           {(['off', 'zoom', 'mask', 'crown', 'animal'] as const).map(fx => {
             const icons: Record<typeof fx, string> = { off: '✖', zoom: '🔍', mask: '🐱', crown: '👑', animal: '🐶' };
