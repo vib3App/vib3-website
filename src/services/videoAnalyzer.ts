@@ -1,14 +1,16 @@
 /**
  * Video Analyzer - Gap #18
- * Analyzes video audio levels and motion to generate real AI-like edit suggestions.
- * Uses Web Audio API for audio analysis, canvas for motion detection.
+ * Analyzes video audio levels, scene changes, and beat structure to generate
+ * real edit suggestions. Web Audio API for audio + beat detection, HTML5
+ * video + canvas color-histogram diffs for scene cuts.
  */
 
 import { logger } from '@/utils/logger';
+import { detectBeats } from '@/services/audioProcessing';
 
 export interface AnalysisSuggestion {
   id: string;
-  type: 'trim' | 'speed' | 'filter' | 'volume';
+  type: 'trim' | 'speed' | 'filter' | 'volume' | 'cut' | 'beat';
   label: string;
   description: string;
   value: Record<string, unknown>;
@@ -137,6 +139,89 @@ function findLowEnergySegments(
 }
 
 /**
+ * Sample the video at ~1 fps, compute a coarse color histogram per frame,
+ * and return timestamps where consecutive frames differ enough to look
+ * like a scene change. Returns up to N candidate cut points.
+ *
+ * Cheap implementation: small 80x80 canvas, sum-of-absolute-differences on
+ * the downscaled image data. Good enough for "is this a different scene?"
+ * without pulling in TensorFlow.
+ */
+async function detectSceneChanges(
+  videoUrl: string,
+  duration: number,
+  maxResults = 8,
+): Promise<number[]> {
+  if (typeof document === 'undefined' || duration <= 0) return [];
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = videoUrl;
+    const canvas = document.createElement('canvas');
+    canvas.width = 80;
+    canvas.height = 80;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) { resolve([]); return; }
+
+    const sampleStep = Math.max(0.5, Math.min(2, duration / 60));
+    const timestamps: number[] = [];
+    for (let t = 0; t <= duration; t += sampleStep) timestamps.push(t);
+
+    const diffs: { t: number; diff: number }[] = [];
+    let prev: Uint8ClampedArray | null = null;
+    let cursor = 0;
+    let settled = false;
+
+    const cleanup = () => {
+      if (settled) return;
+      settled = true;
+      try { video.pause(); } catch { /* ignore */ }
+      video.src = '';
+      diffs.sort((a, b) => b.diff - a.diff);
+      const peaks = diffs
+        .slice(0, maxResults)
+        .map(d => d.t)
+        .sort((a, b) => a - b);
+      resolve(peaks);
+    };
+
+    video.addEventListener('error', cleanup);
+    video.addEventListener('loadedmetadata', () => { seekNext(); });
+    video.addEventListener('seeked', () => {
+      try {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        if (prev) {
+          let sum = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            sum += Math.abs(data[i] - prev[i])
+              + Math.abs(data[i + 1] - prev[i + 1])
+              + Math.abs(data[i + 2] - prev[i + 2]);
+          }
+          const normalized = sum / (canvas.width * canvas.height * 3);
+          diffs.push({ t: timestamps[cursor], diff: normalized });
+        }
+        prev = new Uint8ClampedArray(data);
+      } catch (err) {
+        logger.error('scene sample failed:', err);
+      }
+      cursor++;
+      seekNext();
+    });
+
+    function seekNext() {
+      if (cursor >= timestamps.length) { cleanup(); return; }
+      video.currentTime = timestamps[cursor];
+    }
+
+    // Safety net so we don't hang if seeked never fires.
+    setTimeout(cleanup, 30_000);
+  });
+}
+
+/**
  * Run full analysis on a video and return actionable suggestions.
  */
 export async function analyzeVideoForSuggestions(
@@ -223,6 +308,52 @@ export async function analyzeVideoForSuggestions(
       description: 'High-energy audio pairs well with vivid, saturated visuals for maximum impact.',
       value: { filterIndex: 5 }, // Vivid filter index
     });
+  }
+
+  // 6. Visual scene-change detection. Cheap canvas histogram diff at ~1 fps.
+  // Top peaks become "Cut at scene change" suggestions; the apply handler can
+  // split clips at those times.
+  try {
+    const scenes = await detectSceneChanges(videoUrl, duration, 6);
+    if (scenes.length > 0) {
+      const cutTimes = scenes.filter(t => t > 1 && t < duration - 1).slice(0, 3);
+      if (cutTimes.length > 0) {
+        suggestions.push({
+          id: `sug-${idCounter++}`,
+          type: 'cut',
+          label: 'Cut at scene changes',
+          description: `Detected ${cutTimes.length} visual scene change${cutTimes.length === 1 ? '' : 's'} (${cutTimes.map(t => t.toFixed(1) + 's').join(', ')}). Splitting here keeps shots tight.`,
+          value: { cutTimes },
+        });
+      }
+    }
+  } catch (err) {
+    logger.error('Scene-change detection failed:', err);
+  }
+
+  // 7. Beat-driven cut suggestion. Reuses the audio analyzer that already
+  // powers the beat-sync panel — if we find a confident tempo, suggest
+  // snapping cuts to beats for a music-video edit.
+  try {
+    const beats = await detectBeats(videoUrl);
+    if (beats.confidence > 0.4 && beats.beatTimestamps.length >= 4) {
+      // Pick every Nth beat so we don't suggest a cut every 0.5s.
+      const stride = Math.max(2, Math.round(beats.beatTimestamps.length / 8));
+      const beatCuts = beats.beatTimestamps
+        .filter((_, i) => i > 0 && i % stride === 0)
+        .filter(t => t < duration - 0.5);
+      if (beatCuts.length > 0) {
+        suggestions.push({
+          id: `sug-${idCounter++}`,
+          type: 'beat',
+          label: `Sync cuts to ${beats.bpm} BPM`,
+          description: `Confident beat track detected (${Math.round(beats.confidence * 100)}% confidence). Snap cuts to ${beatCuts.length} beats for a rhythmic feel.`,
+          value: { beatTimes: beatCuts, bpm: beats.bpm },
+        });
+      }
+    }
+  } catch (err) {
+    logger.error('Beat detection in analyzer failed:', err);
   }
 
   return suggestions;

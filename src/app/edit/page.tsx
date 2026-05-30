@@ -394,9 +394,50 @@ function EditContent() {
     if (type === 'volume' && typeof v.volume === 'number') {
       updateVolume(v.volume);
     }
+    if (type === 'cut' && Array.isArray(v.cutTimes)) {
+      const cutTimes = (v.cutTimes as unknown[]).filter((t): t is number => typeof t === 'number');
+      if (cutTimes.length > 0 && duration > 0) {
+        // Split the source duration at each suggested point. Sort + dedupe to
+        // keep clip ranges monotonic.
+        const points = Array.from(new Set([0, ...cutTimes, duration]))
+          .filter(t => t >= 0 && t <= duration)
+          .sort((a, b) => a - b);
+        const next = [];
+        for (let i = 0; i < points.length - 1; i++) {
+          next.push({
+            id: `clip-cut-${i}`,
+            startTime: points[i],
+            endTime: points[i + 1],
+            label: String.fromCharCode(65 + i),
+          });
+        }
+        if (next.length > 0) setClips(next);
+      }
+    }
+    if (type === 'beat' && Array.isArray(v.beatTimes)) {
+      const beatTimes = (v.beatTimes as unknown[]).filter((t): t is number => typeof t === 'number');
+      setBeatMarkers(beatTimes);
+      // Also seed clip boundaries on the most prominent beat times so the
+      // existing clip-merge pipeline can render hard cuts on the beat.
+      if (beatTimes.length > 0 && duration > 0) {
+        const points = Array.from(new Set([0, ...beatTimes, duration]))
+          .filter(t => t >= 0 && t <= duration)
+          .sort((a, b) => a - b);
+        const next = [];
+        for (let i = 0; i < points.length - 1; i++) {
+          next.push({
+            id: `clip-beat-${i}`,
+            startTime: points[i],
+            endTime: points[i + 1],
+            label: String.fromCharCode(65 + i),
+          });
+        }
+        if (next.length > 1) setClips(next);
+      }
+    }
     // Remove the applied suggestion from the list
     setAiSuggestions(prev => prev.filter(s => !(s.type === type && s.value === value)));
-  }, [setSelectedFilter, updateVolume, history, getCurrentSnapshot]);
+  }, [setSelectedFilter, updateVolume, history, getCurrentSnapshot, duration]);
 
   const handleClipSpeedChange = useCallback((clipId: string, speed: number) => {
     setClipSpeeds(prev => ({ ...prev, [clipId]: speed }));
