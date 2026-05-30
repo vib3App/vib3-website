@@ -191,7 +191,7 @@ export default function SlideshowPage() {
             </button>
           )}
           {slideshow.music && (
-            <div className="mt-2">
+            <div className="mt-2 space-y-2">
               <label className="text-xs text-white/50 flex items-center justify-between mb-1">
                 <span>Volume</span>
                 <span>{Math.round(slideshow.musicVolume * 100)}%</span>
@@ -202,6 +202,34 @@ export default function SlideshowPage() {
                 onChange={e => slideshow.setMusicVolume(parseFloat(e.target.value))}
                 className="w-full accent-purple-500"
               />
+              <label className="flex items-center justify-between gap-2 text-sm text-white">
+                <span>
+                  Sync slides to beat
+                  {slideshow.beatBpm != null && (
+                    <span className="ml-2 text-xs text-teal-400">~{slideshow.beatBpm} BPM detected</span>
+                  )}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => slideshow.setSyncToBeats(!slideshow.syncToBeats)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                    slideshow.syncToBeats ? 'bg-purple-500' : 'bg-white/20'
+                  }`}
+                  role="switch"
+                  aria-checked={slideshow.syncToBeats}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                      slideshow.syncToBeats ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </label>
+              {slideshow.syncToBeats && (
+                <p className="text-xs text-white/40">
+                  Slide durations follow the music beats so transitions land on the rhythm.
+                </p>
+              )}
             </div>
           )}
         </section>

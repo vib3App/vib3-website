@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { videoProcessor, type ProcessingProgress, type SlideshowTransition } from '@/services/videoProcessor';
+import { detectBeats } from '@/services/audioProcessing';
 import { logger } from '@/utils/logger';
 
 export interface SlideshowSlide {
@@ -17,6 +18,8 @@ export interface UseSlideshowResult {
   transition: SlideshowTransition;
   music: File | null;
   musicVolume: number;
+  syncToBeats: boolean;
+  beatBpm: number | null;
   rendering: boolean;
   progress: ProcessingProgress | null;
   outputUrl: string | null;
@@ -29,6 +32,7 @@ export interface UseSlideshowResult {
   setTransition: (t: SlideshowTransition) => void;
   setMusic: (f: File | null) => void;
   setMusicVolume: (v: number) => void;
+  setSyncToBeats: (v: boolean) => void;
   render: () => Promise<void>;
   sendToUpload: () => void;
 }
@@ -43,6 +47,8 @@ export function useSlideshow(): UseSlideshowResult {
   const [transition, setTransition] = useState<SlideshowTransition>('fade');
   const [music, setMusic] = useState<File | null>(null);
   const [musicVolume, setMusicVolume] = useState(0.7);
+  const [syncToBeats, setSyncToBeats] = useState(false);
+  const [beatBpm, setBeatBpm] = useState<number | null>(null);
   const [rendering, setRendering] = useState(false);
   const [progress, setProgress] = useState<ProcessingProgress | null>(null);
   const [outputUrl, setOutputUrl] = useState<string | null>(null);
@@ -107,10 +113,45 @@ export function useSlideshow(): UseSlideshowResult {
     setRendering(true);
     setProgress({ stage: 'loading', percent: 0, message: 'Loading video processor...' });
     setErrorMessage(null);
+    let perSlideDurations: number[] | undefined;
     try {
+      // Beat-sync mode: detect beats in the music and distribute slides across
+      // the strongest beat boundaries. Each slide spans an even-beat group so
+      // transitions land on the rhythm.
+      if (syncToBeats && music) {
+        setProgress({ stage: 'processing', percent: 5, message: 'Analyzing music...' });
+        try {
+          const beats = await detectBeats(music);
+          if (beats.confidence > 0.3 && beats.beatTimestamps.length > slides.length) {
+            setBeatBpm(beats.bpm);
+            // Pick (slides.length + 1) anchor points evenly across the beat list,
+            // then take differences as per-slide durations.
+            const beatsArr = [0, ...beats.beatTimestamps];
+            const step = (beatsArr.length - 1) / slides.length;
+            const anchors: number[] = [];
+            for (let i = 0; i <= slides.length; i++) {
+              const idx = Math.min(beatsArr.length - 1, Math.round(i * step));
+              anchors.push(beatsArr[idx]);
+            }
+            perSlideDurations = [];
+            for (let i = 0; i < slides.length; i++) {
+              const d = Math.max(0.5, anchors[i + 1] - anchors[i]);
+              perSlideDurations.push(d);
+            }
+          } else {
+            setBeatBpm(null);
+          }
+        } catch (err) {
+          logger.error('Beat sync detection failed:', err);
+        }
+      } else {
+        setBeatBpm(null);
+      }
+
       const blob = await videoProcessor.buildSlideshow({
         images: slides.map(s => s.file),
         durationPerSlide,
+        perSlideDurations,
         transition,
         music: music ?? undefined,
         musicVolume,
@@ -130,7 +171,7 @@ export function useSlideshow(): UseSlideshowResult {
     } finally {
       setRendering(false);
     }
-  }, [slides, durationPerSlide, transition, music, musicVolume]);
+  }, [slides, durationPerSlide, transition, music, musicVolume, syncToBeats]);
 
   const sendToUpload = useCallback(() => {
     if (!outputUrl) return;
@@ -148,6 +189,8 @@ export function useSlideshow(): UseSlideshowResult {
     transition,
     music,
     musicVolume,
+    syncToBeats,
+    beatBpm,
     rendering,
     progress,
     outputUrl,
@@ -160,6 +203,7 @@ export function useSlideshow(): UseSlideshowResult {
     setTransition,
     setMusic,
     setMusicVolume,
+    setSyncToBeats,
     render,
     sendToUpload,
   };

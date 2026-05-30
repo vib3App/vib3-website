@@ -13,6 +13,9 @@ export type SlideshowTransition = 'none' | 'fade' | 'slideleft' | 'slideup' | 'c
 export interface SlideshowOptions {
   images: Array<File | Blob>;
   durationPerSlide: number; // seconds, applies to every slide
+  /** Optional per-slide overrides. When present, must match images.length and
+   * each value > 0; otherwise falls back to durationPerSlide. */
+  perSlideDurations?: number[];
   transition: SlideshowTransition;
   transitionDuration?: number; // seconds, default 0.5
   music?: Blob | null;
@@ -28,7 +31,7 @@ interface BuildResult {
 
 function buildFilterComplex(
   count: number,
-  durationPerSlide: number,
+  slideDurations: number[],
   transition: SlideshowTransition,
   transitionDuration: number,
   width: number,
@@ -50,10 +53,11 @@ function buildFilterComplex(
     return `${norm.join(';')};${concatInputs}concat=n=${count}:v=1:a=0[outv]`;
   }
 
-  // xfade chain. Each transition starts at offset = (previousEnd - transitionDuration).
+  // xfade chain. Each transition offset = sum of previous slide durations
+  // minus one transition window so they overlap.
   const chain: string[] = [...norm];
   let prevLabel = 'v0';
-  let runningOffset = durationPerSlide - transitionDuration;
+  let runningOffset = slideDurations[0] - transitionDuration;
   for (let i = 1; i < count; i++) {
     const isLast = i === count - 1;
     const outLabel = isLast ? 'outv' : `t${i}`;
@@ -62,23 +66,23 @@ function buildFilterComplex(
       `duration=${transitionDuration.toFixed(2)}:offset=${runningOffset.toFixed(2)}[${outLabel}]`,
     );
     prevLabel = outLabel;
-    runningOffset += durationPerSlide - transitionDuration;
+    runningOffset += slideDurations[i] - transitionDuration;
   }
   return chain.join(';');
 }
 
-function buildArgs(opts: SlideshowOptions, hasMusic: boolean, totalDurationSec: number): BuildResult {
+function buildArgs(opts: SlideshowOptions, hasMusic: boolean, totalDurationSec: number, slideDurations: number[]): BuildResult {
   const args: string[] = [];
   const inputs: string[] = [];
   const transitionDuration = opts.transitionDuration ?? 0.5;
   const width = opts.width ?? 1080;
   const height = opts.height ?? 1920;
 
-  // Image inputs: each as a looped still photo of `durationPerSlide` seconds.
+  // Image inputs: each as a looped still photo of its slot duration (seconds).
   for (let i = 0; i < opts.images.length; i++) {
     const fname = `slide_${i}.jpg`;
     inputs.push(fname);
-    args.push('-loop', '1', '-t', opts.durationPerSlide.toString(), '-i', fname);
+    args.push('-loop', '1', '-t', slideDurations[i].toString(), '-i', fname);
   }
 
   if (hasMusic) {
@@ -88,7 +92,7 @@ function buildArgs(opts: SlideshowOptions, hasMusic: boolean, totalDurationSec: 
 
   const videoFilter = buildFilterComplex(
     opts.images.length,
-    opts.durationPerSlide,
+    slideDurations,
     opts.transition,
     transitionDuration,
     width,
@@ -150,12 +154,21 @@ export async function buildSlideshowImpl(
     }
 
     const transitionDuration = opts.transitionDuration ?? 0.5;
+    // Per-slide durations: use the override array if it matches, otherwise
+    // fall back to uniform durationPerSlide for every slide.
+    const slideDurations: number[] = (() => {
+      const override = opts.perSlideDurations;
+      if (override && override.length === opts.images.length && override.every(d => d > 0)) {
+        return override.map(d => Number(d.toFixed(3)));
+      }
+      return new Array(opts.images.length).fill(opts.durationPerSlide);
+    })();
+    const summedSlides = slideDurations.reduce((a, b) => a + b, 0);
     const total = opts.transition === 'none'
-      ? opts.images.length * opts.durationPerSlide
-      : opts.images.length * opts.durationPerSlide
-        - Math.max(0, opts.images.length - 1) * transitionDuration;
+      ? summedSlides
+      : summedSlides - Math.max(0, opts.images.length - 1) * transitionDuration;
 
-    const { args, inputs } = buildArgs(opts, hasMusic, total);
+    const { args, inputs } = buildArgs(opts, hasMusic, total, slideDurations);
 
     onProgress?.({ stage: 'encoding', percent: 40, message: 'Rendering slideshow...' });
     await ffmpeg.exec(args);
