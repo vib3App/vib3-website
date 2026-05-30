@@ -44,6 +44,7 @@ function CameraPageInner() {
     echo, echoSubmitting,
     greenScreenEnabled, setGreenScreenEnabled, greenScreenBg, setGreenScreenBg,
     greenScreenStream, greenScreenBgPresets,
+    faceFx, setFaceFx, faceArStream,
   } = useCamera();
 
   const greenScreenVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -57,6 +58,19 @@ function CameraPageInner() {
       el.srcObject = null;
     }
   }, [greenScreenStream]);
+
+  const faceArVideoRef = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = faceArVideoRef.current;
+    if (!el) return;
+    if (faceArStream) {
+      el.srcObject = faceArStream;
+      el.play().catch(() => {});
+    } else {
+      el.srcObject = null;
+    }
+  }, [faceArStream]);
+  const faceArActive = faceFx !== 'off';
 
   if (!isAuthVerified || !isAuthenticated) {
     return (
@@ -134,7 +148,7 @@ function CameraPageInner() {
               style={{
                 filter: CAMERA_FILTERS[selectedFilter].filter,
                 transform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
-                display: (isCameraKitActive || greenScreenEnabled) ? 'none' : undefined,
+                display: (isCameraKitActive || greenScreenEnabled || faceArActive) ? 'none' : undefined,
               }}
               autoPlay playsInline muted
             />
@@ -147,7 +161,15 @@ function CameraPageInner() {
               }}
               autoPlay playsInline muted
             />
-            {!isCameraKitActive && !greenScreenEnabled && (
+            <video
+              ref={faceArVideoRef}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                display: faceArActive && !greenScreenEnabled ? undefined : 'none',
+              }}
+              autoPlay playsInline muted
+            />
+            {!isCameraKitActive && !greenScreenEnabled && !faceArActive && (
               <canvas ref={effectsCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
             )}
             <canvas
@@ -249,6 +271,29 @@ function CameraPageInner() {
           zoomPresets={zoom.zoomPresets}
           onPresetSelect={zoom.setPresetZoom}
         />
+      )}
+
+      {/* Face AR picker */}
+      {!isPreview && (
+        <div className="absolute top-28 left-4 z-20 flex flex-col gap-1 p-1 rounded-xl bg-black/70 backdrop-blur border border-white/10">
+          {(['off', 'zoom', 'mask', 'crown', 'animal'] as const).map(fx => {
+            const icons: Record<typeof fx, string> = { off: '✖', zoom: '🔍', mask: '🐱', crown: '👑', animal: '🐶' };
+            return (
+              <button
+                key={fx}
+                type="button"
+                onClick={() => setFaceFx(fx)}
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] transition ${
+                  faceFx === fx ? 'bg-pink-500/40 text-white' : 'text-white/70 hover:bg-white/10'
+                }`}
+                title={fx === 'off' ? 'No face effect' : `Face: ${fx}`}
+              >
+                <span aria-hidden="true">{icons[fx]}</span>
+                <span className="capitalize">{fx}</span>
+              </button>
+            );
+          })}
+        </div>
       )}
 
       {/* Live green-screen control */}

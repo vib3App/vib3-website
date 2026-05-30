@@ -17,6 +17,7 @@ import { useDMRecording } from './useDMRecording';
 import { useClipOnlyMode } from './useClipOnlyMode';
 import { useEchoMode } from './useEchoMode';
 import { useGreenScreen } from './useGreenScreen';
+import { useFaceAR, type FaceFx } from './useFaceAR';
 import { CAMERA_FILTERS } from './types';
 import type { CameraMode } from './types';
 import { echoApi } from '@/services/api/echo';
@@ -67,6 +68,14 @@ export function useCamera() {
   const echo = useEchoMode();
   const [echoSubmitting, setEchoSubmitting] = useState(false);
 
+  // Face-tracking AR effect
+  const [faceFx, setFaceFx] = useState<FaceFx>('off');
+  const faceArStream = useFaceAR({
+    sourceStream: stream.streamRef.current,
+    effect: faceFx,
+    cameraFacing: stream.cameraFacing,
+  });
+
   // Green-screen camera effect
   const [greenScreenEnabled, setGreenScreenEnabled] = useState(false);
   const [greenScreenBg, setGreenScreenBg] = useState<GreenScreenBg>('beach');
@@ -102,7 +111,9 @@ export function useCamera() {
     effectsCanvasRef: effects.effectsCanvasRef,
     cameraKitCanvasRef: cameraKit.canvasRef,
     isCameraKitActive: cameraKit.isCameraKitActive,
-    effectStream: greenScreenEnabled ? greenScreenStream : null,
+    effectStream: greenScreenEnabled
+      ? greenScreenStream
+      : (faceFx !== 'off' ? faceArStream : null),
     maxDuration,
     selectedSpeed,
     activeFilter,
@@ -382,5 +393,9 @@ export function useCamera() {
     setGreenScreenBg,
     greenScreenStream,
     greenScreenBgPresets: GREEN_SCREEN_BG_PRESETS,
+    // Face-tracking AR
+    faceFx,
+    setFaceFx,
+    faceArStream,
   };
 }
