@@ -1,4 +1,5 @@
 export { CameraTopControls } from './CameraTopControls';
+export { GreenScreenControls } from './GreenScreenControls';
 export { CameraSideControls } from './CameraSideControls';
 export { FiltersPanel, EffectsPanel, SpeedPanel } from './CameraPanels';
 export { CameraBottomControls } from './CameraBottomControls';

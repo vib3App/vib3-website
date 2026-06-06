@@ -23,11 +23,15 @@ import type { CameraMode } from './types';
 import { echoApi } from '@/services/api/echo';
 import { logger } from '@/utils/logger';
 
+// Solid-color background presets, named honestly as colors. These are flat
+// fills — for an actual scene the user uploads their own image (the chroma-key
+// hook composites it). Previously these were mislabeled "Beach/Space/City".
 const GREEN_SCREEN_BG_PRESETS = [
-  { id: 'beach', label: 'Beach', color: '#ffd180' },
-  { id: 'space', label: 'Space', color: '#04122c' },
-  { id: 'city', label: 'City', color: '#5d6d7e' },
-  { id: 'studio', label: 'Studio', color: '#1c1c1e' },
+  { id: 'black', label: 'Black', color: '#000000' },
+  { id: 'white', label: 'White', color: '#ffffff' },
+  { id: 'blue', label: 'Blue', color: '#1e3a8a' },
+  { id: 'green', label: 'Green', color: '#15803d' },
+  { id: 'sand', label: 'Sand', color: '#e8c89a' },
 ] as const;
 export type GreenScreenBg = typeof GREEN_SCREEN_BG_PRESETS[number]['id'];
 
@@ -80,16 +84,31 @@ export function useCamera() {
     cameraFacing: stream.cameraFacing,
   });
 
-  // Green-screen camera effect
+  // Green-screen camera effect. The keying color, sensitivity, and background
+  // (solid color OR an uploaded image) are all user-controllable — the
+  // useGreenScreen hook already supports them; this just exposes the controls.
   const [greenScreenEnabled, setGreenScreenEnabled] = useState(false);
-  const [greenScreenBg, setGreenScreenBg] = useState<GreenScreenBg>('beach');
-  const greenScreenBgPreset = GREEN_SCREEN_BG_PRESETS.find(p => p.id === greenScreenBg) ?? GREEN_SCREEN_BG_PRESETS[0];
+  const [greenScreenColor, setGreenScreenColor] = useState<string>(GREEN_SCREEN_BG_PRESETS[0].color);
+  const [greenScreenImage, setGreenScreenImage] = useState<string | null>(null);
+  const [greenScreenKeyColor, setGreenScreenKeyColor] = useState('#00ff00');
+  const [greenScreenSensitivity, setGreenScreenSensitivity] = useState(40);
+
+  // Revoke object URLs we created for uploaded backgrounds so we don't leak
+  // them when the image is replaced or the screen unmounts.
+  useEffect(() => {
+    return () => {
+      if (greenScreenImage?.startsWith('blob:')) URL.revokeObjectURL(greenScreenImage);
+    };
+  }, [greenScreenImage]);
+
   const greenScreenStream = useGreenScreen({
     sourceStream: stream.streamRef.current,
     enabled: greenScreenEnabled,
-    keyColor: '#00ff00',
-    sensitivity: 40,
-    background: { type: 'color', value: greenScreenBgPreset.color },
+    keyColor: greenScreenKeyColor,
+    sensitivity: greenScreenSensitivity,
+    background: greenScreenImage
+      ? { type: 'image', src: greenScreenImage }
+      : { type: 'color', value: greenScreenColor },
   });
   // Gap 4: Template recording
   const template = useTemplateRecording();
@@ -393,8 +412,14 @@ export function useCamera() {
     // Green screen
     greenScreenEnabled,
     setGreenScreenEnabled,
-    greenScreenBg,
-    setGreenScreenBg,
+    greenScreenColor,
+    setGreenScreenColor,
+    greenScreenImage,
+    setGreenScreenImage,
+    greenScreenKeyColor,
+    setGreenScreenKeyColor,
+    greenScreenSensitivity,
+    setGreenScreenSensitivity,
     greenScreenStream,
     greenScreenBgPresets: GREEN_SCREEN_BG_PRESETS,
     // Face-tracking AR

@@ -20,6 +20,7 @@ import {
   ModeIndicators,
   CollageOverlay,
   ClipTimeline,
+  GreenScreenControls,
 } from '@/components/camera';
 import { TopNav } from '@/components/ui/TopNav';
 import { useEffect, useRef } from 'react';
@@ -42,7 +43,11 @@ function CameraPageInner() {
     cameraKitLoading, cameraKitError, cameraKitLoaded, handleLensSelect,
     photo, zoom, handsFree, template, challenge, dm, clipOnly,
     echo, echoSubmitting,
-    greenScreenEnabled, setGreenScreenEnabled, greenScreenBg, setGreenScreenBg,
+    greenScreenEnabled, setGreenScreenEnabled,
+    greenScreenColor, setGreenScreenColor,
+    greenScreenImage, setGreenScreenImage,
+    greenScreenKeyColor, setGreenScreenKeyColor,
+    greenScreenSensitivity, setGreenScreenSensitivity,
     greenScreenStream, greenScreenBgPresets,
     faceFx, setFaceFx, faceArStream, faceArSupported,
   } = useCamera();
@@ -302,42 +307,20 @@ function CameraPageInner() {
 
       {/* Live green-screen control */}
       {!isPreview && (
-        <div className="absolute top-28 right-4 z-20 flex flex-col items-end gap-2">
-          <button
-            type="button"
-            onClick={() => setGreenScreenEnabled(!greenScreenEnabled)}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
-              greenScreenEnabled
-                ? 'bg-green-500 text-white'
-                : 'bg-black/60 text-white/80 hover:bg-black/80'
-            }`}
-            aria-label={`Green screen ${greenScreenEnabled ? 'on' : 'off'}`}
-          >
-            <span className="mr-1" aria-hidden="true">🟩</span>
-            Green Screen
-          </button>
-          {greenScreenEnabled && (
-            <div className="flex flex-col gap-1 p-1 rounded-xl bg-black/80 backdrop-blur border border-white/10">
-              {greenScreenBgPresets.map(p => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setGreenScreenBg(p.id)}
-                  className={`flex items-center gap-2 px-2 py-1 rounded-lg text-[11px] transition ${
-                    greenScreenBg === p.id ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'
-                  }`}
-                >
-                  <span
-                    className="w-3 h-3 rounded-sm border border-white/30"
-                    style={{ backgroundColor: p.color }}
-                    aria-hidden="true"
-                  />
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <GreenScreenControls
+          enabled={greenScreenEnabled}
+          onToggle={() => setGreenScreenEnabled(!greenScreenEnabled)}
+          presets={greenScreenBgPresets}
+          color={greenScreenColor}
+          onColorChange={(c) => { setGreenScreenColor(c); setGreenScreenImage(null); }}
+          image={greenScreenImage}
+          onPickImage={(file) => setGreenScreenImage(URL.createObjectURL(file))}
+          onClearImage={() => setGreenScreenImage(null)}
+          keyColor={greenScreenKeyColor}
+          onKeyColorChange={setGreenScreenKeyColor}
+          sensitivity={greenScreenSensitivity}
+          onSensitivityChange={setGreenScreenSensitivity}
+        />
       )}
 
       {/* Gap 4: Template overlay */}
