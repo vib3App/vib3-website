@@ -26,12 +26,14 @@ The 5 Tier-1 commits (2eef227…bb9420d) were shipped gated only on `tsc` + `esl
 | b56b5f1 | Scene + beat suggestions | ✅ REAL | Real frame-diff scene detection; `audioProcessing/beatDetection.ts` is genuine DSP (OfflineAudioContext, RMS windows, BPM histogram, honest confidence). |
 | bb9420d | Beat-synced slideshow | ✅ REAL | `perSlideDurations` flows into real per-image FFmpeg `-loop 1 -t` args; uses valid xfade names so not exposed to the merge bug. |
 
-### Corrective actions (do BEFORE Tier 2)
-1. **[Task #1] Fix merge transition mapping** — route `advancedProcessing.ts` through the shared `xfadeMap`. (in progress)
-2. **[Task #2] Make Face AR honest** — MediaPipe FaceMesh, or gate the picker + never hide the live camera when stream is null. *Decision needed.*
-3. **[Task #3] Real browser verification** for any media feature — tsc/lint cannot catch these classes of bug.
-4. **[Task #4] Green-screen honesty** — real background images or honest preset names; add camera-side key color control.
-5. **[Task #5] God-file debt** — `edit/page.tsx` (1058), `camera/page.tsx` (463), `useCamera.ts` (401) all break the 300-line rule and grew with this work.
+### Corrective actions — RESOLVED 2026-06-20 (all browser-verified)
+1. ✅ **Merge transition mapping** (`aeb7ac8`) — extracted shared `mapToXfadeName`; all 15 UI transitions resolve to valid xfade names. Verified the camera-side `videoMerge.ts` has no sibling bug (pure concat, no xfade).
+2. ✅ **Face AR — made REAL** (`2cb7745` honest gate → `8efb829` real impl). Replaced the dead Shape-Detection API with **MediaPipe FaceLandmarker** (`@mediapipe/tasks-vision`): WASM+model from CDN, GPU→CPU fallback, per-frame `detectForVideo` driving zoom/mask/crown/animal. Picker shows broadly; camera never blanks. Verified (model inits, effect composites).
+3. ✅ **Real browser verification** — established a Playwright-against-cached-Chromium harness with a local expired-JWT session to reach gated UI. Every commit this pass was browser-driven, not just tsc+200. (This habit caught the #7 mobile tap bug below.)
+4. ✅ **Green-screen honesty** (`f12b5a1`) — honest solid-color presets + custom color + real image-upload background + key-color control + sensitivity, extracted to `GreenScreenControls.tsx`.
+5. ◑ **God-file debt** — `edit/page.tsx` **1058→451** via `useEditorState.ts` (`7718470`) + `EditorPanels.tsx` (`401d7ed`). Camera files (`camera/page.tsx`, `useCamera.ts`) remain a smaller, lower-priority follow-up.
+
+**Also found+fixed via the new verification habit:** ✅ camera top controls (green-screen toggle, face-FX picker) were untappable under the ~141px mobile `TopNav` — measured the overlap, fixed with responsive `top-40 md:top-28` offsets (`6ccf14e`).
 
 ---
 
