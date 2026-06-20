@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useCamera, CAMERA_FILTERS } from '@/hooks/useCamera';
+import { useCamera } from '@/hooks/useCamera';
 import {
   CameraTopControls,
   CameraSideControls,
@@ -21,9 +21,10 @@ import {
   CollageOverlay,
   ClipTimeline,
   GreenScreenControls,
+  CameraPreview,
+  FaceFxPicker,
 } from '@/components/camera';
 import { TopNav } from '@/components/ui/TopNav';
-import { useEffect, useRef } from 'react';
 
 function CameraPageInner() {
   const {
@@ -51,34 +52,6 @@ function CameraPageInner() {
     greenScreenStream, greenScreenBgPresets,
     faceFx, setFaceFx, faceArStream, faceArSupported,
   } = useCamera();
-
-  const greenScreenVideoRef = useRef<HTMLVideoElement | null>(null);
-  useEffect(() => {
-    const el = greenScreenVideoRef.current;
-    if (!el) return;
-    if (greenScreenStream) {
-      el.srcObject = greenScreenStream;
-      el.play().catch(() => {});
-    } else {
-      el.srcObject = null;
-    }
-  }, [greenScreenStream]);
-
-  const faceArVideoRef = useRef<HTMLVideoElement | null>(null);
-  useEffect(() => {
-    const el = faceArVideoRef.current;
-    if (!el) return;
-    if (faceArStream) {
-      el.srcObject = faceArStream;
-      el.play().catch(() => {});
-    } else {
-      el.srcObject = null;
-    }
-  }, [faceArStream]);
-  // The AR effect is only actually *showing* when it produced a real stream.
-  // Keying the live-camera hide on this (not just "an effect is selected")
-  // means an unsupported browser keeps the normal camera instead of blanking.
-  const faceArShowing = !!faceArStream && !greenScreenEnabled;
 
   if (!isAuthVerified || !isAuthenticated) {
     return (
@@ -134,60 +107,23 @@ function CameraPageInner() {
       )}
 
       {/* Camera/Preview View */}
-      <div
-        className="absolute inset-0"
+      <CameraPreview
+        isPreview={isPreview}
+        previewUrl={previewUrl}
+        previewVideoRef={previewVideoRef}
+        videoRef={videoRef}
+        effectsCanvasRef={effectsCanvasRef}
+        cameraKitCanvasRef={cameraKitCanvasRef}
+        selectedFilter={selectedFilter}
+        cameraFacing={cameraFacing}
+        isCameraKitActive={isCameraKitActive}
+        greenScreenEnabled={greenScreenEnabled}
+        greenScreenStream={greenScreenStream}
+        faceArStream={faceArStream}
         onTouchStart={zoom.handleTouchStart}
         onTouchMove={zoom.handleTouchMove}
         onTouchEnd={zoom.handleTouchEnd}
-      >
-        {isPreview && previewUrl ? (
-          <video
-            ref={previewVideoRef}
-            src={previewUrl}
-            className="w-full h-full object-cover"
-            style={{ filter: CAMERA_FILTERS[selectedFilter].filter }}
-            autoPlay loop playsInline muted
-          />
-        ) : (
-          <>
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              style={{
-                filter: CAMERA_FILTERS[selectedFilter].filter,
-                transform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
-                display: (isCameraKitActive || greenScreenEnabled || faceArShowing) ? 'none' : undefined,
-              }}
-              autoPlay playsInline muted
-            />
-            <video
-              ref={greenScreenVideoRef}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                transform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
-                display: greenScreenEnabled ? undefined : 'none',
-              }}
-              autoPlay playsInline muted
-            />
-            <video
-              ref={faceArVideoRef}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                display: faceArShowing ? undefined : 'none',
-              }}
-              autoPlay playsInline muted
-            />
-            {!isCameraKitActive && !greenScreenEnabled && !faceArShowing && (
-              <canvas ref={effectsCanvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
-            )}
-            <canvas
-              ref={cameraKitCanvasRef}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ display: isCameraKitActive ? undefined : 'none' }}
-            />
-          </>
-        )}
-      </div>
+      />
 
       {/* Error */}
       {error && (
@@ -281,28 +217,10 @@ function CameraPageInner() {
         />
       )}
 
-      {/* Face AR picker — only shown where the FaceDetector API exists, so we
-          never offer an effect that would blank the viewfinder and record nothing. */}
+      {/* Face AR picker — only shown where face AR is supported, so we never
+          offer an effect that would blank the viewfinder and record nothing. */}
       {!isPreview && faceArSupported && (
-        <div className="absolute top-40 md:top-28 left-4 z-20 flex flex-col gap-1 p-1 rounded-xl bg-black/70 backdrop-blur border border-white/10">
-          {(['off', 'zoom', 'mask', 'crown', 'animal'] as const).map(fx => {
-            const icons: Record<typeof fx, string> = { off: '✖', zoom: '🔍', mask: '🐱', crown: '👑', animal: '🐶' };
-            return (
-              <button
-                key={fx}
-                type="button"
-                onClick={() => setFaceFx(fx)}
-                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] transition ${
-                  faceFx === fx ? 'bg-pink-500/40 text-white' : 'text-white/70 hover:bg-white/10'
-                }`}
-                title={fx === 'off' ? 'No face effect' : `Face: ${fx}`}
-              >
-                <span aria-hidden="true">{icons[fx]}</span>
-                <span className="capitalize">{fx}</span>
-              </button>
-            );
-          })}
-        </div>
+        <FaceFxPicker value={faceFx} onSelect={setFaceFx} />
       )}
 
       {/* Live green-screen control */}

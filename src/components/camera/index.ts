@@ -1,5 +1,7 @@
 export { CameraTopControls } from './CameraTopControls';
 export { GreenScreenControls } from './GreenScreenControls';
+export { CameraPreview } from './CameraPreview';
+export { FaceFxPicker } from './FaceFxPicker';
 export { CameraSideControls } from './CameraSideControls';
 export { FiltersPanel, EffectsPanel, SpeedPanel } from './CameraPanels';
 export { CameraBottomControls } from './CameraBottomControls';
