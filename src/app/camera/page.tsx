@@ -111,7 +111,7 @@ function CameraPageInner() {
       <TopNav />
 
       {echo.isActive && echo.originalVideo && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/30 backdrop-blur border border-purple-400/40 text-white text-sm">
+        <div className="absolute top-40 md:top-20 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/30 backdrop-blur border border-purple-400/40 text-white text-sm">
           <span aria-hidden="true">🎙️</span>
           <span>Echo with @{echo.originalVideo.username}</span>
         </div>
@@ -191,7 +191,7 @@ function CameraPageInner() {
 
       {/* Error */}
       {error && (
-        <div className="absolute top-20 left-4 right-4 bg-red-500/90 text-white px-4 py-3 rounded-xl text-sm text-center">
+        <div className="absolute top-40 md:top-20 left-4 right-4 bg-red-500/90 text-white px-4 py-3 rounded-xl text-sm text-center">
           {error}
         </div>
       )}
@@ -284,7 +284,7 @@ function CameraPageInner() {
       {/* Face AR picker — only shown where the FaceDetector API exists, so we
           never offer an effect that would blank the viewfinder and record nothing. */}
       {!isPreview && faceArSupported && (
-        <div className="absolute top-28 left-4 z-20 flex flex-col gap-1 p-1 rounded-xl bg-black/70 backdrop-blur border border-white/10">
+        <div className="absolute top-40 md:top-28 left-4 z-20 flex flex-col gap-1 p-1 rounded-xl bg-black/70 backdrop-blur border border-white/10">
           {(['off', 'zoom', 'mask', 'crown', 'animal'] as const).map(fx => {
             const icons: Record<typeof fx, string> = { off: '✖', zoom: '🔍', mask: '🐱', crown: '👑', animal: '🐶' };
             return (

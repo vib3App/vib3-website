@@ -50,7 +50,7 @@ export function GreenScreenControls({
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className="absolute top-28 right-4 z-20 flex flex-col items-end gap-2">
+    <div className="absolute top-40 md:top-28 right-4 z-20 flex flex-col items-end gap-2">
       <button
         type="button"
         onClick={onToggle}
