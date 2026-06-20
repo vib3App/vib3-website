@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { logger } from '@/utils/logger';
+import { FaceLandmarker, FilesetResolver, type FaceLandmarkerResult } from '@mediapipe/tasks-vision';
 
 export type FaceFx = 'off' | 'zoom' | 'mask' | 'crown' | 'animal';
 
@@ -26,47 +27,73 @@ interface FaceBox {
   height: number;
 }
 
+// MediaPipe WASM + model load from CDN, mirroring how the editor loads the
+// FFmpeg core. Pin the WASM to the installed package version.
+const MP_VERSION = '0.10.35';
+const WASM_PATH = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VERSION}/wasm`;
+const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+
+// One FaceLandmarker shared across mounts — creation downloads the model and is
+// expensive, so cache the promise and reuse the instance.
+let landmarkerPromise: Promise<FaceLandmarker> | null = null;
+
+function getLandmarker(): Promise<FaceLandmarker> {
+  if (!landmarkerPromise) {
+    landmarkerPromise = (async () => {
+      const fileset = await FilesetResolver.forVisionTasks(WASM_PATH);
+      const make = (delegate: 'GPU' | 'CPU') => FaceLandmarker.createFromOptions(fileset, {
+        baseOptions: { modelAssetPath: MODEL_URL, delegate },
+        runningMode: 'VIDEO',
+        numFaces: 1,
+      });
+      try {
+        return await make('GPU');
+      } catch {
+        // Some browsers/headless environments lack a usable GPU delegate.
+        return await make('CPU');
+      }
+    })().catch((err) => {
+      landmarkerPromise = null; // allow a later retry
+      throw err;
+    });
+  }
+  return landmarkerPromise;
+}
+
 /**
- * Whether real-time face AR can run in this browser. It depends on the
- * Shape Detection `FaceDetector` API, which currently ships in NO browser by
- * default (not Chrome stable, Safari, or Firefox). Callers must use this to
- * gate the face-FX UI — otherwise selecting an effect produces a null stream
- * and a blank viewfinder. Exported so the camera page can hide the picker.
+ * Whether real-time face AR can run in this browser. The implementation uses
+ * MediaPipe FaceLandmarker, which needs WebAssembly — available in every modern
+ * browser (unlike the old Shape Detection `FaceDetector` API this replaced).
+ * The model still loads asynchronously; until it's ready the camera passes
+ * through unmodified, and if the load fails the picker is a graceful no-op
+ * (never a blank viewfinder).
  */
 export function isFaceArSupported(): boolean {
-  return typeof globalThis !== 'undefined' && 'FaceDetector' in globalThis;
-}
-
-function detectorAvailable(): boolean {
-  return isFaceArSupported();
+  return typeof WebAssembly !== 'undefined' && typeof document !== 'undefined';
 }
 
 /**
- * Real-time face-driven camera effect built on the native FaceDetector API.
- * Falls back to a no-op MediaStream when the browser lacks the API so we
- * don't break the camera path on Safari/Firefox.
+ * Real-time face-driven camera effect powered by MediaPipe FaceLandmarker.
  *
- * The detector runs every ~150ms (not every frame) to keep the per-frame
- * draw loop cheap. The latest detected bounding box drives whichever
- * effect the user picked:
+ * The render loop draws the camera into a canvas and, once the model is loaded,
+ * runs detection each frame to track the face. The latest face box drives the
+ * selected effect:
  *   - 'zoom': pan+scale around the face
  *   - 'mask' / 'crown' / 'animal': draw an emoji sized/positioned over the face
  *
- * Returns null while disabled or while waiting on the first detection.
+ * Returns the composited MediaStream (consumed by preview + recorder), or null
+ * while disabled / before the camera is playing.
  */
 export function useFaceAR({ sourceStream, effect, cameraFacing }: UseFaceARProps): MediaStream | null {
   const [output, setOutput] = useState<MediaStream | null>(null);
   const animRef = useRef<number | null>(null);
-  const detectRef = useRef<number | null>(null);
   const lastFaceRef = useRef<FaceBox | null>(null);
 
   useEffect(() => {
     if (effect === 'off' || !sourceStream || typeof document === 'undefined') return;
-    if (!detectorAvailable()) {
-      logger.error('FaceDetector API not available; face effects disabled');
-      return;
-    }
     let cancelled = false;
+    let landmarker: FaceLandmarker | null = null;
+    let lastTs = -1;
 
     const video = document.createElement('video');
     video.muted = true;
@@ -74,22 +101,17 @@ export function useFaceAR({ sourceStream, effect, cameraFacing }: UseFaceARProps
     video.srcObject = sourceStream;
     const canvas = document.createElement('canvas');
 
-    const detector = new FaceDetector({ maxDetectedFaces: 1, fastMode: true });
-
-    const detectLoop = async () => {
-      if (cancelled) return;
-      if (video.videoWidth > 0 && video.videoHeight > 0) {
-        try {
-          const faces = await detector.detect(video);
-          if (faces.length > 0) {
-            const b = faces[0].boundingBox;
-            lastFaceRef.current = { x: b.x, y: b.y, width: b.width, height: b.height };
-          }
-        } catch {
-          // FaceDetector throws if video is not ready; just skip this tick.
-        }
+    const computeBox = (res: FaceLandmarkerResult, w: number, h: number): FaceBox | null => {
+      const lms = res.faceLandmarks?.[0];
+      if (!lms || lms.length === 0) return null;
+      let minX = 1, minY = 1, maxX = 0, maxY = 0;
+      for (const p of lms) {
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
       }
-      detectRef.current = window.setTimeout(detectLoop, 150);
+      return { x: minX * w, y: minY * h, width: (maxX - minX) * w, height: (maxY - minY) * h };
     };
 
     const render = () => {
@@ -103,12 +125,26 @@ export function useFaceAR({ sourceStream, effect, cameraFacing }: UseFaceARProps
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
+      // Detect once the model is ready. VIDEO mode requires strictly increasing
+      // timestamps; performance.now() is monotonic across sessions.
+      if (landmarker) {
+        const ts = performance.now();
+        if (ts > lastTs) {
+          lastTs = ts;
+          try {
+            const box = computeBox(landmarker.detectForVideo(video, ts), w, h);
+            if (box) lastFaceRef.current = box;
+          } catch {
+            // Video frame not ready for this tick; skip.
+          }
+        }
+      }
+
       const face = lastFaceRef.current;
       const isFront = cameraFacing === 'user';
 
-      // Optionally apply zoom-to-face by adjusting the source rect.
       if (effect === 'zoom' && face) {
-        // Make the zoom rectangle 2.4x the face box, clamped to frame.
+        // Zoom rectangle 2.4x the face box, clamped to frame.
         const cx = face.x + face.width / 2;
         const cy = face.y + face.height / 2;
         const zoomScale = 2.4;
@@ -133,7 +169,7 @@ export function useFaceAR({ sourceStream, effect, cameraFacing }: UseFaceARProps
         ctx.restore();
       }
 
-      // Draw the emoji overlay on top of the face for mask/crown/animal.
+      // Emoji overlay for mask/crown/animal, tracking the face.
       const emoji = EFFECT_EMOJI[effect];
       if (emoji && face) {
         // Mirror the face X for front camera so it follows the displayed image.
@@ -155,13 +191,17 @@ export function useFaceAR({ sourceStream, effect, cameraFacing }: UseFaceARProps
         await video.play();
         if (cancelled) return;
         animRef.current = requestAnimationFrame(render);
-        detectRef.current = window.setTimeout(detectLoop, 100);
         const stream = canvas.captureStream(30);
         if (cancelled) {
           stream.getTracks().forEach(t => t.stop());
           return;
         }
         setOutput(stream);
+        // Load the model in the background; the canvas passes the camera
+        // through until it's ready, so the viewfinder is never blank.
+        getLandmarker()
+          .then(lm => { if (!cancelled) landmarker = lm; })
+          .catch(err => logger.error('FaceLandmarker load failed; face effect is a no-op:', err));
       } catch (err) {
         logger.error('useFaceAR start failed:', err);
         if (!cancelled) setOutput(null);
@@ -171,10 +211,10 @@ export function useFaceAR({ sourceStream, effect, cameraFacing }: UseFaceARProps
     return () => {
       cancelled = true;
       if (animRef.current !== null) cancelAnimationFrame(animRef.current);
-      if (detectRef.current !== null) window.clearTimeout(detectRef.current);
       animRef.current = null;
-      detectRef.current = null;
       lastFaceRef.current = null;
+      // Note: the shared FaceLandmarker is intentionally NOT closed — it's cached
+      // for reuse across effect toggles.
       try { video.pause(); } catch { /* ignore */ }
       video.srcObject = null;
       setOutput(prev => {
