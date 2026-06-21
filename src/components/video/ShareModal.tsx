@@ -14,6 +14,7 @@ interface ShareModalProps {
 
 const shareOptions = [
   { id: 'copy', label: 'Copy Link', icon: '🔗' },
+  { id: 'qr', label: 'QR Code', icon: '🔳' },
   { id: 'twitter', label: 'Twitter/X', icon: '𝕏' },
   { id: 'facebook', label: 'Facebook', icon: '📘' },
   { id: 'whatsapp', label: 'WhatsApp', icon: '💬' },
@@ -23,8 +24,12 @@ const shareOptions = [
 
 export function ShareModal({ videoId, videoUrl: _videoUrl, caption, isOpen, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const shareUrl = `https://vib3app.net/v/${videoId}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=8&data=${encodeURIComponent(shareUrl)}&bgcolor=1A1F2E&color=ffffff`;
+
+  const close = () => { setShowQR(false); onClose(); };
 
   const handleShare = async (platform: string) => {
     // Record share
@@ -38,6 +43,11 @@ export function ShareModal({ videoId, videoUrl: _videoUrl, caption, isOpen, onCl
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      return;
+    }
+
+    if (platform === 'qr') {
+      setShowQR(true);
       return;
     }
 
@@ -95,13 +105,35 @@ export function ShareModal({ videoId, videoUrl: _videoUrl, caption, isOpen, onCl
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={close}
       />
 
       {/* Modal */}
       <div className="relative w-full max-w-sm glass-card rounded-2xl p-6 animate-scale-in">
-        <h2 className="text-white font-semibold text-lg text-center mb-6">Share Video</h2>
+        <h2 className="text-white font-semibold text-lg text-center mb-6">
+          {showQR ? 'Scan QR Code' : 'Share Video'}
+        </h2>
 
+        {showQR ? (
+          <div className="flex flex-col items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={qrUrl}
+              alt="QR code linking to this video"
+              width={240}
+              height={240}
+              className="rounded-xl bg-[#1A1F2E] p-2"
+            />
+            <p className="text-white/50 text-sm text-center">Point a camera at the code to open this video.</p>
+            <button
+              onClick={() => setShowQR(false)}
+              className="text-purple-400 text-sm font-medium"
+            >
+              ← Back to share options
+            </button>
+          </div>
+        ) : (
+          <>
         {/* Native share button (mobile) */}
         {typeof navigator !== 'undefined' && 'share' in navigator && (
           <button
@@ -130,10 +162,12 @@ export function ShareModal({ videoId, videoUrl: _videoUrl, caption, isOpen, onCl
             </button>
           ))}
         </div>
+          </>
+        )}
 
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={close}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:text-white"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
