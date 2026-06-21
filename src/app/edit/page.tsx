@@ -11,6 +11,7 @@ import { useDraftPersistence } from '@/hooks/videoEditor/useDraftPersistence';
 import { EditorHeader, EditorPanels, AnimatedTextOverlay, Transition3DPreview } from '@/components/edit';
 import { TopNav } from '@/components/ui/TopNav';
 import { isIdentityCurves, tableValues } from '@/utils/curves';
+import { scaleCssFilter } from '@/utils/cssFilter';
 
 function ProcessingModal({ progress }: { progress: { stage: string; percent: number; message: string } | null }) {
   if (!progress) return null;
@@ -129,7 +130,7 @@ function EditContent() {
   // wiring, not 50 useState lines.
   const ed = useEditorState({ videoUrl, duration });
   const {
-    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves,
+    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves, filterIntensity,
     blurRadius, rotation, setRotation, flipH, setFlipH, flipV,
     setFlipV, reversed, setReversed, cropAspect, setCropAspect, opacity,
     setOpacity, blendMode, setBlendMode, noiseReduction, setNoiseReduction, clips,
@@ -300,7 +301,15 @@ function EditContent() {
   return (
     <div className="min-h-screen aurora-bg">
       <TopNav />
-      <EditorHeader onCancel={goBack} onDone={() => { drafts.discard(); handleDone(buildExtraEdits()); }} isProcessing={isProcessing} />
+      <EditorHeader onCancel={goBack} onDone={() => {
+        drafts.discard();
+        // Override the base preset filter with the intensity-scaled string so
+        // export matches the live preview (no-op at 100%).
+        const filterOverride = selectedFilter !== 0
+          ? { filter: scaleCssFilter(EDITOR_FILTERS[selectedFilter].filter, filterIntensity) }
+          : {};
+        handleDone({ ...buildExtraEdits(), ...filterOverride });
+      }} isProcessing={isProcessing} />
       {isProcessing && <ProcessingModal progress={processingProgress} />}
 
       <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
@@ -320,7 +329,7 @@ function EditContent() {
           className="max-w-full max-h-full object-contain"
           style={{
             filter: [
-              EDITOR_FILTERS[selectedFilter].filter,
+              scaleCssFilter(EDITOR_FILTERS[selectedFilter].filter, filterIntensity),
               tune.brightness !== 0 ? `brightness(${1 + tune.brightness})` : '',
               tune.contrast !== 1 ? `contrast(${tune.contrast})` : '',
               tune.saturation !== 1 ? `saturate(${tune.saturation})` : '',

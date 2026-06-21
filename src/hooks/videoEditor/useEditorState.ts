@@ -41,6 +41,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
   // Tune / blur
   const [tune, setTune] = useState<TuneSettings>({ brightness: 0, contrast: 1, saturation: 1, exposure: 0 });
   const [curves, setCurves] = useState<CurveSettings>(identityCurves());
+  const [filterIntensity, setFilterIntensity] = useState(1); // 0..1 strength of the selected preset filter
   const [blurRadius, setBlurRadius] = useState(0);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -313,6 +314,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     greenScreenSensitivity, setGreenScreenSensitivity,
     tune, setTune,
     curves, setCurves,
+    filterIntensity, setFilterIntensity,
     blurRadius, setBlurRadius,
     selectedTemplate, setSelectedTemplate,
     rotation, setRotation,

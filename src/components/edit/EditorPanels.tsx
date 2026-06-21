@@ -39,7 +39,7 @@ export function EditorPanels({
   const {
     speed, setSpeed, selectedTransition, setSelectedTransition, transitionDuration, setTransitionDuration,
     greenScreenEnabled, setGreenScreenEnabled, greenScreenColor, setGreenScreenColor, greenScreenSensitivity, setGreenScreenSensitivity,
-    tune, setTune, curves, setCurves, blurRadius, setBlurRadius, selectedTemplate, setSelectedTemplate,
+    tune, setTune, curves, setCurves, filterIntensity, setFilterIntensity, blurRadius, setBlurRadius, selectedTemplate, setSelectedTemplate,
     rotation, setRotation, flipH, setFlipH, flipV, setFlipV,
     reversed, setReversed, cropAspect, setCropAspect, opacity, setOpacity,
     blendMode, setBlendMode, selectedMask, setSelectedMask, maskInvert, setMaskInvert,
@@ -80,7 +80,12 @@ export function EditorPanels({
           )}
 
           {editMode === 'filters' && (
-            <FilterPanel selectedFilter={selectedFilter} onSelect={saveAndSet(setSelectedFilter)} />
+            <FilterPanel
+              selectedFilter={selectedFilter}
+              onSelect={saveAndSet(setSelectedFilter)}
+              intensity={filterIntensity}
+              onIntensityChange={setFilterIntensity}
+            />
           )}
 
           {editMode === 'tune' && (
