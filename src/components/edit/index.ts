@@ -1,6 +1,7 @@
 export { EditorHeader } from './EditorHeader';
 export { EditorTabs } from './EditorTabs';
 export { EditorPanels } from './EditorPanels';
+export { CurvesPanel } from './CurvesPanel';
 export { TrimPanel } from './TrimPanel';
 export { FilterPanel } from './FilterPanel';
 export { TunePanel } from './TunePanel';

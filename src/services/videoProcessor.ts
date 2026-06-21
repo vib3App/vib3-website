@@ -9,6 +9,8 @@ export type {
   TextOverlay,
   StickerOverlay,
   TuneSettings,
+  CurveSettings,
+  CurvePoint,
   CropSettings,
   TransformSettings,
   TransitionSettings,

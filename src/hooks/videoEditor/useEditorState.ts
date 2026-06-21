@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Clip, AISuggestion, ProductTag, CustomFont } from '@/components/edit';
-import type { TuneSettings } from '@/services/videoProcessor';
+import type { TuneSettings, CurveSettings } from '@/services/videoProcessor';
+import { identityCurves, isIdentityCurves } from '@/utils/curves';
 import type { SpeedKeyframe, GiphyStickerOverlay, TextPathType } from '@/hooks/videoEditor/types';
 import { analyzeVideoForSuggestions } from '@/services/videoAnalyzer';
 
@@ -39,6 +40,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
 
   // Tune / blur
   const [tune, setTune] = useState<TuneSettings>({ brightness: 0, contrast: 1, saturation: 1, exposure: 0 });
+  const [curves, setCurves] = useState<CurveSettings>(identityCurves());
   const [blurRadius, setBlurRadius] = useState(0);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -188,6 +190,9 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     const hasTune = tune.brightness !== 0 || tune.contrast !== 1 || tune.saturation !== 1 || tune.exposure !== 0;
     if (hasTune) extras.tune = tune;
 
+    // Color curves (master + per-channel)
+    if (!isIdentityCurves(curves)) extras.curves = curves;
+
     // Gap 19: Blur
     if (blurRadius > 0) extras.blur = blurRadius;
 
@@ -297,7 +302,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     }
 
     return extras;
-  }, [tune, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
+  }, [tune, curves, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
 
   return {
     speed, setSpeed,
@@ -307,6 +312,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     greenScreenColor, setGreenScreenColor,
     greenScreenSensitivity, setGreenScreenSensitivity,
     tune, setTune,
+    curves, setCurves,
     blurRadius, setBlurRadius,
     selectedTemplate, setSelectedTemplate,
     rotation, setRotation,

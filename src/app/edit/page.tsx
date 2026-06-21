@@ -10,6 +10,7 @@ import { useVoiceover } from '@/hooks/videoEditor/useVoiceover';
 import { useDraftPersistence } from '@/hooks/videoEditor/useDraftPersistence';
 import { EditorHeader, EditorPanels, AnimatedTextOverlay, Transition3DPreview } from '@/components/edit';
 import { TopNav } from '@/components/ui/TopNav';
+import { isIdentityCurves, tableValues } from '@/utils/curves';
 
 function ProcessingModal({ progress }: { progress: { stage: string; percent: number; message: string } | null }) {
   if (!progress) return null;
@@ -128,7 +129,7 @@ function EditContent() {
   // wiring, not 50 useState lines.
   const ed = useEditorState({ videoUrl, duration });
   const {
-    speed, setSpeed, selectedTransition, setSelectedTransition, tune,
+    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves,
     blurRadius, rotation, setRotation, flipH, setFlipH, flipV,
     setFlipV, reversed, setReversed, cropAspect, setCropAspect, opacity,
     setOpacity, blendMode, setBlendMode, noiseReduction, setNoiseReduction, clips,
@@ -303,6 +304,16 @@ function EditContent() {
       {isProcessing && <ProcessingModal progress={processingProgress} />}
 
       <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
+        {/* Tone-curve filter for the live preview (matches the FFmpeg export). */}
+        <svg width="0" height="0" className="absolute" aria-hidden="true">
+          <filter id="vib3-curves" colorInterpolationFilters="sRGB">
+            <feComponentTransfer>
+              <feFuncR type="table" tableValues={tableValues(curves, 'r')} />
+              <feFuncG type="table" tableValues={tableValues(curves, 'g')} />
+              <feFuncB type="table" tableValues={tableValues(curves, 'b')} />
+            </feComponentTransfer>
+          </filter>
+        </svg>
         <video
           ref={videoRef}
           src={videoUrl}
@@ -313,8 +324,11 @@ function EditContent() {
               tune.brightness !== 0 ? `brightness(${1 + tune.brightness})` : '',
               tune.contrast !== 1 ? `contrast(${tune.contrast})` : '',
               tune.saturation !== 1 ? `saturate(${tune.saturation})` : '',
+              !isIdentityCurves(curves) ? 'url(#vib3-curves)' : '',
               blurRadius > 0 ? `blur(${blurRadius}px)` : '',
-            ].filter(Boolean).join(' ') || undefined,
+              // Drop the 'none' keyword (default filter) — combining it with any
+              // filter function is invalid CSS and voids the whole declaration.
+            ].filter(f => f && f !== 'none').join(' ') || undefined,
             transform: videoTransform,
             opacity,
             mixBlendMode: blendMode as React.CSSProperties['mixBlendMode'],

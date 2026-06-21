@@ -4,10 +4,12 @@
  */
 import type {
   TuneSettings,
+  CurveSettings,
   CropSettings,
   TransformSettings,
   MaskSettings,
 } from './types';
+import { isIdentityCurve, ffmpegPoints } from '@/utils/curves';
 
 /** Gap 18: Build eq filter for brightness/contrast/saturation/exposure */
 export function buildTuneFilter(tune: TuneSettings): string | null {
@@ -25,6 +27,22 @@ export function buildTuneFilter(tune: TuneSettings): string | null {
   }
   if (parts.length === 0) return null;
   return `eq=${parts.join(':')}`;
+}
+
+/**
+ * Build FFmpeg `curves` filter(s) from master + per-channel tone curves.
+ * Master ('all') is applied first, then per-channel — matching the SVG preview
+ * (effective_c(x) = curve_c(curve_rgb(x))). Returns null if everything is identity.
+ */
+export function buildCurvesFilter(curves: CurveSettings): string | null {
+  const stages: string[] = [];
+  if (!isIdentityCurve(curves.rgb)) {
+    stages.push(`curves=all='${ffmpegPoints(curves.rgb)}'`);
+  }
+  if ((['r', 'g', 'b'] as const).some(ch => !isIdentityCurve(curves[ch]))) {
+    stages.push(`curves=r='${ffmpegPoints(curves.r)}':g='${ffmpegPoints(curves.g)}':b='${ffmpegPoints(curves.b)}'`);
+  }
+  return stages.length ? stages.join(',') : null;
 }
 
 /** Gap 19: Build boxblur filter */

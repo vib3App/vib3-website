@@ -11,6 +11,18 @@ export interface TuneSettings {
   exposure: number;    // -1 to 1 (0 = no change)
 }
 
+export interface CurvePoint {
+  x: number;  // input level 0..1
+  y: number;  // output level 0..1
+}
+
+export interface CurveSettings {
+  rgb: CurvePoint[];  // master, applied to all channels first
+  r: CurvePoint[];
+  g: CurvePoint[];
+  b: CurvePoint[];
+}
+
 export interface CropSettings {
   aspect: string | null;  // e.g. '9:16', '16:9', '1:1', '4:5', '4:3', or null for free
   x: number;              // crop region x offset (0-1 normalized)
@@ -62,6 +74,8 @@ export interface VideoEdits {
   musicVolume?: number;
   // Gap 18: Tune adjustments
   tune?: TuneSettings;
+  // Color curves (master + per-channel tone curves)
+  curves?: CurveSettings;
   // Gap 19: Blur
   blur?: number;  // blur radius in px (0 = off)
   // Gap 29: Crop

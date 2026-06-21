@@ -1,6 +1,7 @@
 import type { VideoEdits, TextOverlay, StickerOverlay } from './types';
 import {
   buildTuneFilter,
+  buildCurvesFilter,
   buildBlurFilter,
   buildCropFilter,
   buildTransformFilters,
@@ -144,6 +145,12 @@ function collectVideoFilters(edits: VideoEdits): string[] {
   if (edits.tune) {
     const tuneFilter = buildTuneFilter(edits.tune);
     if (tuneFilter) videoFilters.push(tuneFilter);
+  }
+
+  // Color curves (master + per-channel tone curves)
+  if (edits.curves) {
+    const curvesFilter = buildCurvesFilter(edits.curves);
+    if (curvesFilter) videoFilters.push(curvesFilter);
   }
 
   // Gap 19: Blur
