@@ -12,6 +12,7 @@ import { EditorHeader, EditorPanels, AnimatedTextOverlay, Transition3DPreview } 
 import { TopNav } from '@/components/ui/TopNav';
 import { isIdentityCurves, tableValues } from '@/utils/curves';
 import { scaleCssFilter } from '@/utils/cssFilter';
+import { useVideoShortcuts } from '@/hooks/keyboard/useVideoShortcuts';
 
 function ProcessingModal({ progress }: { progress: { stage: string; percent: number; message: string } | null }) {
   if (!progress) return null;
@@ -146,6 +147,13 @@ function EditContent() {
 
   // Gap #28: Draft persistence (auto-save every 5s + restore on mount)
   const drafts = useDraftPersistence(videoUrl);
+
+  // Editor keyboard shortcuts: space/k play-pause, arrows/j/l seek.
+  useVideoShortcuts({
+    onPlayPause: togglePlayPause,
+    onSeekForward: (s) => { if (videoRef.current) videoRef.current.currentTime = Math.min(duration, videoRef.current.currentTime + s); },
+    onSeekBackward: (s) => { if (videoRef.current) videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - s); },
+  });
 
   const getCurrentSnapshot = useCallback((): EditorSnapshot => ({
     selectedFilter, volume, trimStart, trimEnd,

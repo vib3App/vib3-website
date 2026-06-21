@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { VideoPlayer } from '@/components/video/VideoPlayer';
@@ -188,9 +188,25 @@ function CreatorInfo({
 }
 
 function VideoInfo({ video }: { video: Video }) {
+  const [expanded, setExpanded] = useState(false);
+  const caption = video.caption || '';
+  const isLong = caption.length > 80;
   return (
     <div className="absolute bottom-32 md:bottom-20 left-4 right-20 z-10 space-y-2">
-      <RichText text={video.caption || ''} className="text-white text-sm line-clamp-2 drop-shadow-lg" />
+      <div>
+        <RichText
+          text={caption}
+          className={`text-white text-sm drop-shadow-lg ${expanded ? '' : 'line-clamp-2'}`}
+        />
+        {isLong && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
+            className="text-white/60 text-xs font-medium mt-0.5 hover:text-white"
+          >
+            {expanded ? 'less' : 'more'}
+          </button>
+        )}
+      </div>
 
       {Array.isArray(video.hashtags) && video.hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">

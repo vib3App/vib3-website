@@ -20,7 +20,11 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  // Persist the mute preference so it survives reloads/navigation.
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('vib3_mute_preference') !== 'false';
+  });
 
   const handleLike = useCallback(async (index: number) => {
     const video = videos[index];
@@ -166,7 +170,11 @@ export function useFeedActions({ videos, setVideos, isAuthenticated }: UseFeedAc
   }, [videos, setVideos]);
 
   const toggleMute = useCallback(() => {
-    setIsMuted(prev => !prev);
+    setIsMuted(prev => {
+      const next = !prev;
+      if (typeof window !== 'undefined') localStorage.setItem('vib3_mute_preference', String(next));
+      return next;
+    });
   }, []);
 
   const toggleQueue = useCallback(() => {
