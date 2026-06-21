@@ -185,6 +185,36 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     setGiphyStickers(prev => prev.map(s => s.id === id ? { ...s, x, y } : s));
   }, []);
 
+  // Reset the visual/effect/audio adjustments to defaults. Content the user
+  // authored (clips, text, stickers, GIPHY, captions, narration) is preserved.
+  const resetAdjustments = useCallback(() => {
+    setTune({ brightness: 0, contrast: 1, saturation: 1, exposure: 0 });
+    setCurves(identityCurves());
+    setFilterIntensity(1);
+    setVignette(0);
+    setGrain(0);
+    setBlurRadius(0);
+    setRotation(0);
+    setFlipH(false);
+    setFlipV(false);
+    setReversed(false);
+    setCropAspect(null);
+    setOpacity(1);
+    setBlendMode('normal');
+    setSelectedMask(null);
+    setMaskInvert(false);
+    setMaskFeather(0);
+    setSpeed(1);
+    setSelectedTransition('none');
+    setSelectedTransition3D('none');
+    setCutoutMode('off');
+    setStabilizationEnabled(false);
+    setBeatMarkers([]);
+    setNoiseReduction(0);
+    setAudioDucking(false);
+    setTextStyle('shadow');
+  }, []);
+
   // Build extra edits object for the processor pipeline. Pure transform over
   // the extended state above (plus duration); the page passes it to handleDone.
   const buildExtraEdits = useCallback(() => {
@@ -387,5 +417,6 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     handleRemoveGiphySticker,
     handleUpdateGiphyStickerPosition,
     buildExtraEdits,
+    resetAdjustments,
   };
 }
