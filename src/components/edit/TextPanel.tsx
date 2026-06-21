@@ -10,7 +10,16 @@ interface TextPanelProps {
   onNewTextChange: (text: string) => void;
   onAddText: () => void;
   onRemoveText: (id: string) => void;
+  textStyle: string;
+  onTextStyleChange: (style: string) => void;
 }
+
+const TEXT_STYLES = [
+  { id: 'shadow', label: 'Shadow' },
+  { id: 'background', label: 'Background' },
+  { id: 'outline', label: 'Outline' },
+  { id: 'none', label: 'Plain' },
+];
 
 export function TextPanel({
   texts,
@@ -20,6 +29,8 @@ export function TextPanel({
   onNewTextChange,
   onAddText,
   onRemoveText,
+  textStyle,
+  onTextStyleChange,
 }: TextPanelProps) {
   return (
     <div className="space-y-4">
@@ -43,6 +54,24 @@ export function TextPanel({
           + Add Text
         </button>
       )}
+
+      {/* Text style (applies to all text overlays) */}
+      <div>
+        <p className="text-white/50 text-sm mb-2">Style</p>
+        <div className="flex gap-2">
+          {TEXT_STYLES.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => onTextStyleChange(s.id)}
+              className={`flex-1 py-1.5 text-sm rounded-lg transition ${
+                textStyle === s.id ? 'bg-purple-500 text-white' : 'glass text-white/50 hover:text-white'
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {texts.length > 0 && (
         <div className="space-y-2">

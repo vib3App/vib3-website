@@ -53,7 +53,7 @@ export function EditorPanels({
     activeVoiceEffect, setActiveVoiceEffect, selectedTransition3D, setSelectedTransition3D, transition3DDuration, setTransition3DDuration,
     speedRampKeyframes, setSpeedRampKeyframes, giphyStickers, customFonts, setCustomFonts, selectedFont,
     setSelectedFont, textAnimation, setTextAnimation, textAnimDuration, setTextAnimDuration, textPath,
-    setTextPath, karaokeEnabled, setKaraokeEnabled, karaokeColor, setKaraokeColor, karaokeFontSize,
+    setTextPath, textStyle, setTextStyle, karaokeEnabled, setKaraokeEnabled, karaokeColor, setKaraokeColor, karaokeFontSize,
     setKaraokeFontSize, translationTracks, setTranslationTracks, handleAnalyzeVideo, handleClipSpeedChange, handleAddGiphySticker,
     handleRemoveGiphySticker, videoDimensions,
   } = editor;
@@ -113,6 +113,7 @@ export function EditorPanels({
               texts={texts} showTextInput={showTextInput} newText={newText}
               onShowTextInput={setShowTextInput} onNewTextChange={setNewText}
               onAddText={addText} onRemoveText={removeText}
+              textStyle={textStyle} onTextStyleChange={saveAndSet(setTextStyle)}
             />
           )}
 

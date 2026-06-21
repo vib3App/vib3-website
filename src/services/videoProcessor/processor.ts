@@ -141,7 +141,7 @@ export class VideoProcessorService {
       const texts = edits.texts || [];
       const stickers = edits.stickers || [];
       if ((texts.length > 0 || stickers.length > 0 || edits.drawingDataUrl) && edits.videoWidth && edits.videoHeight) {
-        const overlayData = await renderOverlaysToImage(texts, stickers, edits.videoWidth, edits.videoHeight, edits.displayHeight, edits.drawingDataUrl);
+        const overlayData = await renderOverlaysToImage(texts, stickers, edits.videoWidth, edits.videoHeight, edits.displayHeight, edits.drawingDataUrl, edits.textStyle);
         if (overlayData) {
           await this.ffmpeg!.writeFile('overlay.png', overlayData);
           hasOverlay = true;

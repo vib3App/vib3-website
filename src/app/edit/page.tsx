@@ -135,7 +135,7 @@ function EditContent() {
     setFlipV, reversed, setReversed, cropAspect, setCropAspect, opacity,
     setOpacity, blendMode, setBlendMode, noiseReduction, setNoiseReduction, clips,
     setClips, setVideoDimensions, setBeatMarkers, setAiSuggestions, selectedTransition3D, transition3DDuration,
-    giphyStickers, selectedFont, textAnimation, textAnimDuration, handleUpdateGiphyStickerPosition, buildExtraEdits,
+    giphyStickers, selectedFont, textAnimation, textAnimDuration, textStyle, handleUpdateGiphyStickerPosition, buildExtraEdits,
   } = ed;
 
   // Gap #22: Undo/redo
@@ -392,6 +392,7 @@ function EditContent() {
               color={text.color}
               fontSize={text.fontSize}
               fontFamily={selectedFont}
+              textStyle={textStyle}
               isPlaying={isPlaying}
             />
           </DraggableOverlay>

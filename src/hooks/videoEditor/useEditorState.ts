@@ -129,6 +129,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
   const [textAnimation, setTextAnimation] = useState<string | null>(null);
   const [textAnimDuration, setTextAnimDuration] = useState(0.8);
   const [textPath, setTextPath] = useState<TextPathType>('straight');
+  const [textStyle, setTextStyle] = useState('shadow'); // shadow | background | outline | none
 
   // Karaoke captions
   const [karaokeEnabled, setKaraokeEnabled] = useState(false);
@@ -201,6 +202,9 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
 
     // Film grain
     if (grain > 0) extras.grain = grain;
+
+    // Text style (applies to burned-in text overlays)
+    if (textStyle !== 'shadow') extras.textStyle = textStyle;
 
     // Gap 19: Blur
     if (blurRadius > 0) extras.blur = blurRadius;
@@ -311,7 +315,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     }
 
     return extras;
-  }, [tune, curves, vignette, grain, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
+  }, [tune, curves, vignette, grain, textStyle, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
 
   return {
     speed, setSpeed,
@@ -371,6 +375,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     textAnimation, setTextAnimation,
     textAnimDuration, setTextAnimDuration,
     textPath, setTextPath,
+    textStyle, setTextStyle,
     karaokeEnabled, setKaraokeEnabled,
     karaokeColor, setKaraokeColor,
     karaokeFontSize, setKaraokeFontSize,

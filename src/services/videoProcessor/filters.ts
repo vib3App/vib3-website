@@ -71,6 +71,7 @@ export async function renderOverlaysToImage(
   videoHeight: number,
   displayHeight?: number,
   drawingDataUrl?: string,
+  textStyle: string = 'shadow',
 ): Promise<Uint8Array | null> {
   if (texts.length === 0 && stickers.length === 0 && !drawingDataUrl) return null;
 
@@ -96,16 +97,42 @@ export async function renderOverlaysToImage(
     ctx.save();
     const x = (text.x / 100) * videoWidth;
     const y = (text.y / 100) * videoHeight;
-    const scaledFontSize = Math.round(text.fontSize * scale);
-    ctx.font = `bold ${scaledFontSize}px sans-serif`;
-    ctx.fillStyle = text.color;
+    const fs = Math.round(text.fontSize * scale);
+    ctx.font = `bold ${fs}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 4 * scale;
-    ctx.shadowOffsetX = 2 * scale;
-    ctx.shadowOffsetY = 2 * scale;
-    ctx.fillText(text.text, x, y);
+
+    if (textStyle === 'background') {
+      const metrics = ctx.measureText(text.text);
+      const padX = fs * 0.4;
+      const padY = fs * 0.28;
+      const w = metrics.width + padX * 2;
+      const h = fs + padY * 2;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+      ctx.beginPath();
+      ctx.roundRect(x - w / 2, y - h / 2, w, h, fs * 0.25);
+      ctx.fill();
+      ctx.fillStyle = text.color;
+      ctx.fillText(text.text, x, y);
+    } else if (textStyle === 'outline') {
+      ctx.lineWidth = Math.max(2, fs * 0.12);
+      ctx.strokeStyle = '#000';
+      ctx.lineJoin = 'round';
+      ctx.strokeText(text.text, x, y);
+      ctx.fillStyle = text.color;
+      ctx.fillText(text.text, x, y);
+    } else if (textStyle === 'none') {
+      ctx.fillStyle = text.color;
+      ctx.fillText(text.text, x, y);
+    } else {
+      // 'shadow' (default)
+      ctx.fillStyle = text.color;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+      ctx.shadowBlur = 4 * scale;
+      ctx.shadowOffsetX = 2 * scale;
+      ctx.shadowOffsetY = 2 * scale;
+      ctx.fillText(text.text, x, y);
+    }
     ctx.restore();
   }
 

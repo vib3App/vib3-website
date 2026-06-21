@@ -16,6 +16,28 @@ interface AnimatedTextOverlayProps {
   fontSize: number;
   fontFamily?: string;
   isPlaying?: boolean;
+  textStyle?: string; // 'shadow' | 'background' | 'outline' | 'none'
+}
+
+/** Per-style CSS so the preview matches the canvas-rendered export. */
+function styleProps(textStyle: string, color: string, fontSize: number): React.CSSProperties {
+  switch (textStyle) {
+    case 'background':
+      return {
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        borderRadius: fontSize * 0.25,
+        padding: `${fontSize * 0.28}px ${fontSize * 0.4}px`,
+      };
+    case 'outline':
+      return {
+        WebkitTextStroke: `${Math.max(2, fontSize * 0.12)}px #000`,
+        paintOrder: 'stroke fill',
+      } as React.CSSProperties;
+    case 'none':
+      return {};
+    default: // shadow
+      return { textShadow: '2px 2px 4px rgba(0,0,0,0.5)' };
+  }
 }
 
 const KEYFRAMES: Record<string, string> = {
@@ -90,6 +112,7 @@ export function AnimatedTextOverlay({
   fontSize,
   fontFamily = 'sans-serif',
   isPlaying = true,
+  textStyle = 'shadow',
 }: AnimatedTextOverlayProps) {
   const styleRef = useRef<HTMLStyleElement | null>(null);
 
@@ -129,8 +152,8 @@ export function AnimatedTextOverlay({
         fontSize,
         fontFamily,
         fontWeight: 'bold',
-        textShadow: '2px 2px 4px rgba(0,0,0,0.5)',
         whiteSpace: 'nowrap',
+        ...styleProps(textStyle, color, fontSize),
         ...getAnimationStyle(),
       }}
     >

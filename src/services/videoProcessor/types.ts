@@ -66,6 +66,7 @@ export interface VideoEdits {
   filter?: string;
   volume?: number;
   texts?: TextOverlay[];
+  textStyle?: string; // 'shadow' | 'background' | 'outline' | 'none'
   stickers?: StickerOverlay[];
   videoWidth?: number;
   videoHeight?: number;
