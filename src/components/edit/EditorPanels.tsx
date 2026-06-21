@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+import { isIdentityCurves } from '@/utils/curves';
 import {
   EditorTabs, TrimPanel, FilterPanel, TunePanel, CurvesPanel, VignettePanel, GrainPanel, BlurPanel,
   TextPanel, AudioPanel, StickerPanel, SpeedPanel, TransitionPanel,
@@ -65,9 +67,45 @@ export function EditorPanels({
     stickers, addText, removeText, addSticker, removeSticker, videoRef,
   } = base;
 
+  // Tabs with a non-default adjustment applied get a dot indicator.
+  const modifiedModes = useMemo(() => {
+    const s = new Set<string>();
+    if (selectedFilter !== 0) s.add('filters');
+    if (tune.brightness !== 0 || tune.contrast !== 1 || tune.saturation !== 1 || tune.exposure !== 0) s.add('tune');
+    if (!isIdentityCurves(curves)) s.add('curves');
+    if (vignette > 0) s.add('vignette');
+    if (grain > 0) s.add('grain');
+    if (blurRadius > 0) s.add('blur');
+    if (speed !== 1 || reversed) s.add('speed');
+    if (selectedTransition !== 'none') s.add('transitions');
+    if (selectedTransition3D !== 'none') s.add('transitions3d');
+    if (rotation !== 0 || flipH || flipV) s.add('transform');
+    if (cropAspect) s.add('crop');
+    if (opacity < 1 || blendMode !== 'normal') s.add('opacity');
+    if (selectedMask) s.add('masks');
+    if (texts.length > 0 || textStyle !== 'shadow') s.add('text');
+    if (stickers.length > 0) s.add('stickers');
+    if (giphyStickers.length > 0) s.add('giphy');
+    if (audioDucking || noiseReduction > 0) s.add('audio');
+    if (cutoutMode !== 'off') s.add('cutout');
+    if (stabilizationEnabled) s.add('stabilize');
+    if (beatMarkers.length > 0) s.add('beatsync');
+    if (freezeFrames.length > 0) s.add('freeze');
+    if (speedRampKeyframes.length >= 2) s.add('speedramp');
+    if (activeVoiceEffect) s.add('voiceeffects');
+    if (captions.length > 0) s.add('captions');
+    if (translationTracks.length > 0) s.add('translate');
+    if (karaokeEnabled) s.add('karaoke');
+    if (hasNarration) s.add('narration');
+    if (productTags.length > 0) s.add('shopping');
+    if (selectedTemplate) s.add('templates');
+    if (musicLibraryTrackId) s.add('music');
+    return s;
+  }, [selectedFilter, tune, curves, vignette, grain, blurRadius, speed, reversed, selectedTransition, selectedTransition3D, rotation, flipH, flipV, cropAspect, opacity, blendMode, selectedMask, texts, textStyle, stickers, giphyStickers, audioDucking, noiseReduction, cutoutMode, stabilizationEnabled, beatMarkers, freezeFrames, speedRampKeyframes, activeVoiceEffect, captions, translationTracks, karaokeEnabled, hasNarration, productTags, selectedTemplate, musicLibraryTrackId]);
+
   return (
       <div className="glass-card border-t border-white/5">
-        <EditorTabs activeMode={editMode} onModeChange={setEditMode} />
+        <EditorTabs activeMode={editMode} onModeChange={setEditMode} modifiedModes={modifiedModes} />
 
         <div className="p-4 min-h-[200px]">
           {editMode === 'trim' && (

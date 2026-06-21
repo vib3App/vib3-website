@@ -5,6 +5,8 @@ import type { EditMode } from '@/hooks/useVideoEditor';
 interface EditorTabsProps {
   activeMode: EditMode;
   onModeChange: (mode: EditMode) => void;
+  /** Modes that currently have a non-default adjustment applied. */
+  modifiedModes?: ReadonlySet<string>;
 }
 
 const modes: { id: EditMode; label: string; icon: React.ReactNode }[] = [
@@ -211,17 +213,20 @@ const modes: { id: EditMode; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export function EditorTabs({ activeMode, onModeChange }: EditorTabsProps) {
+export function EditorTabs({ activeMode, onModeChange, modifiedModes }: EditorTabsProps) {
   return (
     <div className="flex overflow-x-auto scrollbar-hide">
       {modes.map((mode) => (
         <button
           key={mode.id}
           onClick={() => onModeChange(mode.id)}
-          className={`flex-1 min-w-[64px] flex flex-col items-center gap-1 py-3 ${
+          className={`relative flex-1 min-w-[64px] flex flex-col items-center gap-1 py-3 ${
             activeMode === mode.id ? 'text-purple-400' : 'text-white/50'
           }`}
         >
+          {modifiedModes?.has(mode.id) && (
+            <span className="absolute top-2 right-1/2 translate-x-3 w-1.5 h-1.5 rounded-full bg-teal-400" aria-label="modified" />
+          )}
           {mode.icon}
           <span className="text-xs">{mode.label}</span>
         </button>
