@@ -43,6 +43,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
   const [curves, setCurves] = useState<CurveSettings>(identityCurves());
   const [filterIntensity, setFilterIntensity] = useState(1); // 0..1 strength of the selected preset filter
   const [vignette, setVignette] = useState(0); // 0..1 vignette strength
+  const [grain, setGrain] = useState(0); // 0..1 film grain strength
   const [blurRadius, setBlurRadius] = useState(0);
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -198,6 +199,9 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     // Vignette
     if (vignette > 0) extras.vignette = vignette;
 
+    // Film grain
+    if (grain > 0) extras.grain = grain;
+
     // Gap 19: Blur
     if (blurRadius > 0) extras.blur = blurRadius;
 
@@ -307,7 +311,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     }
 
     return extras;
-  }, [tune, curves, vignette, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
+  }, [tune, curves, vignette, grain, blurRadius, cropAspect, rotation, flipH, flipV, selectedTransition, transitionDuration, selectedTransition3D, transition3DDuration, clips, duration, opacity, blendMode, selectedMask, maskInvert, maskFeather, freezeFrames, clipSpeeds, stabilizationEnabled, stabilizationStrength, greenScreenEnabled, greenScreenColor, greenScreenSensitivity, cutoutMode, cutoutColor, cutoutSensitivity, speedRampKeyframes, activeVoiceEffect, narrationBlob, reversed, beatMarkers]);
 
   return {
     speed, setSpeed,
@@ -320,6 +324,7 @@ export function useEditorState({ videoUrl, duration }: UseEditorStateArgs) {
     curves, setCurves,
     filterIntensity, setFilterIntensity,
     vignette, setVignette,
+    grain, setGrain,
     blurRadius, setBlurRadius,
     selectedTemplate, setSelectedTemplate,
     rotation, setRotation,

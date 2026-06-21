@@ -57,6 +57,17 @@ export function buildVignetteFilter(strength: number): string | null {
   return `vignette=a=${angle.toFixed(4)}`;
 }
 
+/**
+ * Build FFmpeg `noise` filter for film grain. Strength 0..1 maps to noise
+ * amount; temporal + uniform for a natural moving grain. Null when off.
+ */
+export function buildGrainFilter(strength: number): string | null {
+  if (!strength || strength <= 0) return null;
+  const s = strength > 1 ? 1 : strength;
+  const amount = Math.max(1, Math.round(s * 40));
+  return `noise=alls=${amount}:allf=t+u`;
+}
+
 /** Gap 19: Build boxblur filter */
 export function buildBlurFilter(radius: number): string | null {
   if (radius <= 0) return null;

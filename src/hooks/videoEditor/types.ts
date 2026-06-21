@@ -31,7 +31,7 @@ export const EDITOR_FILTERS = [
   { name: 'Clarendon', filter: 'contrast(1.2) saturate(1.35)' },
 ];
 
-export type EditMode = 'trim' | 'filters' | 'tune' | 'curves' | 'vignette' | 'blur' | 'text' | 'stickers' | 'audio' | 'speed' | 'transitions' | 'greenscreen' | 'templates' | 'transform' | 'voiceover' | 'crop' | 'opacity' | 'masks' | 'captions' | 'split' | 'draw' | 'sfx' | 'beatsync' | 'freeze' | 'cutout' | 'stabilize' | 'clipspeed' | 'aiauto' | 'music' | 'voiceeffects' | 'transitions3d' | 'speedramp' | 'giphy' | 'customfonts' | 'textanim' | 'textpath' | 'karaoke' | 'translate' | 'shopping' | 'narration';
+export type EditMode = 'trim' | 'filters' | 'tune' | 'curves' | 'vignette' | 'grain' | 'blur' | 'text' | 'stickers' | 'audio' | 'speed' | 'transitions' | 'greenscreen' | 'templates' | 'transform' | 'voiceover' | 'crop' | 'opacity' | 'masks' | 'captions' | 'split' | 'draw' | 'sfx' | 'beatsync' | 'freeze' | 'cutout' | 'stabilize' | 'clipspeed' | 'aiauto' | 'music' | 'voiceeffects' | 'transitions3d' | 'speedramp' | 'giphy' | 'customfonts' | 'textanim' | 'textpath' | 'karaoke' | 'translate' | 'shopping' | 'narration';
 
 export interface TextOverlay {
   id: string;

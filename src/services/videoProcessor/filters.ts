@@ -3,6 +3,7 @@ import {
   buildTuneFilter,
   buildCurvesFilter,
   buildVignetteFilter,
+  buildGrainFilter,
   buildBlurFilter,
   buildCropFilter,
   buildTransformFilters,
@@ -158,6 +159,12 @@ function collectVideoFilters(edits: VideoEdits): string[] {
   if (edits.vignette && edits.vignette > 0) {
     const vignetteFilter = buildVignetteFilter(edits.vignette);
     if (vignetteFilter) videoFilters.push(vignetteFilter);
+  }
+
+  // Film grain
+  if (edits.grain && edits.grain > 0) {
+    const grainFilter = buildGrainFilter(edits.grain);
+    if (grainFilter) videoFilters.push(grainFilter);
   }
 
   // Gap 19: Blur

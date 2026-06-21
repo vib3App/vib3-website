@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  EditorTabs, TrimPanel, FilterPanel, TunePanel, CurvesPanel, VignettePanel, BlurPanel,
+  EditorTabs, TrimPanel, FilterPanel, TunePanel, CurvesPanel, VignettePanel, GrainPanel, BlurPanel,
   TextPanel, AudioPanel, StickerPanel, SpeedPanel, TransitionPanel,
   GreenScreenPanel, TemplatePanel, TransformPanel, VoiceoverPanel, CropPanel,
   OpacityPanel, MasksPanel, CaptionsPanel, SplitPanel, DrawingPanel, SFXPanel,
@@ -39,7 +39,7 @@ export function EditorPanels({
   const {
     speed, setSpeed, selectedTransition, setSelectedTransition, transitionDuration, setTransitionDuration,
     greenScreenEnabled, setGreenScreenEnabled, greenScreenColor, setGreenScreenColor, greenScreenSensitivity, setGreenScreenSensitivity,
-    tune, setTune, curves, setCurves, filterIntensity, setFilterIntensity, vignette, setVignette, blurRadius, setBlurRadius, selectedTemplate, setSelectedTemplate,
+    tune, setTune, curves, setCurves, filterIntensity, setFilterIntensity, vignette, setVignette, grain, setGrain, blurRadius, setBlurRadius, selectedTemplate, setSelectedTemplate,
     rotation, setRotation, flipH, setFlipH, flipV, setFlipV,
     reversed, setReversed, cropAspect, setCropAspect, opacity, setOpacity,
     blendMode, setBlendMode, selectedMask, setSelectedMask, maskInvert, setMaskInvert,
@@ -98,6 +98,10 @@ export function EditorPanels({
 
           {editMode === 'vignette' && (
             <VignettePanel strength={vignette} onStrengthChange={saveAndSet(setVignette)} />
+          )}
+
+          {editMode === 'grain' && (
+            <GrainPanel strength={grain} onStrengthChange={saveAndSet(setGrain)} />
           )}
 
           {editMode === 'blur' && (

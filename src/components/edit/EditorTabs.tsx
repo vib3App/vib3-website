@@ -34,6 +34,11 @@ const modes: { id: EditMode; label: string; icon: React.ReactNode }[] = [
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" strokeWidth={2} /><ellipse cx="12" cy="12" rx="5" ry="4" strokeWidth={2} opacity="0.5" /></svg>,
   },
   {
+    id: 'grain',
+    label: 'Grain',
+    icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><circle cx="6" cy="7" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="18" cy="8" r="1"/><circle cx="8" cy="13" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="19" cy="16" r="1"/><circle cx="5" cy="18" r="1"/><circle cx="11" cy="18" r="1"/><circle cx="17" cy="20" r="1"/></svg>,
+  },
+  {
     id: 'blur',
     label: 'Blur',
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,

@@ -78,6 +78,8 @@ export interface VideoEdits {
   curves?: CurveSettings;
   // Vignette strength 0..1 (0 = off)
   vignette?: number;
+  // Film grain strength 0..1 (0 = off)
+  grain?: number;
   // Gap 19: Blur
   blur?: number;  // blur radius in px (0 = off)
   // Gap 29: Crop

@@ -130,7 +130,7 @@ function EditContent() {
   // wiring, not 50 useState lines.
   const ed = useEditorState({ videoUrl, duration });
   const {
-    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves, filterIntensity, vignette,
+    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves, filterIntensity, vignette, grain,
     blurRadius, rotation, setRotation, flipH, setFlipH, flipV,
     setFlipV, reversed, setReversed, cropAspect, setCropAspect, opacity,
     setOpacity, blendMode, setBlendMode, noiseReduction, setNoiseReduction, clips,
@@ -362,6 +362,19 @@ function EditContent() {
             style={{
               background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.95) 100%)',
               opacity: vignette,
+            }}
+          />
+        )}
+
+        {/* Film-grain preview overlay (export uses the FFmpeg noise filter). */}
+        {grain > 0 && (
+          <div
+            data-testid="grain-overlay"
+            className="pointer-events-none absolute inset-0 mix-blend-overlay"
+            style={{
+              opacity: grain * 0.7,
+              backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+              backgroundSize: '160px 160px',
             }}
           />
         )}

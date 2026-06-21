@@ -3,6 +3,7 @@ export { EditorTabs } from './EditorTabs';
 export { EditorPanels } from './EditorPanels';
 export { CurvesPanel } from './CurvesPanel';
 export { VignettePanel } from './VignettePanel';
+export { GrainPanel } from './GrainPanel';
 export { TrimPanel } from './TrimPanel';
 export { FilterPanel } from './FilterPanel';
 export { TunePanel } from './TunePanel';
