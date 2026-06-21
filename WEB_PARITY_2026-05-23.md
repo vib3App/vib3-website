@@ -35,6 +35,17 @@ The 5 Tier-1 commits (2eef227…bb9420d) were shipped gated only on `tsc` + `esl
 
 **Also found+fixed via the new verification habit:** ✅ camera top controls (green-screen toggle, face-FX picker) were untappable under the ~141px mobile `TopNav` — measured the overlap, fixed with responsive `top-40 md:top-28` offsets (`6ccf14e`).
 
+### NET-NEW features shipped 2026-06-20 (all tsc+lint clean; editor ones browser-verified)
+- ✅ **Color curves / RGB editor** (`9db04cb`) — Tier 2 #26.
+- ✅ **Filter intensity slider** (`10b1885`) — presets were all-or-nothing; now 0–100% (live preview + export).
+- ✅ **Vignette** (`f708e3d`) and ✅ **Film grain** (`a77808d`) — new editor effects (radial/noise preview overlays + FFmpeg vignette/noise export).
+- ✅ **Rich text in comments + feed captions** (`31989d2`,`61ad261`) — Tier 3 #39; @mentions→/search, #hashtags→/hashtag, URLs external (pure parser node-verified, email-safe).
+- ✅ **QR code in video share modal** (`a913312`) — Tier 3 #36 (profile QR already existed).
+- Fixed a latent CSS bug: the default `'none'` filter combined with any filter function is invalid CSS — voided tune/curves preview; now stripped.
+
+### Audit found STALE (already built by prior sessions — do not rebuild)
+50+ filters (web has 30), Pixabay/Jamendo music search (`musicApi.ts`+`MusicLibraryPanel`), hashtag challenge submit/vote, notification granularity (10 types+DND), achievement progress bars (`AchievementCard`), playlist drag-reorder (`PlaylistReorder`+API), QR generation (profile). The Tier 2/3 lists below are substantially out of date — verify before building.
+
 ---
 
 ## TIER 1 — Critical (Core Feature Missing or Non-Functional)
