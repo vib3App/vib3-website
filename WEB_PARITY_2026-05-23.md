@@ -92,7 +92,7 @@ The 5 Tier-1 commits (2eef227…bb9420d) were shipped gated only on `tsc` + `esl
 23. **TUS resumable uploads** — Flutter uses `tus_upload_service.dart`. Web uses plain Axios; uploads restart on failure.
 24. **Background uploads** — Flutter's WorkManager continues uploads while app is closed. Web pauses when tab closes (Service Worker + IndexedDB could partially fix).
 25. **Pixabay/music library search** — Flutter's `pixabay_music_service.dart` has live search/filter. Web's `MusicLibraryPanel` is a placeholder with no backend.
-26. **Color curves / RGB editor** — Flutter has `rgb_curve_editor.dart`; web only has brightness/contrast/saturation sliders.
+26. ✅ **Color curves / RGB editor** — DONE 2026-06-20 (`9db04cb`). `CurvesPanel` with draggable master + per-channel R/G/B tone curves; live SVG `feComponentTransfer` preview + FFmpeg `curves` export, shared math in `utils/curves.ts`. (Was: web only had brightness/contrast/saturation sliders.)
 27. **30+ transitions** — Web has ~10. No 3D picker, no beat-synced transitions.
 28. **50+ filters** — Web has 9.
 29. **Creator fund tier visualization** — Flutter shows tier roadmap + eligibility milestones; web is text/numeric only.
