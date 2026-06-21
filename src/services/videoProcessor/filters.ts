@@ -2,6 +2,7 @@ import type { VideoEdits, TextOverlay, StickerOverlay } from './types';
 import {
   buildTuneFilter,
   buildCurvesFilter,
+  buildVignetteFilter,
   buildBlurFilter,
   buildCropFilter,
   buildTransformFilters,
@@ -151,6 +152,12 @@ function collectVideoFilters(edits: VideoEdits): string[] {
   if (edits.curves) {
     const curvesFilter = buildCurvesFilter(edits.curves);
     if (curvesFilter) videoFilters.push(curvesFilter);
+  }
+
+  // Vignette
+  if (edits.vignette && edits.vignette > 0) {
+    const vignetteFilter = buildVignetteFilter(edits.vignette);
+    if (vignetteFilter) videoFilters.push(vignetteFilter);
   }
 
   // Gap 19: Blur

@@ -45,6 +45,18 @@ export function buildCurvesFilter(curves: CurveSettings): string | null {
   return stages.length ? stages.join(',') : null;
 }
 
+/**
+ * Build FFmpeg `vignette` filter. Strength 0..1 maps to the vignette angle
+ * (larger angle = darker corners). Returns null when off.
+ */
+export function buildVignetteFilter(strength: number): string | null {
+  if (!strength || strength <= 0) return null;
+  const s = strength > 1 ? 1 : strength;
+  // ~0.1π (subtle) up to ~0.5π (strong)
+  const angle = (0.1 + s * 0.4) * Math.PI;
+  return `vignette=a=${angle.toFixed(4)}`;
+}
+
 /** Gap 19: Build boxblur filter */
 export function buildBlurFilter(radius: number): string | null {
   if (radius <= 0) return null;

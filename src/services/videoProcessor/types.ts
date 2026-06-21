@@ -76,6 +76,8 @@ export interface VideoEdits {
   tune?: TuneSettings;
   // Color curves (master + per-channel tone curves)
   curves?: CurveSettings;
+  // Vignette strength 0..1 (0 = off)
+  vignette?: number;
   // Gap 19: Blur
   blur?: number;  // blur radius in px (0 = off)
   // Gap 29: Crop

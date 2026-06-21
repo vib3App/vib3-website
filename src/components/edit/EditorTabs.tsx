@@ -29,6 +29,11 @@ const modes: { id: EditMode; label: string; icon: React.ReactNode }[] = [
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 20C8 20 8 12 12 8s8-4 8-4" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 20L20 4" opacity="0.4" /></svg>,
   },
   {
+    id: 'vignette',
+    label: 'Vignette',
+    icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" strokeWidth={2} /><ellipse cx="12" cy="12" rx="5" ry="4" strokeWidth={2} opacity="0.5" /></svg>,
+  },
+  {
     id: 'blur',
     label: 'Blur',
     icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,

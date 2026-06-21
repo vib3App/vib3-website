@@ -130,7 +130,7 @@ function EditContent() {
   // wiring, not 50 useState lines.
   const ed = useEditorState({ videoUrl, duration });
   const {
-    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves, filterIntensity,
+    speed, setSpeed, selectedTransition, setSelectedTransition, tune, curves, filterIntensity, vignette,
     blurRadius, rotation, setRotation, flipH, setFlipH, flipV,
     setFlipV, reversed, setReversed, cropAspect, setCropAspect, opacity,
     setOpacity, blendMode, setBlendMode, noiseReduction, setNoiseReduction, clips,
@@ -353,6 +353,18 @@ function EditContent() {
           onPause={() => setIsPlaying(false)}
           playsInline
         />
+
+        {/* Vignette preview overlay (export uses the FFmpeg vignette filter). */}
+        {vignette > 0 && (
+          <div
+            data-testid="vignette-overlay"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.95) 100%)',
+              opacity: vignette,
+            }}
+          />
+        )}
 
         {texts.map((text) => (
           <DraggableOverlay
