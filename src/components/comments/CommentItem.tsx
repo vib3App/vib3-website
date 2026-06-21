@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import type { Comment } from '@/types';
+import { RichText } from '@/components/ui/RichText';
 
 // Pre-generate waveform heights for voice comment visualization
 function generateWaveformHeights(count: number): number[] {
@@ -123,7 +124,7 @@ export function CommentItem({
             <audio ref={audioRef} src={comment.voiceUrl} className="hidden" />
           </div>
         ) : (
-          <p className="text-white/80 text-sm mt-1 break-words">{comment.content}</p>
+          <RichText text={comment.content} className="text-white/80 text-sm mt-1 break-words" />
         )}
 
         {/* Actions */}
