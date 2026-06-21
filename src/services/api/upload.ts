@@ -261,14 +261,17 @@ export class TusUploadManager {
     this.visibilityCleanup = () => document.removeEventListener('visibilitychange', handler);
   }
 
-  private async uploadChunks(): Promise<void> {
-    if (!this.file || !this.uploadUrl) return;
+  // Re-send a chunk at the current offset, retrying transient failures with
+  // exponential backoff. Re-PATCHing the same offset is safe in TUS, so a
+  // dropped connection no longer aborts the whole upload.
+  private chunkRetries = 3;
 
-    while (this.offset < this.file.size && !this.aborted) {
-      const chunk = this.file.slice(this.offset, this.offset + this.chunkSize);
-
+  private async sendChunk(chunk: Blob): Promise<Response> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt <= this.chunkRetries; attempt++) {
+      if (this.aborted) throw new Error('Upload aborted');
       try {
-        const response = await fetch(this.uploadUrl, {
+        const response = await fetch(this.uploadUrl!, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/offset+octet-stream',
@@ -278,10 +281,34 @@ export class TusUploadManager {
           body: chunk,
           keepalive: true, // Gap #40: Allow upload to continue when tab is backgrounded
         });
-
+        // 4xx (other than offset conflicts) are client errors — don't retry.
         if (!response.ok) {
-          throw new Error(`Upload failed: ${response.status}`);
+          const retryable = response.status >= 500 || response.status === 409 || response.status === 423;
+          if (!retryable) throw new Error(`Upload failed: ${response.status}`);
+          throw new Error(`Upload failed (retryable): ${response.status}`);
         }
+        return response;
+      } catch (err) {
+        lastError = err;
+        const msg = err instanceof Error ? err.message : '';
+        // Non-retryable client error or abort: stop immediately.
+        if (msg.startsWith('Upload failed: ') || msg === 'Upload aborted') throw err;
+        if (attempt < this.chunkRetries) {
+          await new Promise(resolve => setTimeout(resolve, 500 * 2 ** attempt));
+        }
+      }
+    }
+    throw lastError instanceof Error ? lastError : new Error('Upload failed');
+  }
+
+  private async uploadChunks(): Promise<void> {
+    if (!this.file || !this.uploadUrl) return;
+
+    while (this.offset < this.file.size && !this.aborted) {
+      const chunk = this.file.slice(this.offset, this.offset + this.chunkSize);
+
+      try {
+        const response = await this.sendChunk(chunk);
 
         const newOffset = response.headers.get('Upload-Offset');
         if (newOffset) {
