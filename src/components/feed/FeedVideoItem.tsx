@@ -9,6 +9,7 @@ import { ActionButtons } from '@/components/feed/ActionButtons';
 import { DoubleTapLike } from './DoubleTapLike';
 import { SpeedControl } from './SpeedControl';
 import type { Video } from '@/types';
+import { RichText } from '@/components/ui/RichText';
 
 interface FeedVideoItemProps {
   video: Video;
@@ -189,7 +190,7 @@ function CreatorInfo({
 function VideoInfo({ video }: { video: Video }) {
   return (
     <div className="absolute bottom-32 md:bottom-20 left-4 right-20 z-10 space-y-2">
-      <p className="text-white text-sm line-clamp-2 drop-shadow-lg">{video.caption}</p>
+      <RichText text={video.caption || ''} className="text-white text-sm line-clamp-2 drop-shadow-lg" />
 
       {Array.isArray(video.hashtags) && video.hashtags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
