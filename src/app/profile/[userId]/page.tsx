@@ -56,7 +56,7 @@ export default function ProfilePage() {
 
         {p.profile && (
           <>
-            <EditProfileModal isOpen={p.showEditModal} onClose={() => p.setShowEditModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, bio: p.profile.bio, location: p.profile.location, profilePicture: p.profile.profilePicture }} onSave={(updates) => p.updateProfile(updates)} />
+            <EditProfileModal isOpen={p.showEditModal} onClose={() => p.setShowEditModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, bio: p.profile.bio, location: p.profile.location, website: p.profile.website, profilePicture: p.profile.profilePicture }} onSave={(updates) => p.updateProfile(updates)} />
             <ProfileQRModal isOpen={p.showQRModal} onClose={() => p.setShowQRModal(false)} profile={{ username: p.profile.username, displayName: p.profile.displayName, profilePicture: p.profile.profilePicture, isVerified: p.profile.isVerified }} profileUrl={p.profileUrl} />
             {!p.isOwnProfile && (
               <SendTipModal isOpen={showTipModal} onClose={() => setShowTipModal(false)} recipientId={p.userId} recipientName={p.profile.displayName || p.profile.username} recipientAvatar={p.profile.profilePicture} />

@@ -11,6 +11,7 @@ interface ProfileData {
   bio?: string;
   profilePicture?: string;
   location?: string;
+  website?: string;
 }
 
 interface EditProfileModalProps {
@@ -30,6 +31,7 @@ export function EditProfileModal({
   const [displayName, setDisplayName] = useState(profile.displayName || '');
   const [bio, setBio] = useState(profile.bio || '');
   const [location, setLocation] = useState(profile.location || '');
+  const [website, setWebsite] = useState(profile.website || '');
   const [profilePicture, setProfilePicture] = useState(profile.profilePicture || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,6 +43,7 @@ export function EditProfileModal({
       setDisplayName(profile.displayName || '');
       setBio(profile.bio || '');
       setLocation(profile.location || '');
+      setWebsite(profile.website || '');
       setProfilePicture(profile.profilePicture || '');
       setImagePreview(null);
       setError('');
@@ -90,6 +93,7 @@ export function EditProfileModal({
         displayName: displayName.trim() || undefined,
         bio: bio.trim() || undefined,
         location: location.trim() || undefined,
+        website: website.trim() || undefined,
         profilePicture: newProfilePicture,
       };
 
@@ -228,6 +232,20 @@ export function EditProfileModal({
               className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50"
             />
             <p className="text-white/30 text-xs mt-1">Where are you based?</p>
+          </div>
+
+          {/* Website */}
+          <div>
+            <label className="block text-white/70 text-sm mb-2">Website</label>
+            <input
+              type="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://example.com"
+              maxLength={200}
+              className="w-full aurora-bg text-white px-4 py-3 rounded-xl outline-none placeholder:text-white/30 focus:ring-2 focus:ring-purple-500/50"
+            />
+            <p className="text-white/30 text-xs mt-1">Your link (shown on your profile)</p>
           </div>
 
           {/* Username (read-only) */}

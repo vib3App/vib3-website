@@ -26,6 +26,8 @@ export const profileApi = {
   async updateProfile(updates: {
     displayName?: string;
     bio?: string;
+    location?: string;
+    website?: string;
     profilePicture?: string;
   }): Promise<UserProfile> {
     const { data } = await apiClient.put<UserProfile>('/user/profile', updates);

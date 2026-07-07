@@ -9,6 +9,7 @@ export interface UserProfile {
   profileImage?: string;
   bio?: string;
   location?: string;
+  website?: string;
   isVerified?: boolean;
   createdAt?: string;
   followers?: number;

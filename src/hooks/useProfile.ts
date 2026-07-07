@@ -19,6 +19,7 @@ export interface UserProfile {
   profilePicture?: string;
   bio?: string;
   location?: string;
+  website?: string;
   isVerified?: boolean;
   createdAt?: string;
   stats: { followers: number; following: number; likes: number; videos: number };
