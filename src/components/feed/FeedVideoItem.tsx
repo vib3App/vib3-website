@@ -9,6 +9,7 @@ import { ActionButtons } from '@/components/feed/ActionButtons';
 import { DoubleTapLike } from './DoubleTapLike';
 import { SpeedControl } from './SpeedControl';
 import type { Video } from '@/types';
+import { PollOverlay } from './PollOverlay';
 import { RichText } from '@/components/ui/RichText';
 
 interface FeedVideoItemProps {
@@ -75,6 +76,9 @@ export function FeedVideoItem({
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 pointer-events-none" />
+
+      {/* Read-only poll/quiz overlays (interactive in the mobile app) */}
+      <PollOverlay interactions={video.interactions} />
 
       {/* Bottom-right controls: speed + mute */}
       <div className="fixed bottom-4 right-20 z-50 flex items-center gap-2">

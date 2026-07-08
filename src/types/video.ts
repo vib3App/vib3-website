@@ -33,6 +33,23 @@ export interface Video {
   createdAt: string;
   hashtags: string[];
   musicInfo?: MusicInfo;
+  /** Interactive poll/quiz stickers (metadata; quiz answer is NOT included). */
+  interactions?: VideoInteraction[];
+}
+
+/** A poll/quiz sticker attached to a video. Normalized position + time window. */
+export interface VideoInteraction {
+  id: string;
+  type: 'poll' | 'quiz';
+  question?: string;
+  options: string[];
+  counts?: number[];
+  x?: number;
+  y?: number;
+  w?: number;
+  h?: number;
+  startMs?: number;
+  endMs?: number;
 }
 
 export interface Comment {

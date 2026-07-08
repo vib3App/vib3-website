@@ -35,6 +35,7 @@ export interface VideoResponse {
   description?: string;
   hashtags?: string[];
   tags?: string[];
+  interactions?: import('@/types/video').VideoInteraction[];
   duration?: number;
   likesCount?: number;
   commentsCount?: number;
@@ -98,6 +99,7 @@ export function transformVideo(data: VideoResponse): Video {
     thumbnailUrl,
     caption: data.caption || data.title || data.description || '',
     hashtags: data.hashtags || data.tags || [],
+    interactions: Array.isArray(data.interactions) ? data.interactions : undefined,
     duration: data.duration || 0,
     likesCount: data.likesCount || data.likes || 0,
     commentsCount: data.commentsCount || data.comments || 0,
