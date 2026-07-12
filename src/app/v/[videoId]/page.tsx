@@ -45,24 +45,18 @@ export async function generateMetadata({
   }
 
   const username = video.author?.username || '';
-  const likes = video.likesCount || 0;
-  const comments = video.commentsCount || 0;
-  const caption = video.caption || '';
+  const displayName = video.author?.displayName || username || 'VIB3';
+  const caption = (video.caption || '').trim();
 
-  const ogTitle = username || 'VIB3';
+  // Match the clean card layout apps like TikTok use. iMessage/LinkPresentation
+  // renders the card as "<og:site_name> · <og:title>" (e.g. "VIB3 · Heart Adopts")
+  // with og:description as the subtitle. So: title = the CREATOR's name, and the
+  // subtitle is the caption when we have one, else a simple call-to-action (like
+  // TikTok's "Watch TikTok now"). No stats clutter — TikTok doesn't show them.
+  const ogTitle = displayName;
+  const ogDescription = caption || 'Watch on VIB3';
 
-  const parts: string[] = [];
-  if (likes > 0 || comments > 0) {
-    parts.push(`${likes.toLocaleString()} likes, ${comments.toLocaleString()} comments.`);
-  }
-  if (caption) {
-    parts.push(caption);
-  } else {
-    parts.push(`Check out ${username ? `${username}'s` : 'this'} video.`);
-  }
-  const ogDescription = parts.join(' ');
-
-  const pageTitle = username ? `${username} on VIB3` : 'Watch on VIB3';
+  const pageTitle = `${displayName} on VIB3`;
 
   // Use the video's real CDN thumbnail as og:image (static + fast, like TikTok).
   // The previous og:image was a dynamically-generated 1200x630 PNG (~800KB, ~1.5s
