@@ -80,9 +80,15 @@ export async function generateMetadata({
       url: pageUrl,
       type: 'video.other',
       siteName: 'VIB3',
-      images: thumbnailUrl ? [{ url: thumbnailUrl, alt: ogTitle }] : undefined,
+      // Explicit portrait (9:16) dimensions — iMessage/LinkPresentation uses
+      // og:image/og:video width+height to decide whether to render the rich
+      // VIDEO card (large thumbnail + play button + "Watch VIB3 now") vs a plain
+      // link card (small image + domain). VIB3 videos are vertical.
+      images: thumbnailUrl
+        ? [{ url: thumbnailUrl, width: 720, height: 1280, alt: ogTitle }]
+        : undefined,
       videos: mp4Url
-        ? [{ url: mp4Url, secureUrl: mp4Url, type: 'video/mp4' }]
+        ? [{ url: mp4Url, secureUrl: mp4Url, type: 'video/mp4', width: 720, height: 1280 }]
         : undefined,
     },
     twitter: {
