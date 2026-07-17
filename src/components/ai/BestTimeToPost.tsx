@@ -1,32 +1,33 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import { apiClient } from '@/services/api/client';
 
-interface BestTimeSlot {
-  hour: number;
-  score: number; // 0-100 engagement potential
-  audienceSize: 'low' | 'medium' | 'high';
+/**
+ * Best Time to Post — REAL metrics, no AI, no guessing.
+ *
+ * History: this widget used to generate its numbers with Math.random() dressed
+ * up as "engagement potential", and was never mounted anywhere. It now shows
+ * the actual hour-of-day view histogram from the backend
+ * (/api/analytics/best-post-times): the creator's own audience hours once they
+ * have enough views to be meaningful, platform-wide traffic until then —
+ * exactly the feature as originally intended ("if the highest traffic on the
+ * site is 5PM-10PM, that's the best time to post").
+ */
+
+interface TimesSummary {
+  distribution: number[]; // 24 buckets, views per hour-of-day
+  totalViews: number;
+  bestHours: number[];
+  bestWindow: string | null;
 }
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-function generateSlots(_dayIndex: number): BestTimeSlot[] {
-  return Array.from({ length: 24 }, (_, hour) => {
-    let baseScore = 30;
-    if (hour >= 7 && hour <= 9) baseScore = 60;
-    if (hour >= 12 && hour <= 14) baseScore = 75;
-    if (hour >= 18 && hour <= 22) baseScore = 90;
-    if (hour >= 0 && hour <= 5) baseScore = 20;
-
-    const score = Math.min(100, Math.max(0, baseScore + Math.random() * 20 - 10));
-
-    return {
-      hour,
-      score: Math.round(score),
-      audienceSize: score > 70 ? 'high' : score > 40 ? 'medium' : 'low',
-    };
-  });
+interface BestTimesResponse {
+  global: TimesSummary;
+  creator: TimesSummary | null;
+  recommended: TimesSummary;
+  source: string; // 'your audience' | 'platform traffic'
 }
 
 function formatHour(hour: number): string {
@@ -36,13 +37,25 @@ function formatHour(hour: number): string {
 }
 
 export function BestTimeToPost({ className = '' }: { className?: string }) {
-  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
+  const [data, setData] = useState<BestTimesResponse | null>(null);
+  const [failed, setFailed] = useState(false);
 
-  // Generate slots based on selectedDay - useMemo recalculates when day changes
-  const slots = useMemo(() => generateSlots(selectedDay), [selectedDay]);
+  useEffect(() => {
+    let alive = true;
+    apiClient
+      .get<BestTimesResponse>('/analytics/best-post-times')
+      .then((res) => { if (alive) setData(res.data); })
+      .catch(() => { if (alive) setFailed(true); });
+    return () => { alive = false; };
+  }, []);
 
-  const bestSlot = slots.reduce((best, slot) =>
-    slot.score > (best?.score || 0) ? slot : best, slots[0]);
+  // Failed or genuinely empty platform: render nothing rather than invent
+  // numbers — inventing numbers is how the fake version happened.
+  if (failed) return null;
+  if (data && data.recommended.totalViews === 0) return null;
+
+  const rec = data?.recommended;
+  const max = rec ? Math.max(...rec.distribution, 1) : 1;
 
   return (
     <motion.div
@@ -53,74 +66,46 @@ export function BestTimeToPost({ className = '' }: { className?: string }) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-white font-medium">Best Time to Post</h3>
-          <p className="text-white/50 text-sm">When your audience is most active</p>
+          <p className="text-white/50 text-sm">
+            {data ? `Based on ${data.source}` : 'Loading…'}
+          </p>
         </div>
         <div className="text-2xl">⏰</div>
       </div>
 
-      {/* Day selector */}
-      <div className="flex gap-1 mb-4">
-        {DAYS.map((day, index) => (
-          <motion.button
-            key={day}
-            className={`flex-1 py-1.5 rounded-lg text-xs transition-colors ${
-              selectedDay === index
-                ? 'bg-purple-500 text-white'
-                : 'bg-white/5 text-white/50 hover:bg-white/10'
-            }`}
-            onClick={() => setSelectedDay(index)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {day}
-          </motion.button>
-        ))}
-      </div>
+      {rec && (
+        <>
+          {rec.bestWindow && (
+            <p className="text-white text-lg font-semibold mb-3">{rec.bestWindow}</p>
+          )}
 
-      {/* Heatmap */}
-      <div className="grid grid-cols-12 gap-1 mb-4">
-        {slots.slice(0, 24).map((slot, index) => (
-          <motion.div
-            key={index}
-            className="aspect-square rounded cursor-pointer relative group"
-            style={{
-              backgroundColor: `rgba(168, 85, 247, ${slot.score / 100})`,
-            }}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: index * 0.02 }}
-            whileHover={{ scale: 1.2, zIndex: 10 }}
-          >
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2
-                          opacity-0 group-hover:opacity-100 transition-opacity
-                          bg-black/90 px-2 py-1 rounded text-xs text-white
-                          whitespace-nowrap z-20">
-              {formatHour(slot.hour)}: {slot.score}% engagement
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Best time recommendation */}
-      {bestSlot && (
-        <motion.div
-          className="p-3 rounded-xl bg-purple-500/20 border border-purple-500/30"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🎯</span>
-            <div>
-              <div className="text-white text-sm font-medium">
-                Best time: {formatHour(bestSlot.hour)}
-              </div>
-              <div className="text-white/60 text-xs">
-                {bestSlot.score}% higher engagement potential
-              </div>
-            </div>
+          {/* 24-hour histogram of real views */}
+          <div className="flex items-end gap-0.5 h-16 mb-1">
+            {rec.distribution.map((n, h) => (
+              <div
+                key={h}
+                title={`${formatHour(h)}: ${n} views`}
+                className={`flex-1 rounded-sm ${
+                  rec.bestHours.includes(h)
+                    ? 'bg-gradient-to-t from-purple-500 to-teal-400'
+                    : 'bg-white/10'
+                }`}
+                style={{ height: `${Math.max(6, (n / max) * 100)}%` }}
+              />
+            ))}
           </div>
-        </motion.div>
+          <div className="flex justify-between text-[10px] text-white/30">
+            <span>12am</span>
+            <span>6am</span>
+            <span>12pm</span>
+            <span>6pm</span>
+            <span>11pm</span>
+          </div>
+
+          <p className="text-white/40 text-xs mt-3">
+            {rec.totalViews.toLocaleString()} views analyzed (last 30 days)
+          </p>
+        </>
       )}
     </motion.div>
   );

@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import { aiApi, type VideoOutlinePlan } from '@/services/api/ai';
+import { BestTimeToPost } from '@/components/ai';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useUpload } from '@/hooks/useUpload';
@@ -217,6 +218,9 @@ function UploadPageContent() {
                 error={outlineError}
                 onGenerate={handleGenerateOutline}
               />
+
+              {/* Real metrics, not AI: platform/audience hour histogram */}
+              <BestTimeToPost />
 
               {/* Gap #35: Codec Selector */}
               <CodecSelector
