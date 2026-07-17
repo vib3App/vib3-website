@@ -172,6 +172,7 @@ function UploadPageContent() {
           {upload.step === 'details' && (
             <div className="space-y-6">
               <VideoDetailsForm
+                thumbnail={upload.selectedThumbnail}
                 caption={upload.caption}
                 onCaptionChange={upload.setCaption}
                 hashtags={upload.hashtags}

@@ -228,20 +228,32 @@ export const aiApi = {
   /**
    * Generate video description from content
    */
-  async generateDescription(videoId: string): Promise<string> {
-    const { data } = await apiClient.post<{ description: string }>(
-      `/ai/describe/${videoId}`
-    );
+  async generateDescription(input: {
+    videoId?: string;
+    caption?: string;
+    thumbnail?: string; // data URL — the video may not be uploaded yet
+  }): Promise<string> {
+    const path = input.videoId ? `/ai/describe/${input.videoId}` : '/ai/describe';
+    const { data } = await apiClient.post<{ description: string }>(path, {
+      caption: input.caption,
+      thumbnail: input.thumbnail,
+    });
     return data.description;
   },
 
   /**
    * Generate hashtag suggestions
    */
-  async suggestHashtags(videoId: string): Promise<string[]> {
-    const { data } = await apiClient.post<{ hashtags: string[] }>(
-      `/ai/hashtags/${videoId}`
-    );
+  async suggestHashtags(input: {
+    videoId?: string;
+    caption?: string;
+    thumbnail?: string;
+  }): Promise<string[]> {
+    const path = input.videoId ? `/ai/hashtags/${input.videoId}` : '/ai/hashtags';
+    const { data } = await apiClient.post<{ hashtags: string[] }>(path, {
+      caption: input.caption,
+      thumbnail: input.thumbnail,
+    });
     return data.hashtags;
   },
 

@@ -20,6 +20,7 @@ const vibes = [
 
 interface VideoDetailsFormProps {
   videoId?: string;
+  thumbnail?: string | null; // selected thumbnail data URL (video not uploaded yet)
   caption: string;
   onCaptionChange: (caption: string) => void;
   hashtags: string[];
@@ -62,6 +63,7 @@ interface VideoDetailsFormProps {
 
 export function VideoDetailsForm({
   videoId,
+  thumbnail,
   caption,
   onCaptionChange,
   hashtags,
@@ -97,11 +99,17 @@ export function VideoDetailsForm({
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const [isGeneratingHashtags, setIsGeneratingHashtags] = useState(false);
 
+  const canSuggest = Boolean(videoId || caption.trim() || thumbnail);
+
   const handleAICaption = async () => {
-    if (!videoId) return;
+    if (!canSuggest) return;
     setIsGeneratingCaption(true);
     try {
-      const description = await aiApi.generateDescription(videoId);
+      const description = await aiApi.generateDescription({
+        videoId,
+        caption,
+        thumbnail: thumbnail ?? undefined,
+      });
       if (description) onCaptionChange(description);
     } catch (err) {
       logger.error('AI caption generation failed:', err);
@@ -111,10 +119,14 @@ export function VideoDetailsForm({
   };
 
   const handleAIHashtags = async () => {
-    if (!videoId) return;
+    if (!canSuggest) return;
     setIsGeneratingHashtags(true);
     try {
-      const tags = await aiApi.suggestHashtags(videoId);
+      const tags = await aiApi.suggestHashtags({
+        videoId,
+        caption,
+        thumbnail: thumbnail ?? undefined,
+      });
       if (tags.length > 0) onHashtagsChange([...new Set([...hashtags, ...tags])].slice(0, 10));
     } catch (err) {
       logger.error('AI hashtag generation failed:', err);
@@ -137,7 +149,7 @@ export function VideoDetailsForm({
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-white font-medium">Caption</label>
-          {videoId && (
+          {canSuggest && (
             <button
               onClick={handleAICaption}
               disabled={isGeneratingCaption}
@@ -167,7 +179,7 @@ export function VideoDetailsForm({
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-white font-medium">Hashtags</label>
-          {videoId && (
+          {canSuggest && (
             <button
               onClick={handleAIHashtags}
               disabled={isGeneratingHashtags}
