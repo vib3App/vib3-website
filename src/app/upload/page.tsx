@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState, useCallback } from 'react';
+import { aiApi, type VideoOutlinePlan } from '@/services/api/ai';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { useUpload } from '@/hooks/useUpload';
@@ -39,27 +40,24 @@ function UploadPageContent() {
   const { isAuthenticated, isAuthVerified } = useAuthStore();
   const upload = useUpload(isAuthenticated, isAuthVerified);
 
-  // Gap #31: AI Video Outline state
-  const [outline, setOutline] = useState<{ scenes: { timestamp: number; description: string; suggestion: string }[] } | null>(null);
+  // AI Video Outline — real backend call (was a setTimeout showing hardcoded
+  // fake "scene analysis"; see AIVideoOutline.tsx header for the history).
+  const [outline, setOutline] = useState<VideoOutlinePlan | null>(null);
   const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
+  const [outlineError, setOutlineError] = useState<string | null>(null);
 
-  const handleGenerateOutline = useCallback(() => {
+  const handleGenerateOutline = useCallback(async (topic: string) => {
     setIsGeneratingOutline(true);
-    setOutline(null);
-    // Simulate AI analysis with mock data
-    setTimeout(() => {
-      setOutline({
-        scenes: [
-          { timestamp: 0, description: 'Opening shot - wide angle establishing scene', suggestion: 'Add a quick zoom-in for more dynamic feel' },
-          { timestamp: 3.5, description: 'Subject enters frame from left', suggestion: 'Good composition. Consider adding text overlay here' },
-          { timestamp: 8.2, description: 'Close-up reaction shot', suggestion: 'Lighting is slightly dark - consider brightness adjustment' },
-          { timestamp: 12.0, description: 'Action sequence with fast movement', suggestion: 'Speed ramp to 1.5x would enhance the energy' },
-          { timestamp: 18.5, description: 'Dialogue section - two subjects talking', suggestion: 'Enable auto-captions for accessibility' },
-          { timestamp: 25.0, description: 'Closing shot - subject waves goodbye', suggestion: 'Add fade-out transition and end card' },
-        ],
-      });
+    setOutlineError(null);
+    try {
+      const plan = await aiApi.generateOutline({ topic });
+      setOutline(plan);
+    } catch {
+      setOutline(null);
+      setOutlineError('Outline generation failed — try again in a moment.');
+    } finally {
       setIsGeneratingOutline(false);
-    }, 2000);
+    }
   }, []);
 
   // Gap #35: Codec selection state
@@ -212,11 +210,11 @@ function UploadPageContent() {
                 onWatermarkOpacityChange={upload.setWatermarkOpacity}
               />
 
-              {/* Gap #31: AI Video Outline */}
               <AIVideoOutline
-                videoUrl={upload.videoPreviewUrl}
+                defaultTopic={upload.caption}
                 outline={outline}
                 isGenerating={isGeneratingOutline}
+                error={outlineError}
                 onGenerate={handleGenerateOutline}
               />
 

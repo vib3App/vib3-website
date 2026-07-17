@@ -14,6 +14,15 @@ import type {
 } from '@/types/ai';
 import type { Video } from '@/types';
 
+export interface VideoOutlinePlan {
+  hook: string;
+  script: { timestamp: string; content: string }[];
+  hashtags: string[];
+  caption: string;
+  tips: string[];
+}
+
+
 export const aiApi = {
   // ========== Auto-Captions ==========
 
@@ -255,6 +264,21 @@ export const aiApi = {
       thumbnail: input.thumbnail,
     });
     return data.hashtags;
+  },
+
+  /**
+   * Generate a full video outline (hook, timed script, hashtags, caption, tips)
+   * from a topic — the same feature the app's editor has, now backend-served.
+   */
+  async generateOutline(input: {
+    topic: string;
+    durationSeconds?: number;
+  }): Promise<VideoOutlinePlan> {
+    const { data } = await apiClient.post<{ outline: VideoOutlinePlan }>(
+      '/ai/outline',
+      input
+    );
+    return data.outline;
   },
 
   // ========== AI Settings ==========
